@@ -1,0 +1,21 @@
+version: '3'
+services:
+  organizr:
+    image: ghcr.io/organizr/organizr:latest
+    container_name: organizr
+    environment:
+      - PUID=1026
+      - PGID=100
+      - TZ=Europe/Kiev
+      - branch=v2-master
+      - fpm=false
+    volumes:
+      - /volume1/docker/organizr:/config
+    ports:
+      - 7001:80
+      - 7000:443
+    restart: unless-stopped
+networks:
+  default:
+    name: containers_bridge
+    external: true
