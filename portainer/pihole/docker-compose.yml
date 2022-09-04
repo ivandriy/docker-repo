@@ -1,0 +1,15 @@
+version: "3"
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    network_mode: "host"
+    environment:
+      TZ: 'Europe/Kyiv'
+      WEBPASSWORD: 'nomad_is_1593*'
+      WEB_PORT: 8088
+      FTLCONF_LOCAL_IPV4: 192.168.1.254
+    volumes:
+      - '/volume1/docker/pihole/pihole:/etc/pihole'
+      - '/volume1/docker/pihole/dnsmasq.d:/etc/dnsmasq.d'
+    restart: unless-stopped
