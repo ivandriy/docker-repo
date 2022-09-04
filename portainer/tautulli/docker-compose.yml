@@ -14,5 +14,5 @@ services:
       - 8181:8181
 networks:
   default:
-    name: bridge
+    name: containers_bridge
     external: true
