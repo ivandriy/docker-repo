@@ -1,0 +1,19 @@
+version: '3'
+services:
+  heimdall:
+    image: linuxserver/heimdall
+    container_name: heimdall
+    environment:
+      - PUID=1026
+      - PGID=100
+      - TZ=Europe/Kiev
+    volumes:
+      - /volume1/docker/heimdall/config:/config
+    ports:
+      - 8056:80
+      - 4443:443
+    restart: unless-stopped
+networks:
+  default:
+    name: containers_bridge
+    external: true
