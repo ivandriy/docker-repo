@@ -12,3 +12,7 @@ services:
       - TZ=Europe/Kyiv
     ports:
       - 8181:8181
+networks:
+  default:
+    name: bridge
+    external: true
