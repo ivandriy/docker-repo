@@ -1,0 +1,21 @@
+version: "3.7"
+services:
+  transmission:
+    image: lscr.io/linuxserver/transmission:latest
+    container_name: transmission
+    environment:
+      - PUID=1026
+      - PGID=100
+      - TZ=Europe/Kiev
+    volumes:
+      - /volume1/docker/transmission:/config
+      - /volume1/Data/Downloads:/download
+    ports:
+      - 9091:9091 
+      - 51413:51413
+      - 51413:51413/udp
+    restart: unless-stopped
+networks:
+  default:
+    name: containers_bridge
+    external: true
