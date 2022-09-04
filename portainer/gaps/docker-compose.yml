@@ -1,0 +1,14 @@
+version: '3'
+services:
+  gaps:
+    container_name: gaps
+    image: housewrecker/gaps:latest
+    volumes:
+      - /volume1/docker/gaps:/usr/data
+    ports:
+      - 8484:8484
+    restart: unless-stopped
+networks:
+  default:
+    name: containers_bridge
+    external: true
