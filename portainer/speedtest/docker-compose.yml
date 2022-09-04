@@ -1,0 +1,24 @@
+version: '3.3'
+services:
+    speedtest:
+        container_name: speedtest
+        image: henrywhitaker3/speedtest-tracker:latest
+        ports:
+            - 8765:80
+        volumes:
+            - /volume1/docker/speedtest:/config
+        environment:
+            - TZ=Europe/Kiev
+            - PGID=100
+            - PUID=1026
+            - OOKLA_EULA_GDPR=true
+        logging:
+            driver: "json-file"
+            options:
+                max-file: "10"
+                max-size: "200k"
+        restart: unless-stopped
+networks:
+  default:
+    name: containers_bridge
+    external: true
