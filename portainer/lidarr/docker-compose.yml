@@ -8,7 +8,7 @@ services:
       - PGID=100
       - TZ=Europe/Kiev
     volumes:
-      - /volume1/docker/lidarr:/config
+      - /volume1/config/lidarr:/config
       - /volume1/Data/Downloads/Music:/downloads
       - /volume1/Data/Music:/music
     ports:

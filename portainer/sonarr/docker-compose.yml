@@ -8,7 +8,7 @@ services:
       - PGID=100
       - TZ=Europe/Kiev
     volumes:
-      - /volume1/docker/sonarr:/config
+      - /volume1/config/sonarr:/config
       - /volume1/Data/Downloads/Series:/downloads
       - /volume1/Data/Video/Series:/series
     ports:
