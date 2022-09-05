@@ -10,7 +10,7 @@ services:
       - VERSION=latest
       - TZ=Europe/Kiev
     volumes:
-      - '/volume1/docker/plex:/config'
+      - '/volume1/config/plex:/config'
       - '/volume1/Data/Video/Movies:/volume1/Data/Video/Movies'
       - '/volume1/Data/Video/Mults:/volume1/Data/Video/Mults'
       - '/volume1/Data/Video/Series:/volume1/Data/Video/Series'
