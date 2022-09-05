@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  plex:
+    image: linuxserver/plex:latest
+    container_name: plex
+    network_mode: host
+    environment:
+      - PUID=1026
+      - PGID=100
+      - VERSION=latest
+      - TZ=Europe/Kiev
+    volumes:
+      - '/volume1/docker/plex:/config'
+      - '/volume1/Data/Video/Movies:/volume1/Data/Video/Movies'
+      - '/volume1/Data/Video/Mults:/volume1/Data/Video/Mults'
+      - '/volume1/Data/Video/Series:/volume1/Data/Video/Series'
+      - '/volume1/Data/Video/Sport:/volume1/Data/Video/Sport'
+      - '/volume1/Data/Video/TV:/volume1/Data/Video/TV'
+      - '/volume1/Data/Music:/volume1/Data/Music'
+    restart: unless-stopped
