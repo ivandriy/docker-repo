@@ -1,0 +1,21 @@
+version: "3.8"
+services:
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=1026
+      - PGID=100
+      - TZ=Europe/Kiev
+    volumes:
+      - /volume1/docker/radarr:/config
+      - /volume1/Data/Downloads/Movies:/downloads
+      - /volume1/Data/Video/Movies:/movies
+      - /volume1/Data/Video/Mults:/mults
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+networks:
+  default:
+    name: containers_bridge
+    external: true
