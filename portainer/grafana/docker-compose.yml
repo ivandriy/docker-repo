@@ -1,23 +1,17 @@
-version: "3.8"
+version: '3'
 services:
   grafana:
     image: alhazmy13/telegraf-influxdb-grafana:latest
     container_name: grafana
     environment:
-      - PUID=1026
-      - PGID=100
-      - TZ=Europe/Kiev
+      TZ: Europe/Kiev
+    restart: unless-stopped
     volumes:
       - /volume1/config/grafana:/var/lib/grafana
       - /volume1/config/influxdb:/var/lib/influxdb
     ports:
-      - 49155:22/tcp
-      - 3003:3003/tcp
+      - 3003:3003
       - 5144:514/udp
-      - 49154:8086/tcp
-      - 49153:8125/udp
-      - 49153:8888/tcp
-    restart: unless-stopped
 networks:
   default:
     name: containers_bridge
