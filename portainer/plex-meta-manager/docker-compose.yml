@@ -1,0 +1,10 @@
+version: "2.1"
+services:
+  plex-meta-manager:
+    image: meisnate12/plex-meta-manager:latest
+    container_name: plex-meta-manager
+    environment:
+      - TZ=Europe/Kiev
+    volumes:
+      - /volume1/config/plex-meta-manager:/config
+    restart: unless-stopped
