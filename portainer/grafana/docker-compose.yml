@@ -4,7 +4,9 @@ services:
     image: alhazmy13/telegraf-influxdb-grafana:latest
     container_name: grafana
     environment:
-      TZ: Europe/Kiev
+      - PUID=1026
+      - PGID=100
+      - TZ=Europe/Kiev
     restart: unless-stopped
     volumes:
       - /volume1/config/grafana:/var/lib/grafana
