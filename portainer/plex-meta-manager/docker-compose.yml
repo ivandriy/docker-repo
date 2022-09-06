@@ -6,5 +6,5 @@ services:
     environment:
       - TZ=Europe/Kiev
     volumes:
-      - /volume1/config/plex-meta-manager:/config
+      - /volume1/config/plex-meta-manager/config:/config
     restart: unless-stopped
