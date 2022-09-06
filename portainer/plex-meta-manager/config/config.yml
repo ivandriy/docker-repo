@@ -4,21 +4,60 @@ libraries:                                      # This is called out once within
     - file: config/Movies.yml                   # This is a local file on the system
     - folder: config/Movies/                    # This is a local directory on the system
     - git: PMM/chart/basic                      # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-    - git: PMM/chart/imdb                       # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    - git: PMM/chart/imdb
+    - git: PMM/award/oscars
+    - git: PMM/resolution_standards
+    - git: PMM/streaming 
+    - git: PMM/year
+    - git: PMM/movie/decade
+    - git: PMM/movie/director
+    - git: PMM/movie/franchise
+    - git: PMM/movie/universe
+    - git: PMM/actor
+    - git: PMM/genre                       # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
     overlay_path:
     - remove_overlays: false                    # Set this to true to remove all overlays
     - file: config/Overlays.yml                 # This is a local file on the system
-    - git: PMM/overlays/imdb_top_250            # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    - git: PMM/overlays/imdb_top_250  
+    - git: PMM/overlays/ratings
+      template_variables:
+        rating1: critic
+        rating1_image: rt_tomato
+    - git: PMM/overlays/video_format
+    - git: PMM/overlays/resolution
+    - git: PMM/overlays/audio_codec          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
   Series:
     metadata_path:
     - file: config/Series.yml
     - folder: config/Series/
     - git: PMM/chart/basic                      # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-    - git: PMM/chart/imdb                       # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    - git: PMM/chart/imdb
+    - git: PMM/award/golden
+    - git: PMM/award/emmy
+    - git: PMM/actor
+    - git: PMM/genre
+    - git: PMM/streaming
+    - git: PMM/year
+    - git: PMM/show/country
+    - git: PMM/show/decade                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
     overlay_path:
     - remove_overlays: false                    # Set this to true to remove all overlays
     - file: config/Overlays.yml                 # This is a local file on the system
-    - git: PMM/overlays/imdb_top_250            # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    - git: PMM/overlays/imdb_top_250
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/audio_codec
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/resolution
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/streaming
+      template_variables:
+        overlay_level: season
+    - git: PMM/overlays/video_format
+      template_variables:
+        overlay_level: season            # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
   Music:
     metadata_path:
     - file: config/Music.yml
@@ -89,7 +128,7 @@ omdb:
 radarr:
   url: http://192.168.1.254:7878
   token: 2b8bc31806514b85964c938fac0f3a46
-  add_missing: false
+  add_missing: true
   add_existing: false
   root_folder_path: /movies
   monitor: false
@@ -103,7 +142,7 @@ radarr:
 sonarr:
   url: http://192.168.1.254:8989
   token: d1df0fcee87f483a876738520bdc37b6
-  add_missing: false
+  add_missing: true
   add_existing: false
   root_folder_path: /series
   monitor: none
