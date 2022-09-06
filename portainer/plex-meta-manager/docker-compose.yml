@@ -4,6 +4,8 @@ services:
     image: meisnate12/plex-meta-manager:latest
     container_name: plex-meta-manager
     environment:
+      - PUID=1026
+      - PGID=100
       - TZ=Europe/Kiev
     volumes:
       - /volume1/docker/plex-meta-manager/config:/config
