@@ -8,3 +8,7 @@ services:
     volumes:
       - /volume1/config/plex-meta-manager/config:/config
     restart: unless-stopped
+networks:
+  default:
+    name: containers_bridge
+    external: true
