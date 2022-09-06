@@ -6,7 +6,7 @@ services:
     environment:
       - TZ=Europe/Kiev
     volumes:
-      - /volume1/docker/plex-meta-manager/config:/config
+      - /volume1/docker/plex-meta-manager:/config
     restart: unless-stopped
 networks:
   default:
