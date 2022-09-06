@@ -1,30 +1,30 @@
 libraries:                                      # This is called out once within the config.yml file                                       
   Movies:                                       # Each library must match the Plex library name
     metadata_path:
-      - file: config/Movies.yml                 # This is a local file on the system
-      - folder: config/Movies/                  # This is a local directory on the system
-      - git: PMM/chart/basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - git: PMM/chart/imdb                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    - file: config/Movies.yml                   # This is a local file on the system
+    - folder: config/Movies/                    # This is a local directory on the system
+    - git: PMM/chart/basic                      # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    - git: PMM/chart/imdb                       # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
     overlay_path:
-      - remove_overlays: false                  # Set this to true to remove all overlays
-      - file: config/Overlays.yml               # This is a local file on the system
-      - git: PMM/overlays/imdb_top_250          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-  Series:                           
+    - remove_overlays: false                    # Set this to true to remove all overlays
+    - file: config/Overlays.yml                 # This is a local file on the system
+    - git: PMM/overlays/imdb_top_250            # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+  Series:
     metadata_path:
-      - file: config/Series.yml
-      - folder: config/Series/
-      - git: PMM/chart/basic                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
-      - git: PMM/chart/imdb                     # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    - file: config/Series.yml
+    - folder: config/Series/
+    - git: PMM/chart/basic                      # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    - git: PMM/chart/imdb                       # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
     overlay_path:
-      - remove_overlays: false                  # Set this to true to remove all overlays
-      - file: config/Overlays.yml               # This is a local file on the system
-      - git: PMM/overlays/imdb_top_250          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    - remove_overlays: false                    # Set this to true to remove all overlays
+    - file: config/Overlays.yml                 # This is a local file on the system
+    - git: PMM/overlays/imdb_top_250            # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
   Music:
     metadata_path:
-      - file: config/Music.yml
+    - file: config/Music.yml
 playlist_files:
-  - file: config/playlists.yml       
-  - git: PMM/playlist                           # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+- file: config/playlists.yml
+- git: PMM/playlist                             # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
 settings:
   cache: true
   cache_expiration: 60
@@ -57,12 +57,17 @@ settings:
   item_refresh_delay: 0
   playlist_sync_to_users: all
   verify_ssl: true
+  prioritize_assets: false
+  playlist_report: true
+  custom_repo:
+  check_nightly: false
 webhooks:
   error:
   run_start:
   run_end:
   changes:
     version:
+  version:
 plex:
   url: http://192.168.1.254:32400
   token: 8d3BTc6xfvXoM-8kXtuP
@@ -73,11 +78,14 @@ plex:
 tmdb:
   apikey: 974ade479a2f9ac70fb9634ad950d497
   language: en
+  cache_expiration: 60
+  region:
 tautulli:
   url: http://192.168.1.254:8181
   apikey: 2ffbcbe294ae4faa84c391343feefedc
 omdb:
   apikey: 3242fe73
+  cache_expiration: 60
 radarr:
   url: http://192.168.1.254:7878
   token: 2b8bc31806514b85964c938fac0f3a46
@@ -91,6 +99,7 @@ radarr:
   search: false
   radarr_path:
   plex_path:
+  upgrade_existing: false
 sonarr:
   url: http://192.168.1.254:8989
   token: d1df0fcee87f483a876738520bdc37b6
@@ -107,6 +116,7 @@ sonarr:
   cutoff_search: false
   sonarr_path:
   plex_path:
+  upgrade_existing: false
 trakt:
   client_id: ee9269cef861fa6d9099e41f9e3c5dd2892a446d08fb62720556bc15e16712a7
   client_secret: be0dba3ad604308c39ee58bbd399779e4add7f30362c88fbb511cb237266d555

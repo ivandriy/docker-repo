@@ -1,12 +1,12 @@
-version: "2.1"
+version: "3.8"
 services:
   plex-meta-manager:
     image: meisnate12/plex-meta-manager
-    container_name: plex-meta-manager
     environment:
+      - PMM_RUN=true
       - TZ=Europe/Kiev
     volumes:
-      - /volume1/docker/plex-meta-manager:/config
+      - /volume1/config/plex-meta-manager/config:/config
     restart: unless-stopped
 networks:
   default:
