@@ -34,3 +34,7 @@ services:
       - "PGID=100"
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
+networks:
+  default:
+    name: containers_bridge
+    external: true
