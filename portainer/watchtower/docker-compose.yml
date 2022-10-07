@@ -6,10 +6,10 @@ services:
     container_name: watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /etc/timezone:/etc/timezone:ro
     # Check for updates every couple hours: (3h * 60m * 60s)
     command: --interval 10800
     environment:
+      - "TZ=Europe/Kiev"
       - "WATCHTOWER_LABEL_ENABLE=true"
       - "WATCHTOWER_CLEANUP=true"
       - "WATCHTOWER_INCLUDE_RESTARTING=true"
