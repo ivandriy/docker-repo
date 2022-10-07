@@ -11,7 +11,7 @@ libraries:                                      # This is called out once within
     - git: PMM/movie/director
     - git: PMM/genre                       # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
     overlay_path:
-    - remove_overlays: true                    # Set this to true to remove all overlays
+    - remove_overlays: false                    # Set this to true to remove all overlays
     - file: config/Overlays.yml                 # This is a local file on the system
     - git: PMM/overlays/imdb_top_250  
     - git: PMM/overlays/video_format
@@ -27,7 +27,7 @@ libraries:                                      # This is called out once within
     - git: PMM/award/emmy
     - git: PMM/genre                    # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
     overlay_path:
-    - remove_overlays: true                    # Set this to true to remove all overlays
+    - remove_overlays: false                    # Set this to true to remove all overlays
     - file: config/Overlays.yml                 # This is a local file on the system
     - git: PMM/overlays/imdb_top_250
       template_variables:
