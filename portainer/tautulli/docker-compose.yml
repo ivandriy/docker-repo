@@ -12,6 +12,8 @@ services:
       - TZ=Europe/Kyiv
     ports:
       - 8181:8181
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge
