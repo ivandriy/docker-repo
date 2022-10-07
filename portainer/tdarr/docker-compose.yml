@@ -25,6 +25,8 @@ services:
       - /volume1/docker/tdarr/logs:/app/logs
       - /volume1/Data/Video:/media
       - /volume1/Data/Video/temp:/temp
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge

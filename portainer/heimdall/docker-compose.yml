@@ -13,6 +13,8 @@ services:
       - 8056:80
       - 4443:443
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge

@@ -18,6 +18,8 @@ services:
                 max-file: "10"
                 max-size: "200k"
         restart: unless-stopped
+        labels:
+         - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge

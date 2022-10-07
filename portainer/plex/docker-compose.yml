@@ -18,3 +18,5 @@ services:
       - '/volume1/Data/Video/TV:/volume1/Data/Video/TV'
       - '/volume1/Data/Music:/volume1/Data/Music'
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"

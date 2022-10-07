@@ -10,3 +10,5 @@ services:
     - /volume1/docker/addarr/chatid.txt:/app/chatid.txt:rw
     - /volume1/docker/addarr/admin.txt:/app/admin.txt:ro
     - /volume1/docker/addarr/logs:/app/logs:rw
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
