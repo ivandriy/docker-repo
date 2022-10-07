@@ -13,7 +13,6 @@ services:
       - "WATCHTOWER_LABEL_ENABLE=true"
       - "WATCHTOWER_CLEANUP=true"
       - "WATCHTOWER_INCLUDE_RESTARTING=true"
-      - "WATCHTOWER_MONITOR_ONLY=true"
       - "WATCHTOWER_NOTIFICATIONS=email"
       - "WATCHTOWER_NOTIFICATION_EMAIL_FROM=ivandriy@gmail.com"
       - "WATCHTOWER_NOTIFICATION_EMAIL_TO=andrii@ivanskiy.com"

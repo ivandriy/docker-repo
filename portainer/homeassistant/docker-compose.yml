@@ -13,4 +13,4 @@ services:
     privileged: true
     network_mode: host
     labels:
-      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.centurylinklabs.watchtower.monitor-only=true"

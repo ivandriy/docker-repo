@@ -12,6 +12,8 @@ services:
     ports:
       - 3003:3003
       - 5144:514/udp
+    labels:
+      - "com.centurylinklabs.watchtower.monitor-only=true"
 networks:
   default:
     name: containers_bridge
