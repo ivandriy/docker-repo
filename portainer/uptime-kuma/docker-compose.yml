@@ -1,0 +1,17 @@
+version: '3.3'
+
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    volumes:
+      - /volume1/config/uptime-kuma:/app/data
+    ports:
+      - 3001:3001
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+networks:
+  default:
+    name: containers_bridge
+    external: true
