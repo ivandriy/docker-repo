@@ -7,7 +7,7 @@ services:
     stop_grace_period: 2m
     volumes:
       - type: bind
-        source: /volume1/Data/Dropbox/PhotoStructure/
+        source: /volume1/config/photostructure/library
         target: /ps/library
       - type: bind
         source: /volume1/config/photostructure/tmp
