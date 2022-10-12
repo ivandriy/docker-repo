@@ -11,23 +11,23 @@ services:
     - /volume1/config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     depends_on:
     - cadvisor
-    - node-exporter
-  node-exporter:
-    privileged: true
-    image: prom/node-exporter
-    container_name: node-exporter
-    restart: unless-stopped
-    ports:
-      - "9100:9100"
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - "--path.procfs=/host/proc"
-      - "--path.sysfs=/host/sys"
-      - "--collector.filesystem.ignored-mount-points"
-      - "^/(rootfs/)?(dev|etc|host|proc|run|sys|volume1)($$|/)"
+    #- node-exporter
+  # node-exporter:
+  #   privileged: true
+  #   image: prom/node-exporter
+  #   container_name: node-exporter
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9100:9100"
+  #   volumes:
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - /:/rootfs:ro
+  #   command:
+  #     - "--path.procfs=/host/proc"
+  #     - "--path.sysfs=/host/sys"
+  #     - "--collector.filesystem.ignored-mount-points"
+  #     - "^/(rootfs/)?(dev|etc|host|proc|run|sys|volume1)($$|/)"
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
