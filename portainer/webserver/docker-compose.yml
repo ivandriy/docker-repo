@@ -7,8 +7,6 @@ services:
     restart: unless-stopped
     volumes:
       - /volume1/config/webserver/data:/usr/local/apache2/htdocs/
-    networks:
-      - proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.webserver.rule=Host(`home.ivanskiy.com`)"
