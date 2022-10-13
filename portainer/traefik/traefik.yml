@@ -1,27 +1,27 @@
+---
+certificatesResolvers:
+  mydnschallenge:
+    acme:
+      dnsChallenge:
+        delayBeforeCheck: 10
+        disablePropagationCheck: true
+        provider: digitalocean
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+      email: andrii@ivanskiy.com
+      storage: ./letsencrypt/acme.json
 entryPoints:
   http:
     address: ":80"
-
   https:
     address: ":443"
-
+log:
+  level: DEBUG
 providers:
   docker:
     endpoint: "tcp://socket-proxy:2375"
     exposedByDefault: false
-
   file:
     directory: /rules
     watch: true
-
-certificatesResolvers:
-  mydnschallenge:
-    acme:
-      email: andrii@ivanskiy.com
-      storage: ./letsencrypt/acme.json
-      dnsChallenge:
-        provider: digitalocean
-        delayBeforeCheck: 10
-
-log:
-  level: INFO

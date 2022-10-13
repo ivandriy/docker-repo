@@ -29,14 +29,14 @@ services:
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
 
       # redirect root to www
-      - "traefik.http.routers.root.rule=host(`ivanskiy.com`)"
-      - "traefik.http.routers.root.entrypoints=https"
-      - "traefik.http.routers.root.middlewares=redirect-root-to-www"
-      - "traefik.http.routers.root.tls=true"
+      #- "traefik.http.routers.root.rule=host(`ivanskiy.com`)"
+      #- "traefik.http.routers.root.entrypoints=https"
+      #- "traefik.http.routers.root.middlewares=redirect-root-to-www"
+      #- "traefik.http.routers.root.tls=true"
 
       # middleware redirect root to www
-      - "traefik.http.middlewares.redirect-root-to-www.redirectregex.regex=^https://ivanskiy\\.com/(.*)"
-      - "traefik.http.middlewares.redirect-root-to-www.redirectregex.replacement=https://www.ivanskiy.com/$${1}"
+      #- "traefik.http.middlewares.redirect-root-to-www.redirectregex.regex=^https://ivanskiy\\.com/(.*)"
+      #- "traefik.http.middlewares.redirect-root-to-www.redirectregex.replacement=https://www.ivanskiy.com/$${1}"
 
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=true"
@@ -52,7 +52,16 @@ services:
     labels:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=true"
-
+  whoami:
+    # A container that exposes an API to show its IP address
+    image: traefik/whoami
+    container_name: whoami
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.webserver.rule=Host(`home.ivanskiy.com`)"
+      - "traefik.http.routers.webserver.entrypoints=https"
+      - "traefik.http.routers.webserver.tls=true"
+      - "traefik.http.routers.webserver.tls.certresolver=mydnschallenge"
 networks:
   default:
     name: containers_bridge
