@@ -6,7 +6,7 @@ services:
     container_name: vaultwarden
     restart: unless-stopped
     volumes:
-      - /volume1/config/vaultwarden/data:/data
+      - /volume1/docker/vaultwarden/data:/data
     environment:
       - WEBSOCKET_ENABLED=true
       - WEB_VAULT_ENABLED=true
