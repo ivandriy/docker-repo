@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
     volumes:
-      - /volume1/docker/nextcloud-mysql/db:/var/lib/mysql
+      - /volume1/docker/nextcloud-mysql:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWD}
       - MYSQL_PASSWORD=${DB_PASSWD}
@@ -23,7 +23,7 @@ services:
     container_name: nextcloud
     restart: unless-stopped
     volumes:
-      - /volume1/docker/nextcloud/shared:/shared
+      - /volume1/docker/nextcloud:/var/www/html
     depends_on:
       - db
     labels:
