@@ -23,6 +23,11 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
       # Ip filtering
       - "traefik.http.routers.bitwarden.middlewares=whitelist@file"
+      # For websockets
+      - "traefik.http.routers.bitwarden-websocket.rule=Host(`${TRAEFIK_VAULTWARDEN}`) && Path(`/notifications/hub`)"
+      - "traefik.http.routers.bitwarden-websocket.service=bitwarden-websocket"
+      - "traefik.http.services.bitwarden-websocket.loadbalancer.server.port=3012"
+
     logging:
       driver: "syslog"
       options:
