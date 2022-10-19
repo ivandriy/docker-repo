@@ -10,6 +10,7 @@ services:
     volumes:
       - /volume1/config/transmission:/config
       - /volume1/Data/Downloads:/download
+      - /volume1/Data/Video:/video
     ports:
       - 9091:9091 
       - 51413:51413
