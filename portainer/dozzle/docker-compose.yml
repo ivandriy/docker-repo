@@ -9,7 +9,7 @@ services:
       - 9999:8080
     restart: unless-stopped
     labels:
-      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.centurylinklabs.watchtower.enable=false"
 networks:
   default:
     name: containers_bridge
