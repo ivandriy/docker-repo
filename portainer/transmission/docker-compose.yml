@@ -17,7 +17,7 @@ services:
       - 51413:51413/udp
     restart: unless-stopped
     labels:
-      - "com.centurylinklabs.watchtower.monitor-only=true"
+      - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge
