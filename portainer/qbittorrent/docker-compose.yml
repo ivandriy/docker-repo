@@ -14,6 +14,10 @@ services:
     volumes:
       - /volume1/config/qbittorrent:/config
       - /volume1/Data/Downloads:/media
+    ports:
+      - 6004:6004
+      - 6881:6881
+      - 6881:6881/udp 
     restart: unless-stopped
 networks:
   default:
