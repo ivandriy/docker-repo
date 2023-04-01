@@ -1,0 +1,21 @@
+---
+version: "3.7"
+services:
+  qbittorrent:
+    image: linuxserver/qbittorrent:4.5.0
+    container_name: qbittorrent
+    #mem_limit: 3000m
+    #mem_reservation: 128M
+    environment:
+      - PUID=1026
+      - PGID=100
+      - TZ=Europe/Kiev
+      - WEBUI_PORT=6004
+    volumes:
+      - /volume1/config/qbittorrent:/config
+      - /volume1/Data/Downloads:/media
+    restart: unless-stopped
+networks:
+  default:
+    name: containers_bridge
+    external: true
