@@ -2,7 +2,7 @@
 version: "3.7"
 services:
   qbittorrent:
-    image: linuxserver/qbittorrent:4.5.0
+    image: linuxserver/qbittorrent:latest
     container_name: qbittorrent
     #mem_limit: 3000m
     #mem_reservation: 128M
@@ -13,7 +13,7 @@ services:
       - WEBUI_PORT=6004
     volumes:
       - /volume1/config/qbittorrent:/config
-      - /volume1/Data/Downloads:/media
+      - /volume1/Data/Downloads:/downloads
     ports:
       - 6004:6004
       - 6881:6881
