@@ -4,8 +4,6 @@ services:
   qbittorrent:
     image: linuxserver/qbittorrent:latest
     container_name: qbittorrent
-    #mem_limit: 3000m
-    #mem_reservation: 128M
     environment:
       - PUID=1026
       - PGID=100
@@ -19,6 +17,8 @@ services:
       - 6881:6881
       - 6881:6881/udp 
     restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge
