@@ -19,4 +19,4 @@ services:
       - '/volume1/Data/Music:/volume1/Data/Music'
     restart: unless-stopped
     labels:
-      - "com.centurylinklabs.watchtower.monitor-only=true"
+      - "com.centurylinklabs.watchtower.enable=true"
