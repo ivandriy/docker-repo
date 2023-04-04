@@ -17,6 +17,21 @@ libraries:                                      # This is called out once within
     - git: PMM/overlays/video_format
     - git: PMM/overlays/resolution
     - git: PMM/overlays/audio_codec          # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+  Mults:                                       # Each library must match the Plex library name
+    metadata_path:
+    - file: config/Mults.yml                   # This is a local file on the system
+    - folder: config/Mults/                    # This is a local directory on the system
+    - git: PMM/chart/basic                      # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    - git: PMM/chart/imdb
+    - git: PMM/award/oscars
+    - git: PMM/resolution_standards                      # This is a file within the https://github.com/meisnate12/Plex-Meta-Manager-Configs Repository
+    overlay_path:
+    - remove_overlays: false                    # Set this to true to remove all overlays
+    - file: config/Overlays.yml                 # This is a local file on the system
+    - git: PMM/overlays/imdb_top_250  
+    - git: PMM/overlays/video_format
+    - git: PMM/overlays/resolution
+    - git: PMM/overlays/audio_codec  
   Series:
     metadata_path:
     - file: config/Series.yml
