@@ -9,9 +9,7 @@ services:
       - TZ=Europe/Kiev
     volumes:
       - /volume1/config/radarr:/config
-      - /volume1/Data/Downloads/Movies:/downloads
-      - /volume1/Data/Video/Movies:/movies
-      - /volume1/Data/Video/Mults:/mults
+      - /volume1/Data:/data
     ports:
       - 7878:7878
     restart: unless-stopped
