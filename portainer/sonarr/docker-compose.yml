@@ -9,8 +9,7 @@ services:
       - TZ=Europe/Kiev
     volumes:
       - /volume1/config/sonarr:/config
-      - /volume1/Data/Downloads/Series:/downloads
-      - /volume1/Data/Video/Series:/series
+      - /volume1/Data:/data
     ports:
       - 8989:8989
     restart: unless-stopped
