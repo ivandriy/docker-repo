@@ -11,12 +11,7 @@ services:
       - TZ=Europe/Kiev
     volumes:
       - '/volume1/config/plex:/config'
-      - '/volume1/Data/Video/Movies:/volume1/Data/Video/Movies'
-      - '/volume1/Data/Video/Mults:/volume1/Data/Video/Mults'
-      - '/volume1/Data/Video/Series:/volume1/Data/Video/Series'
-      - '/volume1/Data/Video/Sport:/volume1/Data/Video/Sport'
-      - '/volume1/Data/Video/TV:/volume1/Data/Video/TV'
-      - '/volume1/Data/Music:/volume1/Data/Music'
+      - '/volume1/Data/Media:/data/media:rw'
     restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.enable=false"
