@@ -11,7 +11,7 @@ services:
       - WEBUI_PORT=6004
     volumes:
       - /volume1/config/qbittorrent:/config
-      - /volume1/Data/Downloads:/downloads
+      - /volume1/Data/Downloads:/Data/Downloads
     ports:
       - 6004:6004
       - 6881:6881
