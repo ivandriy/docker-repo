@@ -9,8 +9,7 @@ services:
       - TZ=Europe/Kiev
     volumes:
       - /volume1/config/lidarr:/config
-      - /volume1/Data/Downloads/Music:/downloads
-      - /volume1/Data/Music:/music
+      - /volume1/Data:/data
     ports:
       - 8686:8686
     restart: unless-stopped
