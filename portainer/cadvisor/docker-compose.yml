@@ -19,9 +19,9 @@ services:
     ports:
     - 8080:8080
     command:
-      - "--housekeeping_interval=30s"
+      - "--housekeeping_interval=55s"
       - "--docker_only=true"
-      - "--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator,hugetlb,referenced_memory,cpu_topology,resctrl"
+      - "--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator,hugetlb,referenced_memory,cpu_topology,resctrl,network,process"
     volumes:
     - /:/rootfs:ro
     - /var/run:/var/run:rw
