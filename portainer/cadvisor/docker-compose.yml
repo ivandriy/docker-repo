@@ -21,7 +21,7 @@ services:
     command:
       - "--housekeeping_interval=30s"
       - "--docker_only=true"
-      - "--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator,hugetlb,referenced_memory,cpu_topology,resctrl,process"
+      - "--disable_metrics=accelerator,cpu_topology,disk,memory_numa,tcp,udp,percpu,sched,process,hugetlb,referenced_memory,resctrl,cpuset,advtcp,memory_numa"
     volumes:
     - /:/rootfs:ro
     - /var/run:/var/run:rw
