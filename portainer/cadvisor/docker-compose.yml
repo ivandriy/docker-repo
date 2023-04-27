@@ -24,7 +24,7 @@ services:
       - "--global_housekeeping_interval=30s"
       - "--storage_duration=1m0s"
       - "--docker_only=true"
-      - "--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator,hugetlb,referenced_memory,cpu_topology,resctrl"
+      - "--enable_metrics=cpu,memory,network"
     volumes:
     - /:/rootfs:ro
     - /var/run:/var/run:rw
