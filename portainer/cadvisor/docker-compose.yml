@@ -22,7 +22,11 @@ services:
       - "--housekeeping_interval=30s"
       - "--max_housekeeping_interval=35s"
       - "--global_housekeeping_interval=30s"
+      - "--event_storage_event_limit=default=0"
+      - "--event_storage_age_limit=default=0"
+      - "--store_container_labels=false"
       - "--storage_duration=1m0s"
+      - "--allow_dynamic_housekeeping=true"
       - "--docker_only=true"
       - "--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator,hugetlb,referenced_memory,cpu_topology,resctrl"
     volumes:
