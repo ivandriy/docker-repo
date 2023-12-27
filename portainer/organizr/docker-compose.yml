@@ -16,7 +16,7 @@ services:
       - 7000:443
     restart: unless-stopped
     labels:
-      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.centurylinklabs.watchtower.enable=false"
 networks:
   default:
     name: containers_bridge
