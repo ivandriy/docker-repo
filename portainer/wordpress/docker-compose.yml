@@ -31,18 +31,10 @@ services:
     labels:
       # The labels are usefull for Traefik only
       - "traefik.enable=true"
-      # Get the routes from http
       - "traefik.http.routers.wordpressmysite.rule=Host(`${TRAEFIK_WORDPRESS}`)"
-      - "traefik.http.routers.wordpressmysite.entrypoints=web"
-      # Redirect these routes to https
-      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
-      - "traefik.http.routers.wordpressmysite.middlewares=redirect-to-https@docker"
-      # Get the routes from https
-      - "traefik.http.routers.wordpressmysite-secured.rule=Host(`${TRAEFIK_WORDPRESS}`)"
-      - "traefik.http.routers.wordpressmysite-secured.entrypoints=web-secure"
-      # Apply autentificiation with http challenge
-      - "traefik.http.routers.wordpressmysite-secured.tls=true"
-      - "traefik.http.routers.wordpressmysite-secured.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.wordpressmysite.entrypoints=https"
+      - "traefik.http.routers.wordpressmysite.tls=true"
+      - "traefik.http.routers.wordpressmysite.tls.certresolver=mydnschallenge"
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"      
 
