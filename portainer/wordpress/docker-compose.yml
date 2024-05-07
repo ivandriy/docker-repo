@@ -8,6 +8,7 @@ networks:
 services:
   mysitewordpress:
     image: bitnami/wordpress:latest
+    container_name: mysitewordpress
     environment:
       WORDPRESS_DATABASE_HOST: mysitedb
       WORDPRESS_DATABASE_PORT_NUMBER: 3306
@@ -44,6 +45,7 @@ services:
   mysitedb:
     image: mariadb:latest
     restart: always
+    container_name: mysitedb
     environment:
       MARIADB_DATABASE: ${WORDPRESS_DB_NAME}
       MARIADB_USER: ${WORDPRESS_DB_USER}
@@ -58,6 +60,7 @@ services:
   mysiteredis:
     image: redis:latest
     restart: always
+    container_name: mysiteredis
     ports:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "no", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
@@ -72,6 +75,7 @@ services:
     depends_on:
       - mysitedb
     restart: always
+    container_name: mysitephpmyadmin
     environment:
       - PMA_ARBITRARY=1
       - PMA_HOST=db
