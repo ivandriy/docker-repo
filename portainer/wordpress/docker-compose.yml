@@ -7,7 +7,7 @@ networks:
 
 services:
   mysitewordpress:
-    image: wordpress
+    image: bitnami/wordpress:6.3.1
     environment:
       WORDPRESS_DB_HOST: mysitedb:3306
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
