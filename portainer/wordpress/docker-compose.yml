@@ -10,7 +10,7 @@ services:
     image: bitnami/wordpress:latest
     container_name: wordpress
     environment:
-      WORDPRESS_DATABASE_HOST: mariadb
+      WORDPRESS_DATABASE_HOST: wp-mariadb
       WORDPRESS_DATABASE_PORT_NUMBER: 3306
       WORDPRESS_DATABASE_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DATABASE_USER: ${WORDPRESS_DB_USER}
@@ -25,8 +25,8 @@ services:
     volumes:
       - /volume1/docker/wordpress/data:/var/www/html
     depends_on:
-        - mariadb
-        - redis
+        - wp-mariadb
+        - wp-redis
     labels:
       # The labels are usefull for Traefik only
       - "traefik.enable=true"
@@ -42,25 +42,25 @@ services:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"      
 
-  mariadb:
+  wp-mariadb:
     image: mariadb:latest
     restart: always
-    container_name: mariadb
+    container_name: wp-mariadb
     environment:
       MARIADB_DATABASE: ${WORDPRESS_DB_NAME}
       MARIADB_USER: ${WORDPRESS_DB_USER}
       MARIADB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_ADMIN_PASSWORD}
     volumes:
-      - /volume1/docker/mariadb/db:/var/lib/mysql
+      - /volume1/docker/wordpress/db:/var/lib/mysql
     labels:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"         
 
-  redis:
+  wp-redis:
     image: redis:latest
     restart: always
-    container_name: redis
+    container_name: wp-redis
     ports:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "no", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
