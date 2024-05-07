@@ -42,7 +42,7 @@ services:
       - "com.centurylinklabs.watchtower.enable=false"      
 
   mysitedb:
-    image: mariadb:11.1
+    image: mariadb:latest
     restart: always
     environment:
       MARIADB_DATABASE: ${WORDPRESS_DB_NAME}
