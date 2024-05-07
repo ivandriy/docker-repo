@@ -14,7 +14,13 @@ services:
       - "/volume1/config/traefik/letsencrypt:/letsencrypt"
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     environment:
-      - DO_AUTH_TOKEN=${DO_AUTH_TOKEN}      
+      - DO_AUTH_TOKEN=${DO_AUTH_TOKEN}
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:8082/ping","--spider"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s            
     labels:
       - "traefik.enable=true"
       # dashboard config
