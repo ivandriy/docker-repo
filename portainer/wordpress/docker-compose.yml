@@ -43,7 +43,7 @@ services:
       - "com.centurylinklabs.watchtower.enable=false"      
 
   wp-mariadb:
-    image: mariadb:latest
+    image: bitnami/mariadb:latest
     restart: always
     container_name: wp-mariadb
     environment:
@@ -51,7 +51,8 @@ services:
       MARIADB_USER: ${WORDPRESS_DB_USER}
       MARIADB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_ADMIN_PASSWORD}
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0  
+      MARIADB_CHARACTER_SET: utf8
+      MARIADB_COLLATE: utf8_unicode_ci
     volumes:
       - /volume1/docker/wordpress/db:/var/lib/mysql
     labels:
