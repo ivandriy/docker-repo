@@ -5,8 +5,6 @@ services:
     image: "traefik:latest"
     container_name: "traefik"
     restart: unless-stopped
-    depends_on:
-      - socket-proxy
     ports:
       - "10080:80"
       - "10443:443"
@@ -14,42 +12,18 @@ services:
       - "/volume1/config/traefik/traefik.yml:/traefik.yml:ro"
       - "/volume1/config/traefik/rules:/rules:ro"
       - "/volume1/config/traefik/letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
     environment:
-      - DO_AUTH_TOKEN=${DO_AUTH_TOKEN}
+      - DO_AUTH_TOKEN=${DO_AUTH_TOKEN}      
     labels:
       - "traefik.enable=true"
-
       # global redirect to https
       - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
       - "traefik.http.routers.http-catchall.entrypoints=http"
       - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
-
       # middleware redirect
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
-
-      # redirect root to www
-      #- "traefik.http.routers.root.rule=host(`ivanskiy.com`)"
-      #- "traefik.http.routers.root.entrypoints=https"
-      #- "traefik.http.routers.root.middlewares=redirect-root-to-www"
-      #- "traefik.http.routers.root.tls=true"
-
-      # middleware redirect root to www
-      #- "traefik.http.middlewares.redirect-root-to-www.redirectregex.regex=^https://ivanskiy\\.com/(.*)"
-      #- "traefik.http.middlewares.redirect-root-to-www.redirectregex.replacement=https://www.ivanskiy.com/$${1}"
-
-      # Watchtower Update
-      - "com.centurylinklabs.watchtower.enable=true"
-
-  socket-proxy:
-    image: tecnativa/docker-socket-proxy
-    container_name: traefik-socket-proxy
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      CONTAINERS: 1
-    labels:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=true"
 
