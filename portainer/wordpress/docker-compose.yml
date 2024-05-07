@@ -50,7 +50,7 @@ services:
       MARIADB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_ADMIN_PASSWORD}
     volumes:
-      - /volume1/docker/mysql/db:/var/lib/mysql
+      - /volume1/docker/mariadb/db:/var/lib/mysql
     labels:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"         
