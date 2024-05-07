@@ -1,4 +1,7 @@
 ---
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
 certificatesResolvers:
   mydnschallenge:
     acme:
@@ -16,6 +19,8 @@ entryPoints:
     address: ":80"
   https:
     address: ":443"
+  ping:
+    address: ":8082"
 log:
   level: DEBUG  
 providers:
@@ -25,3 +30,8 @@ providers:
   file:
     directory: /rules
     watch: true
+api:
+  insecure: true
+  dashboard: true
+ping:
+  entryPoint: ping
