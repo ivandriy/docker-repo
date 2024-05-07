@@ -66,23 +66,4 @@ services:
     command: ["redis-server", "--appendonly", "no", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
     labels:
       # Watchtower Update
-      - "com.centurylinklabs.watchtower.enable=false"       
-    
-  # Graphical interface to the database
-  # Can be useful for debug  
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    depends_on:
-      - mariadb
-    restart: always
-    container_name: phpmyadmin
-    environment:
-      - PMA_ARBITRARY=1
-      - PMA_HOST=db
-      - PMA_PORT=3306
-      - MYSQL_ROOT_PASSWORD=${WORDPRESS_DB_ADMIN_PASSWORD}
-    volumes:
-     - /sessions
-    labels:
-      # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"
