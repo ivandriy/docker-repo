@@ -7,7 +7,7 @@ networks:
 
 services:
   mysitewordpress:
-    image: bitnami/wordpress:6.3.1
+    image: bitnami/wordpress:latest
     environment:
       WORDPRESS_DATABASE_HOST: mysitedb
       WORDPRESS_DATABASE_PORT_NUMBER: 3306
@@ -30,7 +30,7 @@ services:
       # The labels are usefull for Traefik only
       - "traefik.enable=true"
       - "traefik.http.routers.wordpressmysite.rule=Host(`${TRAEFIK_WORDPRESS}`)"
-      - "traefik.http.routers.wordpressmysite.service=wordpress"
+      - "traefik.http.routers.wordpressmysite.service=mysitewordpress"
       - "traefik.http.routers.wordpressmysite.entrypoints=https"
       - "traefik.http.services.wordpressmysite.loadbalancer.server.port=8080"
       - "traefik.http.routers.wordpressmysite.tls=true"
