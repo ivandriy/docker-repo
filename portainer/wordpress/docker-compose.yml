@@ -6,24 +6,14 @@ networks:
     external: true  
 
 services:
-  # The Wordpress CMS itself
   mysitewordpress:
-    build:
-      context: .
-    restart: always
-    logging:
-      # Configure the logs retention according to your needs
-      options:
-        max-size: "10m"
-        max-file: "3"
+    image: wordpress
     environment:
-      # Connect WordPress to the database
       WORDPRESS_DB_HOST: mysitedb:3306
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
     volumes:
-      # link the content of WordPress in a directory to enable local modifications
       - /volume1/docker/wordpress/data:/var/www/html
     depends_on:
         - mysitedb
@@ -32,52 +22,37 @@ services:
       # The labels are usefull for Traefik only
       - "traefik.enable=true"
       - "traefik.http.routers.wordpressmysite.rule=Host(`${TRAEFIK_WORDPRESS}`)"
+      - "traefik.http.routers.wordpressmysite.service=wordpress"
       - "traefik.http.routers.wordpressmysite.entrypoints=https"
+      - "traefik.http.services.wordpressmysite.loadbalancer.server.port=8080"
       - "traefik.http.routers.wordpressmysite.tls=true"
       - "traefik.http.routers.wordpressmysite.tls.certresolver=mydnschallenge"
+      - "traefik.http.services.wordpressmysite.loadbalancer.passhostheader=true"
+      - "traefik.http.routers.wordpressmysite.middlewares=compresstraefik"
+      - "traefik.http.middlewares.compresstraefik.compress=true"
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"      
 
-  # The MySQL database
   mysitedb:
-    # this is the database used by Wordpress
-    image: mysql:5.7
+    image: mariadb:11.1
     restart: always
-    logging:
-      # Configure the logs retention according to your needs
-      options:
-        max-size: "10m"
-        max-file: "3"
     environment:
-      # Connect WordPrerss to the database
-      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
-      MYSQL_USER: ${WORDPRESS_DB_USER}
-      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${WORDPRESS_DB_NAME}
+      MARIADB_USER: ${WORDPRESS_DB_USER}
+      MARIADB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_ADMIN_PASSWORD}
     volumes:
-      # Here, the database files are linked into a directory for direct access
-      # You probably prefer to use a docker volume instead
       - /volume1/docker/mysql/db:/var/lib/mysql
     labels:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"         
 
-  # Redis, used as a cache engine, drastically improve page load times
-  # Install a Wordpress plugin like "W3 Total Cache" to get it working
   mysiteredis:
-    image: redis:6
+    image: redis:latest
     restart: always
-    logging:
-      # Configure the logs retention according to your needs
-      options:
-        max-size: "10m"
-        max-file: "3"
     ports:
       - "6379:6379"
-    # launch Redis in cache mode with :
-    #  - max memory up to 50% of your RAM if needed (--maxmemory 512mb)
-    #  - deleting oldest data when max memory is reached (--maxmemory-policy allkeys-lru)
-    entrypoint: redis-server --maxmemory 512mb -maxmemory-policy allkeys-lru
+    command: ["redis-server", "--appendonly", "no", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
     labels:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"       
@@ -89,16 +64,11 @@ services:
     depends_on:
       - mysitedb
     restart: always
-    logging:
-      # Configure the logs retention according to your needs
-      options:
-        max-size: "10m"
-        max-file: "3"
     environment:
       - PMA_ARBITRARY=1
       - PMA_HOST=db
       - PMA_PORT=3306
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${WORDPRESS_DB_ADMIN_PASSWORD}
     volumes:
      - /sessions
     labels:
