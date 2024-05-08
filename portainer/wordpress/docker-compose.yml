@@ -43,10 +43,10 @@ services:
       - "com.centurylinklabs.watchtower.enable=false"      
 
   wp-mariadb:
-    image: bitnami/mariadb:latest
+    build:
+      context: ./db
     restart: always
     container_name: wp-mariadb
-    user: 1026
     environment:
       MARIADB_DATABASE: ${WORDPRESS_DB_NAME}
       MARIADB_USER: ${WORDPRESS_DB_USER}
