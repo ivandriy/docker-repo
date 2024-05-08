@@ -46,7 +46,7 @@ services:
     image: bitnami/mariadb:latest
     restart: always
     container_name: wp-mariadb
-    user: nomad
+    user: 1026
     environment:
       MARIADB_DATABASE: ${WORDPRESS_DB_NAME}
       MARIADB_USER: ${WORDPRESS_DB_USER}
