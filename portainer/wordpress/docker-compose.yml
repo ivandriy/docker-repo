@@ -23,7 +23,7 @@ services:
       WORDPRESS_PASSWORD: ${WORDPRESS_ADMIN_PASSWORD}
       WORDPRESS_EMAIL: ${WORDPRESS_ADMIN_EMAIL}
     volumes:
-      - /volume1/docker/wordpress/data:/var/www/html
+      - /volume1/docker/wordpress/data:/opt/bitnami/wordpress
     depends_on:
         - wp-mariadb
         - wp-redis
@@ -54,7 +54,7 @@ services:
       MARIADB_CHARACTER_SET: utf8
       MARIADB_COLLATE: utf8_unicode_ci
     volumes:
-      - /volume1/docker/wordpress/db:/var/lib/mysql
+      - /volume1/docker/wordpress/db:/bitnami/mariadb
     labels:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"         
