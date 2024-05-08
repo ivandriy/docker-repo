@@ -24,7 +24,7 @@ services:
       WORDPRESS_PASSWORD: ${WORDPRESS_ADMIN_PASSWORD}
       WORDPRESS_EMAIL: ${WORDPRESS_ADMIN_EMAIL}
     volumes:
-      - /volume1/docker/wordpress/data:/opt/bitnami/wordpress
+      - /volume1/docker/wordpress/data:/bitnami/wordpress
     depends_on:
         - wp-mariadb
         - wp-redis
