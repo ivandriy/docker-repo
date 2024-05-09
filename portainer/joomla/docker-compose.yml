@@ -1,0 +1,61 @@
+version: '3'
+
+networks:
+  default:
+    name: containers_bridge
+    external: true  
+
+services:
+  joomla:
+    build:
+      context: ./jm
+    container_name: joomla
+    environment:
+      JOOMLA_DATABASE_HOST: jm-mariadb
+      JOOMLA_DATABASE_PORT_NUMBER: 3306
+      JOOMLA_DATABASE_NAME: ${JOOMLA_DB_NAME}
+      JOOMLA_DATABASE_USER: ${JOOMLA_DB_USER}
+      JOOMLA_DATABASE_PASSWORD: ${JOOMLA_DB_PASSWORD}
+      JOOMLA_SITE_NAME: ${JOOMLA_BLOG_NAME}
+      JOOMLA_USERNAME: ${JOOMLA_ADMIN_USERNAME}
+      JOOMLA_PASSWORD: ${JOOMLA_ADMIN_PASSWORD}
+      JOOMLA_EMAIL: ${JOOMLA_ADMIN_EMAIL}
+    volumes:
+      - /volume1/docker/joomla/data:/bitnami/joomla
+    depends_on:
+        - jm-mariadb
+    labels:
+      # The labels are usefull for Traefik only
+      - "traefik.enable=true"
+      - "traefik.http.routers.joomla.rule=Host(`${TRAEFIK_JOOMLA}`) || Host(`www.${TRAEFIK_JOOMLA}`)"
+      - "traefik.http.routers.joomla.service=joomla"
+      - "traefik.http.routers.joomla.entrypoints=https"
+      - "traefik.http.services.joomla.loadbalancer.server.port=8080"
+      - "traefik.http.routers.joomla.tls=true"
+      - "traefik.http.routers.joomla.tls.certresolver=mydnschallenge"
+      - "traefik.http.services.joomla.loadbalancer.passhostheader=true"
+      - "traefik.http.routers.joomla.middlewares=wwwremove,compresstraefik"
+      - "traefik.http.middlewares.compresstraefik.compress=true"
+
+      # Watchtower Update
+      - "com.centurylinklabs.watchtower.enable=false"      
+
+  jm-mariadb:
+    build:
+      context: ./db
+    restart: always
+    container_name: jm-mariadb
+    ports:
+      - "3307:3306"
+    environment:
+      MARIADB_DATABASE: ${JOOMLA_DB_NAME}
+      MARIADB_USER: ${JOOMLA_DB_USER}
+      MARIADB_PASSWORD: ${JOOMLA_DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${JOOMLA_DB_ADMIN_PASSWORD}
+      MARIADB_CHARACTER_SET: utf8
+      MARIADB_COLLATE: utf8_unicode_ci
+    volumes:
+      - /volume1/docker/joomla/db:/bitnami/mariadb
+    labels:
+      # Watchtower Update
+      - "com.centurylinklabs.watchtower.enable=false"
