@@ -31,7 +31,7 @@ services:
     labels:
       # The labels are usefull for Traefik only
       - "traefik.enable=true"
-      - "traefik.http.routers.wordpress.rule=Host(`${TRAEFIK_WORDPRESS}`)"
+      - "traefik.http.routers.wordpress.rule=Host(`${TRAEFIK_WORDPRESS}`) || Host(`www.${TRAEFIK_WORDPRESS}`)"
       - "traefik.http.routers.wordpress.service=wordpress"
       - "traefik.http.routers.wordpress.entrypoints=https"
       - "traefik.http.services.wordpress.loadbalancer.server.port=8080"
