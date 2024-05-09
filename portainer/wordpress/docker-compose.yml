@@ -48,6 +48,8 @@ services:
       context: ./db
     restart: always
     container_name: wp-mariadb
+    ports:
+      - "3306:3306"
     environment:
       MARIADB_DATABASE: ${WORDPRESS_DB_NAME}
       MARIADB_USER: ${WORDPRESS_DB_USER}
