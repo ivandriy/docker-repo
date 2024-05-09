@@ -37,6 +37,10 @@ services:
       - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
       - "traefik.http.routers.http-catchall.entrypoints=http"
       - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      # global redirect from www to non-www
+      - traefik.http.middlewares.wwwremove.redirectregex.regex=^https://www\.(.*)
+      - traefik.http.middlewares.wwwremove.redirectregex.replacement=https://$${1}
+
       # middleware redirect
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"

@@ -38,13 +38,9 @@ services:
       - "traefik.http.routers.wordpress.tls=true"
       - "traefik.http.routers.wordpress.tls.certresolver=mydnschallenge"
       - "traefik.http.services.wordpress.loadbalancer.passhostheader=true"
+      - "traefik.http.routers.wordpress.middlewares=wwwremove"
       - "traefik.http.routers.wordpress.middlewares=compresstraefik"
       - "traefik.http.middlewares.compresstraefik.compress=true"
-      # Redirect www to non-www
-      - traefik.http.routers.wordpress.middlewares=wordpress-redirect-to-non-www
-      - traefik.http.middlewares.wordpress-edirect-to-non-www.redirectregex.regex=^https?://www.${TRAEFIK_WORDPRESS}/(.*)
-      - traefik.http.middlewares.wordpress-redirect-to-non-www.redirectregex.replacement=https://${TRAEFIK_WORDPRESS}/$${1}
-      - traefik.http.middlewares.wordpress-redirect-to-non-www.redirectregex.permanent=true
 
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"      
