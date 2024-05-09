@@ -38,7 +38,7 @@ services:
       - "traefik.http.routers.wordpress.tls=true"
       - "traefik.http.routers.wordpress.tls.certresolver=mydnschallenge"
       - "traefik.http.services.wordpress.loadbalancer.passhostheader=true"
-      - "traefik.http.routers.wordpress.middlewares=compresstraefik"
+      - "traefik.http.routers.wordpress.middlewares=wwwremove,compresstraefik"
       - "traefik.http.middlewares.compresstraefik.compress=true"
 
       # Watchtower Update
