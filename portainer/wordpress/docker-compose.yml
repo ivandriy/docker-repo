@@ -31,15 +31,14 @@ services:
     labels:
       # The labels are usefull for Traefik only
       - "traefik.enable=true"
-      - "traefik.http.routers.wordpress.rule=Host(`${TRAEFIK_WORDPRESS}`)|| Host(`www.${TRAEFIK_WORDPRESS}`)"
+      - "traefik.http.routers.wordpress.rule=Host(`${TRAEFIK_WORDPRESS}`)"
       - "traefik.http.routers.wordpress.service=wordpress"
       - "traefik.http.routers.wordpress.entrypoints=https"
       - "traefik.http.services.wordpress.loadbalancer.server.port=8080"
       - "traefik.http.routers.wordpress.tls=true"
       - "traefik.http.routers.wordpress.tls.certresolver=mydnschallenge"
       - "traefik.http.services.wordpress.loadbalancer.passhostheader=true"
-      - "traefik.http.routers.wordpress.middlewares=wwwremove"
-      - "traefik.http.routers.wordpress.middlewares=compresstraefik"
+      - "traefik.http.routers.wordpress.middlewares=wwwremove,compresstraefik"
       - "traefik.http.middlewares.compresstraefik.compress=true"
 
       # Watchtower Update
