@@ -5,7 +5,7 @@ services:
     container_name: cloudkey_monitor
     restart: always
     ports:
-    - 9595:9595
+    - 9595:80
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
       CloudKey__Url: ${CloudKey__Url}
