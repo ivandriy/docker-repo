@@ -3,8 +3,15 @@ services:
   cloudkey-monitor:
     image: ghcr.io/ivandriy/simple-uck2-plus-monitor:main
     container_name: cloudkey_monitor
+    restart: always
     ports:
     - 9595:9595
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      CloudKey__Url: ${CloudKey__Url}
+      CloudKey__UserName: ${CloudKey__UserName}
+      CloudKey__Password: ${CloudKey__Password}
+      CloudKey__Timeout: ${CloudKey__Timeout}
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 networks:
