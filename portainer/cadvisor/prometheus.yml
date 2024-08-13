@@ -8,4 +8,4 @@ scrape_configs:
   scrape_interval: 10s
   static_configs:
   - targets:
-    - cloudkey_monitor:8080
+    - cloudkey_monitor:80
