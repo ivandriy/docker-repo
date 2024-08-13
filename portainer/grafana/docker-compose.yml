@@ -7,11 +7,12 @@ services:
       - TZ=Europe/Kiev
     restart: unless-stopped
     volumes:
-      - /volume1/docker/grafana:/var/lib/grafana
+      - /volume1/docker/grafana_new:/var/lib/grafana
       - /volume1/docker/influxdb:/var/lib/influxdb
     ports:
       - 3003:3003
       - 5144:514/udp
+      - 8086:8086
     labels:
       - "com.centurylinklabs.watchtower.monitor-only=true"
 networks:
