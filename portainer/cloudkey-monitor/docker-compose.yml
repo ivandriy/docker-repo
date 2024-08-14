@@ -4,6 +4,12 @@ services:
     image: ghcr.io/ivandriy/simple-uck2-plus-monitor:main
     container_name: cloudkey_monitor
     restart: always
+    healthcheck:
+      test: curl --silent --fail http://localhost/health || exit 1
+      interval: 60s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
     ports:
     - 9595:80
     environment:
