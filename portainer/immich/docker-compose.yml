@@ -4,9 +4,7 @@ services:
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - stack.env      
+      - /etc/localtime:/etc/localtime:ro   
     ports:
       - 2283:3001
     depends_on:
@@ -21,8 +19,6 @@ services:
     image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
     volumes:
       - model-cache:/cache
-    env_file:
-      - stack.env
     restart: always
     healthcheck:
       disable: false
