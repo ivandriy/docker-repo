@@ -18,7 +18,7 @@ services:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:v1.117.0
     volumes:
-      - /volume1/docker/immich/model-cache:/cache
+      - model-cache:/cache
     restart: always
     healthcheck:
       disable: false
@@ -46,6 +46,9 @@ services:
       start_period: 5m
     command: ["postgres", "-c", "shared_preload_libraries=vectors.so", "-c", 'search_path="$$user", public, vectors', "-c", "logging_collector=on", "-c", "max_wal_size=2GB", "-c", "shared_buffers=512MB", "-c", "wal_compression=on"]
     restart: always
+
+volumes:
+  model-cache:
 
 networks:
   default:
