@@ -57,6 +57,28 @@ services:
     command: ["postgres", "-c", "shared_preload_libraries=vectors.so", "-c", 'search_path="$$user", public, vectors', "-c", "logging_collector=on", "-c", "max_wal_size=2GB", "-c", "shared_buffers=512MB", "-c", "wal_compression=on"]
     restart: always
 
+  backup:
+    container_name: immich_db_dumper
+    image: prodrigestivill/postgres-backup-local:14
+    restart: always
+    environment:
+      POSTGRES_HOST: database
+      POSTGRES_CLUSTER: 'TRUE'
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      SCHEDULE: "@daily"
+      BACKUP_ON_START: 'TRUE'
+      BACKUP_KEEP_DAYS: '7'
+      BACKUP_KEEP_WEEKS: '4'
+      BACKUP_KEEP_MONTHS: '6'
+      POSTGRES_EXTRA_OPTS: '--clean --if-exists'
+      BACKUP_DIR: /db_dumps
+    volumes:
+      - /volume1/docker/immich/db_dumps:/db_dumps
+    depends_on:
+      - database
+
 volumes:
   model-cache:
 
