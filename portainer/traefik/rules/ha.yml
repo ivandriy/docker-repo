@@ -1,7 +1,19 @@
 http:
+  routers:
+    ha-local:
+      entryPoints:
+        - "https"
+      service: ha-local
+      rule: Host(`{{ env "TRAEFIK_HA_LOCAL" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "TRAEFIK_LOCAL_DOMAIN" }}'
+            sans:
+              - '.{{ env "TRAEFIK_LOCAL_DOMAIN" }}'
   services:
     ha-local:
       loadBalancer:
         passHostHeader: true
         servers:
-        - url: "http://192.168.1.254:8123"
+        - url: '{{ env "HA_HOST" }}''
