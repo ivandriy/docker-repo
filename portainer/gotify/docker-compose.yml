@@ -8,30 +8,18 @@ services:
     volumes:
       - "/volume1/config/gotify/data:/app/data"
     environment:
-      - GOTIFY_DEFAULTUSER_PASS=${GOTIFY_DEFAULTUSER_PASS}
-    networks:
-      macvlan1:
-        ipv4_address: 192.168.1.10
-      containers_bridge:         
+      - GOTIFY_DEFAULTUSER_PASS=${GOTIFY_DEFAULTUSER_PASS}      
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gotify.rule=Host(`${TRAEFIK_GOTIFY}`)"
-      - "traefik.http.routers.gotify.entrypoints=https"
-      - "traefik.http.routers.gotify.tls=true"
-      - "traefik.http.routers.gotify.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.gotify-local.rule=Host(`${TRAEFIK_GOTIFY_LOCAL}`)"
+      - "traefik.http.routers.gotify-local.entrypoints=https"
+      - "traefik.http.routers.gotify-local.tls=true"
+      - "traefik.http.routers.gotify-local.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.gotify-local.tls.domains[0].main=${TRAEFIK_LOCAL_DOMAIN}"
+      - "traefik.http.routers.gotify-local.tls.domains[0].sans=*.${TRAEFIK_LOCAL_DOMAIN}"
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=true"
-
 networks:
-  containers_bridge:
+  default:
+    name: containers_bridge
     external: true
-  macvlan1:
-    name: macvlan1
-    driver: macvlan
-    driver_opts:
-      parent: ovs_bond0
-    ipam:
-      config:
-        - subnet: 192.168.1.1/24
-          ip_range: 192.168.1.10/31
-          gateway: 192.168.1.1
