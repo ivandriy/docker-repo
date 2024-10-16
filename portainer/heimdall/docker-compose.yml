@@ -15,6 +15,7 @@ services:
     restart: unless-stopped
     labels:
       # local heimdall access
+      - "traefik.enable=true"
       - "traefik.http.routers.heimdall-local.entrypoints=https"
       - "traefik.http.routers.heimdall-local.rule=Host(`${TRAEFIK_HOSTNAME_LOCAL}`)"
       - "traefik.http.routers.heimdall-local.tls=true"
