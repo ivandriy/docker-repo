@@ -14,6 +14,13 @@ services:
       - 4443:443
     restart: unless-stopped
     labels:
+      # local heimdall access
+      - "traefik.http.routers.heimdall-local.entrypoints=https"
+      - "traefik.http.routers.heimdall-local.rule=Host(`${TRAEFIK_HOSTNAME_LOCAL}`)"
+      - "traefik.http.routers.heimdall-local.tls=true"
+      - "traefik.http.routers.heimdall-local.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.heimdall-local.tls.domains[0].main=${TRAEFIK_LOCAL_DOMAIN}"
+      - "traefik.http.routers.heimdall-local.tls.domains[0].sans=*.${TRAEFIK_LOCAL_DOMAIN}" 
       - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
