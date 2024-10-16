@@ -6,8 +6,8 @@ services:
     container_name: "traefik"
     restart: unless-stopped
     ports:
-      - "10080:80"
-      - "10443:443"
+      - "80:80"
+      - "443:443"
     volumes:
       - "/volume1/config/traefik/traefik.yml:/traefik.yml:ro"
       - "/volume1/config/traefik/rules:/rules:ro"
@@ -15,6 +15,10 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     environment:
       - DO_AUTH_TOKEN=${DO_AUTH_TOKEN}
+    networks:
+      macvlan1:
+        ipv4_address: 192.168.1.12
+      containers_bridge:       
     healthcheck:
       test: ["CMD", "wget", "http://localhost:8082/ping","--spider"]
       interval: 10s
@@ -35,13 +39,13 @@ services:
       - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
       # local dashboard access
       - "traefik.http.routers.dashboard-local.entrypoints=https"
-      - "traefik.http.routers.dashboard-local.rule=Host(`traefik.local.ivanskiy.com`)"
+      - "traefik.http.routers.dashboard-local.rule=Host(`${TRAEFIK_HOSTNAME_LOCAL}`)"
       - "traefik.http.services.dashboard-local.loadbalancer.server.port=8080"
       - "traefik.http.routers.dashboard-local.middlewares=authtraefik"
       - "traefik.http.routers.dashboard-local.tls=true"
       - "traefik.http.routers.dashboard-local.tls.certresolver=mydnschallenge"
-      - "traefik.http.routers.dashboard-local.tls.domains[0].main=local.ivanskiy.com"
-      - "traefik.http.routers.dashboard-local.tls.domains[0].sans=*.local.ivanskiy.com"
+      - "traefik.http.routers.dashboard-local.tls.domains[0].main=${TRAEFIK_LOCAL_DOMAIN}"
+      - "traefik.http.routers.dashboard-local.tls.domains[0].sans=*.${TRAEFIK_LOCAL_DOMAIN}"
       - "traefik.http.routers.dashboard-local.service=api@internal"
 
       # global redirect to https
@@ -58,6 +62,15 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
 
 networks:
-  default:
-    name: containers_bridge
+  containers_bridge:
     external: true
+  macvlan1:
+    name: macvlan1
+    driver: macvlan
+    driver_opts:
+      parent: ovs_bond0
+    ipam:
+      config:
+        - subnet: 192.168.1.1/24
+          ip_range: 192.168.1.10/31
+          gateway: 192.168.1.1
