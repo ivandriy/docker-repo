@@ -1,0 +1,12 @@
+version: '3'
+services:
+  adguardhome:
+    image: adguard/adguardhome
+    container_name: adguardhome
+    restart: unless-stopped
+    mem_limit: 2g
+    cpu_shares: 768
+    volumes:
+      - /volume1/docker/adguard-home/work:/opt/adguardhome/work
+      - /volume1/docker/adguard-home/confdir:/opt/adguardhome/conf
+    network_mode: host
