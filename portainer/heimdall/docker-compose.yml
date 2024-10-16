@@ -17,7 +17,7 @@ services:
       # local heimdall access
       - "traefik.enable=true"
       - "traefik.http.routers.heimdall-local.entrypoints=https"
-      - "traefik.http.routers.heimdall-local.rule=Host(`${TRAEFIK_HOSTNAME_LOCAL}`)"
+      - "traefik.http.routers.heimdall-local.rule=Host(`${TRAEFIK_HEIMDALL_LOCAL}`)"
       - "traefik.http.routers.heimdall-local.tls=true"
       - "traefik.http.routers.heimdall-local.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.heimdall-local.tls.domains[0].main=${TRAEFIK_LOCAL_DOMAIN}"
