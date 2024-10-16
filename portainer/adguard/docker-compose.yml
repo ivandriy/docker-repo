@@ -12,23 +12,5 @@ services:
       - /volume1/docker/adguard-home/work:/opt/adguardhome/work
       - /volume1/docker/adguard-home/confdir:/opt/adguardhome/conf
     network_mode: host  
-    #networks:
-    #  macvlan1:
-    #    ipv4_address: 192.168.1.15
-    #  containers_bridge: 
     labels:
-      - "com.centurylinklabs.watchtower.enable=true"
-
-#networks:
-#  containers_bridge:
-#    external: true
-#  macvlan1:
-#    name: macvlan1
-#    driver: macvlan
-#    driver_opts:
-#      parent: ovs_bond0
-#    ipam:
-#      config:
-#        - subnet: 192.168.1.1/24
-#          ip_range: 192.168.1.10/31
-#          gateway: 192.168.1.1      
+      - "com.centurylinklabs.watchtower.enable=true"   
