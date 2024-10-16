@@ -10,7 +10,7 @@ services:
     environment:
       - GOTIFY_DEFAULTUSER_PASS=${GOTIFY_DEFAULTUSER_PASS}
     networks:
-      macvlan:
+      macvlan1:
         ipv4_address: 192.168.1.10        
     labels:
       - "traefik.enable=true"
@@ -25,8 +25,8 @@ networks:
   default:
     name: containers_bridge
     external: true
-  macvlan:
-    name: macvlan
+  macvlan1:
+    name: macvlan1
     driver: macvlan
     driver_opts:
       parent: ovs_bond0
