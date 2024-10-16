@@ -8,7 +8,11 @@ services:
     volumes:
       - "/volume1/config/gotify/data:/app/data"
     environment:
-      - GOTIFY_DEFAULTUSER_PASS=${GOTIFY_DEFAULTUSER_PASS}    
+      - GOTIFY_DEFAULTUSER_PASS=${GOTIFY_DEFAULTUSER_PASS}
+    networks:
+      macvlan:
+        ipv4_address: 192.168.1.10
+      containers_bridge:          
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.gotify.rule=Host(`${TRAEFIK_GOTIFY}`)"
