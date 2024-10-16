@@ -5,9 +5,6 @@ services:
     image: "traefik:latest"
     container_name: "traefik"
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
       - "/volume1/config/traefik/traefik.yml:/traefik.yml:ro"
       - "/volume1/config/traefik/rules:/rules:ro"
@@ -47,7 +44,6 @@ services:
       - "traefik.http.routers.dashboard-local.tls.domains[0].main=${TRAEFIK_LOCAL_DOMAIN}"
       - "traefik.http.routers.dashboard-local.tls.domains[0].sans=*.${TRAEFIK_LOCAL_DOMAIN}"
       - "traefik.http.routers.dashboard-local.service=api@internal"
-
       # global redirect to https
       - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
       - "traefik.http.routers.http-catchall.entrypoints=http"
