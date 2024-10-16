@@ -11,7 +11,8 @@ services:
       - GOTIFY_DEFAULTUSER_PASS=${GOTIFY_DEFAULTUSER_PASS}
     networks:
       macvlan1:
-        ipv4_address: 192.168.1.10       
+        ipv4_address: 192.168.1.10
+      containers_bridge:         
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.gotify.rule=Host(`${TRAEFIK_GOTIFY}`)"
@@ -22,8 +23,7 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
 
 networks:
-  default:
-    name: containers_bridge
+  containers_bridge:
     external: true
   macvlan1:
     name: macvlan1
