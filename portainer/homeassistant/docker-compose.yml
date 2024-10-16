@@ -16,6 +16,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.ha-local.entrypoints=https"
       - "traefik.http.routers.ha-local.rule=Host(`${TRAEFIK_HA_LOCAL}`)"
+      - "traefik.http.services.ha-local.loadbalancer.server.port=8123"
       - "traefik.http.routers.ha-local.tls=true"
       - "traefik.http.routers.ha-local.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.ha-local.tls.domains[0].main=${TRAEFIK_LOCAL_DOMAIN}"
