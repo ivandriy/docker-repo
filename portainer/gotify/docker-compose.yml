@@ -8,14 +8,13 @@ services:
     volumes:
       - "/volume1/config/gotify/data:/app/data"
     environment:
-      - GOTIFY_DEFAULTUSER_PASS=${GOTIFY_DEFAULTUSER_PASS}
+      - GOTIFY_DEFAULTUSER_PASS=${GOTIFY_DEFAULTUSER_PASS}    
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.gotify.rule=Host(`${TRAEFIK_GOTIFY}`)"
       - "traefik.http.routers.gotify.entrypoints=https"
       - "traefik.http.routers.gotify.tls=true"
       - "traefik.http.routers.gotify.tls.certresolver=mydnschallenge"
-
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=true"
 
@@ -23,3 +22,13 @@ networks:
   default:
     name: containers_bridge
     external: true
+  macvlan:
+    name: macvlan
+    driver: macvlan
+    driver_opts:
+      parent: ovs_bond0
+    ipam:
+      config:
+        - subnet: 192.168.1.1/24
+          ip_range: 192.168.1.10/31
+          gateway: 192.168.1.1
