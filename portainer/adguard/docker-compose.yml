@@ -6,7 +6,11 @@ services:
     restart: unless-stopped
     mem_limit: 2g
     cpu_shares: 768
+    environment:
+      TZ: 'Europe/Kyiv'    
     volumes:
       - /volume1/docker/adguard-home/work:/opt/adguardhome/work
       - /volume1/docker/adguard-home/confdir:/opt/adguardhome/conf
     network_mode: host
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
