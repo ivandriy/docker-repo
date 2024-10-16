@@ -33,6 +33,17 @@ services:
       - "traefik.http.services.dashboard.loadbalancer.passhostheader=true"
       - "traefik.http.routers.dashboard.middlewares=authtraefik"
       - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
+      # local dashboard access
+      - "traefik.http.routers.dashboard-local.entrypoints=https"
+      - "traefik.http.routers.dashboard-local.rule=Host(`traefik.local.ivanskiy.com`)"
+      - "traefik.http.services.dashboard-local.loadbalancer.server.port=8080"
+      - "traefik.http.routers.dashboard-local.middlewares=authtraefik"
+      - "traefik.http.routers.dashboard-local.tls=true"
+      - "traefik.http.routers.dashboard-local.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.dashboard-local.tls.domains[0].main=local.ivanskiy.com"
+      - "traefik.http.routers.dashboard-local.tls.domains[0].sans=*.local.ivanskiy.com"
+      - "traefik.http.routers.dashboard-local.service=api@internal"
+
       # global redirect to https
       - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
       - "traefik.http.routers.http-catchall.entrypoints=http"
@@ -40,7 +51,6 @@ services:
       # global redirect from www to non-www
       - traefik.http.middlewares.wwwremove.redirectregex.regex=^https://www\.(.*)
       - traefik.http.middlewares.wwwremove.redirectregex.replacement=https://$${1}
-
       # middleware redirect
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
