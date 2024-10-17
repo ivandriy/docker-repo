@@ -18,6 +18,14 @@ services:
     restart: always
     healthcheck:
       disable: false
+    labels:
+      - "traefik.enable=true"    
+      - "traefik.http.routers.immich.entrypoints=https"
+      - "traefik.http.routers.immich.rule=Host(`immich.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.immich.tls=true"
+      - "traefik.http.routers.immich.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.immich.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.immich.tls.domains[0].sans=*.${LOCAL_DOMAIN}"      
 
   immich-machine-learning:
     container_name: immich_machine_learning
