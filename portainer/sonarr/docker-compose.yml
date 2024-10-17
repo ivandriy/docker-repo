@@ -14,6 +14,13 @@ services:
       - 8989:8989
     restart: unless-stopped
     labels:
+      - "traefik.enable=true"    
+      - "traefik.http.routers.sonarr.entrypoints=https"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.sonarr.tls=true"
+      - "traefik.http.routers.sonarr.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.sonarr.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.sonarr.tls.domains[0].sans=*.${LOCAL_DOMAIN}"    
       - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
