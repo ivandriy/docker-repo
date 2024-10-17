@@ -10,10 +10,10 @@ http:
         domains:
           - main: '{{ env "TRAEFIK_LOCAL_DOMAIN" }}'
             sans:
-              - '.{{ env "TRAEFIK_LOCAL_DOMAIN" }}'
+              - '*.{{ env "TRAEFIK_LOCAL_DOMAIN" }}'
   services:
     ha-local:
       loadBalancer:
         passHostHeader: true
         servers:
-        - url: '{{ env "HA_HOST" }}''
+        - url: {{ expandenv "http://$HA_HOST" }}
