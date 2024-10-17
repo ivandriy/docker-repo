@@ -13,7 +13,7 @@ services:
     privileged: true
     networks:
       macvlan1:
-        ipv4_address: 192.168.1.15
+        ipv4_address: ${HA_MACVLAN_IP}
       containers_bridge:    
     labels:    
       - "com.centurylinklabs.watchtower.monitor-only=true"
