@@ -11,12 +11,12 @@ services:
       - GOTIFY_DEFAULTUSER_PASS=${GOTIFY_DEFAULTUSER_PASS}      
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gotify-local.rule=Host(`${TRAEFIK_GOTIFY_LOCAL}`)"
+      - "traefik.http.routers.gotify-local.rule=Host(`gotify.${LOCAL_DOMAIN}`)"
       - "traefik.http.routers.gotify-local.entrypoints=https"
       - "traefik.http.routers.gotify-local.tls=true"
       - "traefik.http.routers.gotify-local.tls.certresolver=mydnschallenge"
-      - "traefik.http.routers.gotify-local.tls.domains[0].main=${TRAEFIK_LOCAL_DOMAIN}"
-      - "traefik.http.routers.gotify-local.tls.domains[0].sans=*.${TRAEFIK_LOCAL_DOMAIN}"
+      - "traefik.http.routers.gotify-local.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.gotify-local.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=true"
 networks:
