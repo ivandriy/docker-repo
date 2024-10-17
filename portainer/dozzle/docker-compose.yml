@@ -11,11 +11,11 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dozzle-local.entrypoints=https"
-      - "traefik.http.routers.dozzle-local.rule=Host(`${TRAEFIK_DOZZLE_LOCAL}`)"
+      - "traefik.http.routers.dozzle-local.rule=Host(`dozzle.${LOCAL_DOMAIN}`)"
       - "traefik.http.routers.dozzle-local.tls=true"
       - "traefik.http.routers.dozzle-local.tls.certresolver=mydnschallenge"
-      - "traefik.http.routers.dozzle-local.tls.domains[0].main=${TRAEFIK_LOCAL_DOMAIN}"
-      - "traefik.http.routers.dozzle-local.tls.domains[0].sans=*.${TRAEFIK_LOCAL_DOMAIN}"     
+      - "traefik.http.routers.dozzle-local.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.dozzle-local.tls.domains[0].sans=*.${LOCAL_DOMAIN}"     
       - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
