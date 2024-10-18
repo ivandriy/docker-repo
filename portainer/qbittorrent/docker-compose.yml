@@ -18,6 +18,13 @@ services:
       - 6881:6881/udp 
     restart: unless-stopped
     labels:
+      - "traefik.enable=true"    
+      - "traefik.http.routers.qb.entrypoints=https"
+      - "traefik.http.routers.qb.rule=Host(`qb.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.qb.tls=true"
+      - "traefik.http.routers.qb.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.qb.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.qb.tls.domains[0].sans=*.${LOCAL_DOMAIN}"    
       - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
