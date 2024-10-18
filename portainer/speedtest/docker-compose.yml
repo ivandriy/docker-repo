@@ -1,25 +1,32 @@
-version: '3.3'
+version: "3.3"
 services:
-    speedtest:
-        container_name: speedtest
-        image: henrywhitaker3/speedtest-tracker:latest
-        ports:
-            - 8765:80
-        volumes:
-            - /volume1/docker/speedtest:/config
-        environment:
-            - TZ=Europe/Kiev
-            - PGID=100
-            - PUID=1026
-            - OOKLA_EULA_GDPR=true
-        logging:
-            driver: "json-file"
-            options:
-                max-file: "10"
-                max-size: "200k"
-        restart: unless-stopped
-        labels:
-         - "com.centurylinklabs.watchtower.enable=true"
+  speedtest:
+    container_name: speedtest
+    image: henrywhitaker3/speedtest-tracker:latest
+    ports:
+      - 8765:80
+    volumes:
+      - /volume1/docker/speedtest:/config
+    environment:
+      - TZ=Europe/Kiev
+      - PGID=100
+      - PUID=1026
+      - OOKLA_EULA_GDPR=true
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "200k"
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"    
+      - "traefik.http.routers.speedtest.entrypoints=https"
+      - "traefik.http.routers.speedtest.rule=Host(`speedtest.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.speedtest.tls=true"
+      - "traefik.http.routers.speedtest.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.speedtest.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.speedtest.tls.domains[0].sans=*.${LOCAL_DOMAIN}"    
+      - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge
