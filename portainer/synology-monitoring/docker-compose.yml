@@ -21,6 +21,13 @@ services:
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,natel-discrete-panel,grafana-piechart-panel
     restart: unless-stopped
     labels:
+      - "traefik.enable=true"    
+      - "traefik.http.routers.grafana.entrypoints=https"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.grafana.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.grafana.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
       - "com.centurylinklabs.watchtower.enable=true"
 
   prometheus:
@@ -44,6 +51,13 @@ services:
       - /volume1/docker/synology-monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     restart: unless-stopped
     labels:
+      - "traefik.enable=true"    
+      - "traefik.http.routers.prometheus.entrypoints=https"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.prometheus.tls=true"
+      - "traefik.http.routers.prometheus.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.prometheus.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.prometheus.tls.domains[0].sans=*.${LOCAL_DOMAIN}"    
       - "com.centurylinklabs.watchtower.enable=true"
 
   node-exporter:
@@ -123,6 +137,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
     labels:
+      - "traefik.enable=true"    
+      - "traefik.http.routers.cadvisor.entrypoints=https"
+      - "traefik.http.routers.cadvisor.rule=Host(`cadvisor.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.cadvisor.tls=true"
+      - "traefik.http.routers.cadvisor.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.cadvisor.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.cadvisor.tls.domains[0].sans=*.${LOCAL_DOMAIN}"    
       - "com.centurylinklabs.watchtower.enable=true"    
 
   speedtest_exporter:
