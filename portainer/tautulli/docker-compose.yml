@@ -20,7 +20,7 @@ services:
       - "traefik.http.routers.tautulli.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.tautulli.tls.domains[0].main=${LOCAL_DOMAIN}"
       - "traefik.http.routers.tautulli.tls.domains[0].sans=*.${LOCAL_DOMAIN}"    
-      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.centurylinklabs.watchtower.enable=false"
 networks:
   default:
     name: containers_bridge
