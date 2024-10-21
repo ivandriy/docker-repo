@@ -14,4 +14,14 @@ services:
       - '/volume1/Data/Media:/data/media:rw'
     restart: unless-stopped
     labels:
-      - "com.centurylinklabs.watchtower.enable=false"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Plex
+      - homepage.icon=plex.png
+      - homepage.href=http://192.168.1.254:32400/
+      - homepage.description=Media player
+      - homepage.widget.type=plex
+      - homepage.widget.url=http://192.168.1.254:32400
+      - homepage.widget.key=${PLEX_TOKEN}
+      # auto update docker    
+      - "com.centurylinklabs.watchtower.enable=true"
