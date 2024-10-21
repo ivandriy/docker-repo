@@ -31,7 +31,6 @@ services:
       - homepage.widget.type=sonarr
       - homepage.widget.url=http://sonarr:8989
       - homepage.widget.key=${SONARR_API_KEY}
-      - homepage.widget.enableQueue=true   
       # auto update docker          
       - "com.centurylinklabs.watchtower.enable=true"
 networks:
