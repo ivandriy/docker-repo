@@ -19,13 +19,24 @@ services:
     healthcheck:
       disable: false
     labels:
+      # proxy settings    
       - "traefik.enable=true"    
       - "traefik.http.routers.immich.entrypoints=https"
       - "traefik.http.routers.immich.rule=Host(`immich.${LOCAL_DOMAIN}`)"
       - "traefik.http.routers.immich.tls=true"
       - "traefik.http.routers.immich.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.immich.tls.domains[0].main=${LOCAL_DOMAIN}"
-      - "traefik.http.routers.immich.tls.domains[0].sans=*.${LOCAL_DOMAIN}"      
+      - "traefik.http.routers.immich.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Immich
+      - homepage.icon=immich.png
+      - homepage.href=https://immich.${LOCAL_DOMAIN}
+      - homepage.description=Photo manager
+      - homepage.widget.type=immich
+      - homepage.widget.url=http://immich:2283
+      - homepage.widget.key=${IMMICH_API_KEY}
+      - homepage.widget.version=2
 
   immich-machine-learning:
     container_name: immich_machine_learning
