@@ -22,6 +22,12 @@ services:
       - "traefik.http.routers.lidarr.tls.domains[0].main=${LOCAL_DOMAIN}"
       - "traefik.http.routers.lidarr.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
       - "com.centurylinklabs.watchtower.enable=true"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Lidarr
+      - homepage.icon=lidarr.png
+      - homepage.href=https://lidarr.local.ivanskiy.com/
+      - homepage.description=Music manager
 networks:
   default:
     name: containers_bridge
