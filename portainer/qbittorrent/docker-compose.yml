@@ -18,13 +18,23 @@ services:
       - 6881:6881/udp 
     restart: unless-stopped
     labels:
+      # proxy settings    
       - "traefik.enable=true"    
       - "traefik.http.routers.qb.entrypoints=https"
       - "traefik.http.routers.qb.rule=Host(`qb.${LOCAL_DOMAIN}`)"
       - "traefik.http.routers.qb.tls=true"
       - "traefik.http.routers.qb.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.qb.tls.domains[0].main=${LOCAL_DOMAIN}"
-      - "traefik.http.routers.qb.tls.domains[0].sans=*.${LOCAL_DOMAIN}"    
+      - "traefik.http.routers.qb.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=qBittorrent
+      - homepage.icon=qbittorrent.png
+      - homepage.href=https://qb.${LOCAL_DOMAIN}
+      - homepage.description=Torrents downloader
+      - homepage.widget.type=qbittorrent
+      - homepage.widget.url=http://qbittorrent:6004
+      # auto update docker          
       - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
