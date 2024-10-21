@@ -34,7 +34,7 @@ services:
       - homepage.href=https://immich.${LOCAL_DOMAIN}
       - homepage.description=Photo manager
       - homepage.widget.type=immich
-      - homepage.widget.url=http://immich:2283
+      - homepage.widget.url=http://immich-server:2283
       - homepage.widget.key=${IMMICH_API_KEY}
       - homepage.widget.version=2
 
