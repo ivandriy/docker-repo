@@ -14,6 +14,7 @@ services:
       - 8686:8686
     restart: unless-stopped
     labels:
+      # proxy settings
       - "traefik.enable=true"    
       - "traefik.http.routers.lidarr.entrypoints=https"
       - "traefik.http.routers.lidarr.rule=Host(`lidarr.${LOCAL_DOMAIN}`)"
@@ -21,13 +22,17 @@ services:
       - "traefik.http.routers.lidarr.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.lidarr.tls.domains[0].main=${LOCAL_DOMAIN}"
       - "traefik.http.routers.lidarr.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
-      - "com.centurylinklabs.watchtower.enable=true"
       # homepage integration
       - homepage.group=Media
       - homepage.name=Lidarr
       - homepage.icon=lidarr.png
-      - homepage.href=https://lidarr.local.ivanskiy.com/
+      - homepage.href=https://lidarr.${LOCAL_DOMAIN}
       - homepage.description=Music manager
+      - homepage.widget.type=lidarr
+      - homepage.widget.url=https://lidarr.${LOCAL_DOMAIN}
+      - homepage.widget.key=${LIDARR_API_KEY}
+      # auto update docker
+      - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge
