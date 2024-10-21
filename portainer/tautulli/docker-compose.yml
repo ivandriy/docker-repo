@@ -13,13 +13,24 @@ services:
     ports:
       - 8181:8181
     labels:
+      # proxy settings    
       - "traefik.enable=true"    
       - "traefik.http.routers.tautulli.entrypoints=https"
       - "traefik.http.routers.tautulli.rule=Host(`tautulli.${LOCAL_DOMAIN}`)"
       - "traefik.http.routers.tautulli.tls=true"
       - "traefik.http.routers.tautulli.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.tautulli.tls.domains[0].main=${LOCAL_DOMAIN}"
-      - "traefik.http.routers.tautulli.tls.domains[0].sans=*.${LOCAL_DOMAIN}"    
+      - "traefik.http.routers.tautulli.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Tautulli
+      - homepage.icon=tautulli.png
+      - homepage.href=https://tautulli.${LOCAL_DOMAIN}
+      - homepage.description=Plex statistics
+      - homepage.widget.type=tautulli
+      - homepage.widget.url=http://tautulli:8181
+      - homepage.widget.key=${TAUTULLI_API_KEY}      
+      # auto update docker      
       - "com.centurylinklabs.watchtower.enable=false"
 networks:
   default:
