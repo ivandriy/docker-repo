@@ -11,7 +11,7 @@ services:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro   
     ports:
-      - 2283:3001
+      - 2283:2283
     depends_on:
       - redis
       - database
