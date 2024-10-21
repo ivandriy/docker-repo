@@ -36,7 +36,7 @@ services:
       - homepage.href=https://grafana.${LOCAL_DOMAIN}
       - homepage.description=Monitoring dashboards
       - homepage.widget.type=grafana
-      - homepage.widget.url=http://grafana:3340
+      - homepage.widget.url=http://grafana:3000
       - homepage.widget.username=${GRAFANA_USERNAME}
       - homepage.widget.password=${GRAFANA_PASSWORD}
       # auto update docker     
