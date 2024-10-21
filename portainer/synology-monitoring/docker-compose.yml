@@ -21,6 +21,7 @@ services:
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,natel-discrete-panel,grafana-piechart-panel
     restart: unless-stopped
     labels:
+       # proxy settings   
       - "traefik.enable=true"    
       - "traefik.http.routers.grafana.entrypoints=https"
       - "traefik.http.routers.grafana.rule=Host(`grafana.${LOCAL_DOMAIN}`)"
@@ -28,6 +29,17 @@ services:
       - "traefik.http.routers.grafana.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.grafana.tls.domains[0].main=${LOCAL_DOMAIN}"
       - "traefik.http.routers.grafana.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Monitoring
+      - homepage.name=Grafana
+      - homepage.icon=grafana.png
+      - homepage.href=https://grafana.${LOCAL_DOMAIN}
+      - homepage.description=Monitoring dashboards
+      - homepage.widget.type=grafana
+      - homepage.widget.url=http://grafana:3340
+      - homepage.widget.username=${GRAFANA_USERNAME}
+      - homepage.widget.password=${GRAFANA_PASSWORD}
+      # auto update docker     
       - "com.centurylinklabs.watchtower.enable=true"
 
   prometheus:
@@ -51,13 +63,23 @@ services:
       - /volume1/docker/synology-monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     restart: unless-stopped
     labels:
+       # proxy settings       
       - "traefik.enable=true"    
       - "traefik.http.routers.prometheus.entrypoints=https"
       - "traefik.http.routers.prometheus.rule=Host(`prometheus.${LOCAL_DOMAIN}`)"
       - "traefik.http.routers.prometheus.tls=true"
       - "traefik.http.routers.prometheus.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.prometheus.tls.domains[0].main=${LOCAL_DOMAIN}"
-      - "traefik.http.routers.prometheus.tls.domains[0].sans=*.${LOCAL_DOMAIN}"    
+      - "traefik.http.routers.prometheus.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Monitoring
+      - homepage.name=Prometheus
+      - homepage.icon=prometheus.png
+      - homepage.href=https://prometheus.${LOCAL_DOMAIN}
+      - homepage.description=Metrics exporter
+      - homepage.widget.type=prometheus
+      - homepage.widget.url=http://prometheus:9090      
+      # auto update docker           
       - "com.centurylinklabs.watchtower.enable=true"
 
   node-exporter:
