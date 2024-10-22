@@ -27,6 +27,9 @@ services:
       - homepage.widget.key=${HA_TOKEN}
       - homepage.widget.custom[0].state=sensor.hue_motion_sensor_1_temperature
       - homepage.widget.custom[0].label=Температура вдома
+      - homepage.widget.custom[1].state=sensor.hue_motion_sensor_1_illuminance
+      - homepage.widget.custom[1].label=Освітлення
+            
       # auto update docker        
       - "com.centurylinklabs.watchtower.monitor-only=true"
 networks:
