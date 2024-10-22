@@ -1,0 +1,19 @@
+http:
+  routers:
+    synology:
+      entryPoints:
+        - "https"
+      service: synology
+      rule: Host(`synology.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+  services:
+    synology:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+        - url: {{ expandenv "https://$SYNOLOGY_HOST" }}
