@@ -14,7 +14,7 @@ services:
       # proxy settings
       - "traefik.enable=true"    
       - "traefik.http.routers.uptimekuma.entrypoints=https"
-      - "traefik.http.routers.uptimekuma.rule=Host(`uptimekuma.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.uptimekuma.rule=Host(`uptime-kuma.${LOCAL_DOMAIN}`)"
       - "traefik.http.routers.uptimekuma.tls=true"
       - "traefik.http.routers.uptimekuma.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.uptimekuma.tls.domains[0].main=${LOCAL_DOMAIN}"
