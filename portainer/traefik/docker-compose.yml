@@ -28,7 +28,7 @@ services:
     labels:
       - "traefik.enable=true"
       # dashboard config
-      - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_HOSTNAME}`)"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${MAIN_DOMAIN}`)"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=https"
       - "traefik.http.services.dashboard.loadbalancer.server.port=8080"
@@ -39,13 +39,13 @@ services:
       - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
       # local dashboard access
       - "traefik.http.routers.dashboard-local.entrypoints=https"
-      - "traefik.http.routers.dashboard-local.rule=Host(`${TRAEFIK_HOSTNAME_LOCAL}`)"
+      - "traefik.http.routers.dashboard-local.rule=Host(`traefik.${LOCAL_DOMAIN}`)"
       - "traefik.http.services.dashboard-local.loadbalancer.server.port=8080"
       - "traefik.http.routers.dashboard-local.middlewares=authtraefik"
       - "traefik.http.routers.dashboard-local.tls=true"
       - "traefik.http.routers.dashboard-local.tls.certresolver=mydnschallenge"
-      - "traefik.http.routers.dashboard-local.tls.domains[0].main=${TRAEFIK_LOCAL_DOMAIN}"
-      - "traefik.http.routers.dashboard-local.tls.domains[0].sans=*.${TRAEFIK_LOCAL_DOMAIN}"
+      - "traefik.http.routers.dashboard-local.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.dashboard-local.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
       - "traefik.http.routers.dashboard-local.service=api@internal"
       # global redirect to https
       - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
