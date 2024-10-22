@@ -23,7 +23,7 @@ services:
       - homepage.group=Monitoring
       - homepage.name=Uptime Kuma
       - homepage.icon=uptime-kuma.png
-      - homepage.href=https://uptimekuma.${LOCAL_DOMAIN}
+      - homepage.href=https://uptime-kuma.${LOCAL_DOMAIN}
       - homepage.description=Uptime monitor
       - homepage.widget.type=uptimekuma
       - homepage.widget.url=http://uptime-kuma:3001
