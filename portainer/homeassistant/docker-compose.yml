@@ -26,7 +26,7 @@ services:
       - homepage.widget.url=http://homeassistant:8123
       - homepage.widget.key=${HA_TOKEN}
       - homepage.widget.custom.state=sensor.hue_motion_sensor_1_temperature
-      - homepage.widget.custom.state.lable=Температура вдома
+      - homepage.widget.custom.state.label=Температура вдома
       # auto update docker        
       - "com.centurylinklabs.watchtower.monitor-only=true"
 networks:
