@@ -11,6 +11,24 @@ services:
       - 3001:3001
     restart: always
     labels:
+      # proxy settings
+      - "traefik.enable=true"    
+      - "traefik.http.routers.uptimekuma.entrypoints=https"
+      - "traefik.http.routers.uptimekuma.rule=Host(`uptimekuma.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.uptimekuma.tls=true"
+      - "traefik.http.routers.uptimekuma.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.uptimekuma.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.uptimekuma.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Monitoring
+      - homepage.name=Uptime-Kuma
+      - homepage.icon=uptimekuma.png
+      - homepage.href=https://uptimekuma.${LOCAL_DOMAIN}
+      - homepage.description=Uptime monitor
+      - homepage.widget.type=uptimekuma
+      - homepage.widget.url=http://uptime-kuma:3001
+      - homepage.widget.slug=services
+      # auto update docker
       - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
