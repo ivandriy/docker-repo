@@ -21,8 +21,8 @@ services:
       - "traefik.http.routers.uptimekuma.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
       # homepage integration
       - homepage.group=Monitoring
-      - homepage.name=Uptime-Kuma
-      - homepage.icon=uptimekuma.png
+      - homepage.name=Uptime Kuma
+      - homepage.icon=uptime-kuma.png
       - homepage.href=https://uptimekuma.${LOCAL_DOMAIN}
       - homepage.description=Uptime monitor
       - homepage.widget.type=uptimekuma
