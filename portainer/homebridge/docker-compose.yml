@@ -3,8 +3,7 @@ services:
   homebridge:
     container_name: homebridge
     image: homebridge/homebridge
-    restart: always
-    network_mode: host
+    restart: unless-stopped
     environment:
       TZ: 'Europe/Kyiv'
     volumes:
@@ -14,5 +13,33 @@ services:
       options:
         max-size: "10mb"
         max-file: "1"
+    networks:
+      macvlan1:
+        ipv4_address: ${HB_MACVLAN_IP}
+      containers_bridge:    
     labels:
+      # homepage integration
+      - homepage.group=Smart home
+      - homepage.name=Home Bridge
+      - homepage.icon=homebridge.png
+      - homepage.href=https://hb.${LOCAL_DOMAIN}
+      - homepage.description=HomeKit integrations
+      - homepage.widget.type=homebridge
+      - homepage.widget.url=http://homebridge:8581
+      - homepage.widget.username=${HB_USER}
+      - homepage.widget.password=${HB_PASSWORD}
+      # auto update docker
       - "com.centurylinklabs.watchtower.monitor-only=true"
+networks:
+  containers_bridge:
+    external: true
+  macvlan1:
+    name: macvlan1
+    driver: macvlan
+    driver_opts:
+      parent: ovs_bond0
+    ipam:
+      config:
+        - subnet: 192.168.1.1/24
+          ip_range: 192.168.1.10/31
+          gateway: 192.168.1.1     
