@@ -9,13 +9,21 @@ services:
       - 9999:8080
     restart: unless-stopped
     labels:
+      # proxy settings    
       - "traefik.enable=true"
       - "traefik.http.routers.dozzle-local.entrypoints=https"
       - "traefik.http.routers.dozzle-local.rule=Host(`dozzle.${LOCAL_DOMAIN}`)"
       - "traefik.http.routers.dozzle-local.tls=true"
       - "traefik.http.routers.dozzle-local.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.dozzle-local.tls.domains[0].main=${LOCAL_DOMAIN}"
-      - "traefik.http.routers.dozzle-local.tls.domains[0].sans=*.${LOCAL_DOMAIN}"     
+      - "traefik.http.routers.dozzle-local.tls.domains[0].sans=*.${LOCAL_DOMAIN}"  
+      # homepage integration
+      - homepage.group=Monitoring
+      - homepage.name=Dozzle
+      - homepage.icon=dozzle.png
+      - homepage.href=https://dozzle.${LOCAL_DOMAIN}
+      - homepage.description=Logs viewer
+      # auto update docker         
       - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
