@@ -15,7 +15,17 @@ services:
       macvlan1:
         ipv4_address: ${HA_MACVLAN_IP}
       containers_bridge:    
-    labels:    
+    labels:
+      # homepage integration
+      - homepage.group=Smart home
+      - homepage.name=Home Assistant
+      - homepage.icon=homeassistant.png
+      - homepage.href=https://ha.${LOCAL_DOMAIN}
+      - homepage.description=Home Automations
+      - homepage.widget.type=homeassistant
+      - homepage.widget.url=http://homeassistant:8123
+      - homepage.widget.key=${HA_TOKEN}
+      # auto update docker        
       - "com.centurylinklabs.watchtower.monitor-only=true"
 networks:
   containers_bridge:
