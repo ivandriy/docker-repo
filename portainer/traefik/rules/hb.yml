@@ -1,0 +1,19 @@
+http:
+  routers:
+    homebridge:
+      entryPoints:
+        - "https"
+      service: homebridge
+      rule: Host(`hb.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+  services:
+    homebridge:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+        - url: {{ expandenv "http://$HB_HOST" }}
