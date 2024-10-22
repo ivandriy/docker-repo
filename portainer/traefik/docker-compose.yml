@@ -12,8 +12,6 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     environment:
       - DO_AUTH_TOKEN=${DO_AUTH_TOKEN}
-      - TRAEFIK_HA_LOCAL=${TRAEFIK_HA_LOCAL}
-      - TRAEFIK_LOCAL_DOMAIN=${TRAEFIK_LOCAL_DOMAIN}
       - HA_HOST=${HA_HOST}
       - LOCAL_DOMAIN=${LOCAL_DOMAIN}
       - HB_HOST=${HB_HOST}

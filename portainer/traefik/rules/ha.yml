@@ -1,18 +1,18 @@
 http:
   routers:
-    ha-local:
+    homeassistant:
       entryPoints:
         - "https"
-      service: ha-local
-      rule: Host(`{{ env "TRAEFIK_HA_LOCAL" }}`)
+      service: homeassistant
+      rule: Host(`ha.{{ env "LOCAL_DOMAIN" }}`)
       tls:
         certResolver: mydnschallenge
         domains:
-          - main: '{{ env "TRAEFIK_LOCAL_DOMAIN" }}'
+          - main: '{{ env "LOCAL_DOMAIN" }}'
             sans:
-              - '*.{{ env "TRAEFIK_LOCAL_DOMAIN" }}'
+              - '*.{{ env "LOCAL_DOMAIN" }}'
   services:
-    ha-local:
+    homeassistant:
       loadBalancer:
         passHostHeader: true
         servers:
