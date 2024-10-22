@@ -159,14 +159,21 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
     labels:
+      # proxy settings        
       - "traefik.enable=true"    
       - "traefik.http.routers.cadvisor.entrypoints=https"
       - "traefik.http.routers.cadvisor.rule=Host(`cadvisor.${LOCAL_DOMAIN}`)"
       - "traefik.http.routers.cadvisor.tls=true"
       - "traefik.http.routers.cadvisor.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.cadvisor.tls.domains[0].main=${LOCAL_DOMAIN}"
-      - "traefik.http.routers.cadvisor.tls.domains[0].sans=*.${LOCAL_DOMAIN}"    
-      - "com.centurylinklabs.watchtower.enable=true"    
+      - "traefik.http.routers.cadvisor.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Monitoring
+      - homepage.name=cAdvisor
+      - homepage.icon=cadvisor.png
+      - homepage.href=https://cadvisor.${LOCAL_DOMAIN}
+      - homepage.description=Docker monitoring      
+      - "com.centurylinklabs.watchtower.enable=true"
 
   speedtest_exporter:
     image: ghcr.io/aaronmwelborn/speedtest_exporter:latest
