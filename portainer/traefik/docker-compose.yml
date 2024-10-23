@@ -1,3 +1,5 @@
+version: "3"
+
 services:
   traefik:
     image: "traefik:latest"
@@ -14,7 +16,6 @@ services:
       - LOCAL_DOMAIN=${LOCAL_DOMAIN}
       - HB_HOST=${HB_HOST}
       - SYNOLOGY_HOST=${SYNOLOGY_HOST}
-      - PORTAINER_HOST=${PORTAINER_HOST}
     networks:
       macvlan1:
         ipv4_address: ${TRAEFIK_MACVLAN_IP}
