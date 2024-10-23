@@ -1,0 +1,19 @@
+http:
+  routers:
+    portainer:
+      entryPoints:
+        - "https"
+      service: portainer
+      rule: Host(`portainer.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+  services:
+    portainer:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+        - url: {{ expandenv "http://$PORTAINER_HOST" }}
