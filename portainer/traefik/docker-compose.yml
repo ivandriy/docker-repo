@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   traefik:
     image: "traefik:latest"
@@ -67,6 +65,7 @@ networks:
     external: true
   macvlan1:
     name: macvlan1
+    external: true
     driver: macvlan
     driver_opts:
       parent: ovs_bond0
