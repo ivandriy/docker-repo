@@ -58,6 +58,16 @@ services:
       # middleware redirect
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
+      # homepage integration
+      - homepage.group=Network
+      - homepage.name=Traefik
+      - homepage.icon=traefik.png
+      - homepage.href=https://traefik.${LOCAL_DOMAIN}
+      - homepage.description=Reverse proxy
+      - homepage.widget.type=traefik
+      - homepage.widget.url=http://traefik
+      - homepage.widget.username=${TRAEFIK_USER}
+      - homepage.widget.password=${TRAEFIK_PASSWORD}
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=true"
 
