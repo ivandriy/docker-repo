@@ -38,7 +38,7 @@ services:
       - "traefik.http.services.dashboard.loadbalancer.passhostheader=true"
       - "traefik.http.routers.dashboard.middlewares=authtraefik"
       - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
-      # local dashboard access
+      # local dashboard access via https
       - "traefik.http.routers.dashboard-local.entrypoints=https"
       - "traefik.http.routers.dashboard-local.rule=Host(`traefik.${LOCAL_DOMAIN}`)"
       - "traefik.http.services.dashboard-local.loadbalancer.server.port=8080"
@@ -48,6 +48,13 @@ services:
       - "traefik.http.routers.dashboard-local.tls.domains[0].main=${LOCAL_DOMAIN}"
       - "traefik.http.routers.dashboard-local.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
       - "traefik.http.routers.dashboard-local.service=api@internal"
+      # local dashboard access via http
+      - "traefik.http.routers.dashboard-local-http.entrypoints=http"
+      - "traefik.http.routers.dashboard-local-http.rule=Host(`traefik.${LOCAL_DOMAIN}`)"
+      - "traefik.http.services.dashboard-local-http.loadbalancer.server.port=8080"
+      - "traefik.http.routers.dashboard-local-http.middlewares=authtraefik"
+      - "traefik.http.routers.dashboard-local-http.tls=false"
+      - "traefik.http.routers.dashboard-local-http.service=api@internal"      
       # global redirect to https
       - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
       - "traefik.http.routers.http-catchall.entrypoints=http"
@@ -65,7 +72,7 @@ services:
       - homepage.href=https://traefik.${LOCAL_DOMAIN}
       - homepage.description=Reverse proxy
       - homepage.widget.type=traefik
-      - homepage.widget.url=http://traefik
+      - homepage.widget.url=http://traefik.${LOCAL_DOMAIN}
       - homepage.widget.username=${TRAEFIK_USER}
       - homepage.widget.password=${TRAEFIK_PASSWORD}
       # Watchtower Update
