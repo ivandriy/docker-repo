@@ -50,7 +50,7 @@ services:
       - "traefik.http.routers.dashboard-local.service=api@internal"
       # local dashboard access via http
       - "traefik.http.routers.dashboard-local-http.entrypoints=http"
-      - "traefik.http.routers.dashboard-local-http.rule=Host(`traefik.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.dashboard-local-http.rule=Host(`traefik`)"
       - "traefik.http.services.dashboard-local-http.loadbalancer.server.port=8080"
       - "traefik.http.routers.dashboard-local-http.middlewares=authtraefik"
       - "traefik.http.routers.dashboard-local-http.tls=false"
