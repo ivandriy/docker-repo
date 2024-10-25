@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  it-tools:
+    image: corentinth/it-tools:latest
+    container_name: it-tools
+    ports:
+      - 8282:80
+    restart: unless-stopped
+    labels:
+      # proxy settings    
+      - "traefik.enable=true"    
+      - "traefik.http.routers.it-tools.entrypoints=https"
+      - "traefik.http.routers.it-tools.rule=Host(`it-tools.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.it-tools.tls=true"
+      - "traefik.http.routers.it-tools.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.it-tools.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.it-tools.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Development
+      - homepage.name=IT-Tools
+      - homepage.icon=it-tools.png
+      - homepage.href=https://it-tools.${LOCAL_DOMAIN}
+      - homepage.description=Tools for developers
+      # auto update docker     
+      - "com.centurylinklabs.watchtower.enable=true"
+networks:
+  default:
+    name: containers_bridge
+    external: true
