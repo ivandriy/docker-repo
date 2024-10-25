@@ -25,12 +25,12 @@ services:
     labels:
       # proxy settings      
       - "traefik.enable=true"    
-      - "traefik.http.routers.homepage.entrypoints=https"
-      - "traefik.http.routers.homepage.rule=Host(`gitea.${LOCAL_DOMAIN}`)"
-      - "traefik.http.routers.homepage.tls=true"
-      - "traefik.http.routers.homepage.tls.certresolver=mydnschallenge"
-      - "traefik.http.routers.homepage.tls.domains[0].main=${LOCAL_DOMAIN}"
-      - "traefik.http.routers.homepage.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      - "traefik.http.routers.gitea.entrypoints=https"
+      - "traefik.http.routers.gitea.rule=Host(`gitea.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.gitea.tls=true"
+      - "traefik.http.routers.gitea.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.gitea.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.gitea.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
       # homepage integration      
       - homepage.group=Development
       - homepage.name=Gitea
