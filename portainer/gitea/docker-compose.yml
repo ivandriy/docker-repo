@@ -17,8 +17,6 @@ services:
     restart: unless-stopped
     volumes:
       - /volume1/docker/gitea/server:/data
-      - /etc/timezone:/etc/timezone:ro
-      - /etc/localtime:/etc/localtime:ro
     ports:
       - "3030:3000"
       - "222:22"
