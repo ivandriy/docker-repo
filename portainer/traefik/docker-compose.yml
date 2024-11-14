@@ -19,7 +19,10 @@ services:
     networks:
       macvlan1:
         ipv4_address: ${TRAEFIK_MACVLAN_IP}
-      containers_bridge:       
+      containers_bridge:
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1             
     healthcheck:
       test: ["CMD", "wget", "http://localhost:8082/ping","--spider"]
       interval: 10s
