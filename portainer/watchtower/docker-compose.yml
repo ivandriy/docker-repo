@@ -26,6 +26,16 @@ services:
       - WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD=${WATCHTOWER_NOTIFICATION_EMAIL_SERVER_PASSWORD}
       - WATCHTOWER_HTTP_API_TOKEN=${WATCHTOWER_HTTP_API_TOKEN}
       - WATCHTOWER_HTTP_API_METRICS=true
+    labels:
+      # homepage integration
+      - homepage.group=Network
+      - homepage.name=Watchtower
+      - homepage.icon=watchtower.png
+      - homepage.href=https://watchtower.${LOCAL_DOMAIN}
+      - homepage.description=Docker auto updates
+      - homepage.widget.type=watchtower
+      - homepage.widget.url=http://watchtower:8080
+      - homepage.widget.key=${WATCHTOWER_HTTP_API_TOKEN} 
 
 networks:
   default:
