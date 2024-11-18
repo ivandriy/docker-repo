@@ -35,7 +35,7 @@ services:
       - homepage.description=Docker auto updates
       - homepage.widget.type=watchtower
       - homepage.widget.url=http://watchtower:8080
-      - homepage.widget.key=${WATCHTOWER_HTTP_API_TOKEN} 
+      - homepage.widget.key=${WATCHTOWER_HTTP_API_TOKEN}
 
 networks:
   default:

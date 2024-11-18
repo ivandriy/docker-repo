@@ -18,7 +18,7 @@ services:
       - homepage.group=Media
       - homepage.name=Plex
       - homepage.icon=plex.png
-      - homepage.href=http://192.168.1.254:32400/
+      - homepage.href=http://192.168.1.254:32400/web/index.html
       - homepage.description=Media player
       - homepage.widget.type=plex
       - homepage.widget.url=http://192.168.1.254:32400
