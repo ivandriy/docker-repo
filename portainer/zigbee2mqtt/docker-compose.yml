@@ -10,10 +10,6 @@ services:
     environment:
       - TZ=Europe/Kiev
     privileged: true
-    networks:
-      macvlan1:
-        ipv4_address: ${Z2MQTT_MACVLAN_IP}
-      containers_bridge:
     depends_on:
        - mosquitto
     labels:            
@@ -34,11 +30,7 @@ services:
     ports:
       - 1883:1883
       - 9001:9001
-    privileged: true
-    networks:
-      macvlan1:
-        ipv4_address: ${MOSQUITTO_MACVLAN_IP}
-      containers_bridge:       
+    privileged: true     
     volumes:
       - /volume1/docker/mosquitto:/etc/mosquitto
     labels:            
@@ -46,16 +38,6 @@ services:
       - "com.centurylinklabs.watchtower.monitor-only=true"
 
 networks:
-  containers_bridge:
+  default:
+    name: containers_bridge
     external: true
-  macvlan1:
-    name: macvlan1
-    driver: macvlan
-    external: true
-    driver_opts:
-      parent: ovs_bond0
-    ipam:
-      config:
-        - subnet: 192.168.1.1/24
-          ip_range: 192.168.1.10/31
-          gateway: 192.168.1.1
