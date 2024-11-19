@@ -29,6 +29,7 @@ networks:
   macvlan1:
     name: macvlan1
     driver: macvlan
+    external: true
     driver_opts:
       parent: ovs_bond0
     ipam:
