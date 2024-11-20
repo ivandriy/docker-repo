@@ -2,7 +2,7 @@ version: '2'
 services:
   homebridge:
     container_name: homebridge
-    image: homebridge/homebridge
+    image: homebridge/homebridge:latest
     restart: unless-stopped
     environment:
       TZ: 'Europe/Kyiv'
