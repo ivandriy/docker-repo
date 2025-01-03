@@ -11,13 +11,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
     privileged: true
-    networks:
-      macvlan1:
-        ipv4_address: ${HA_MACVLAN_IP}
-      containers_bridge:
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1          
+    network_mode: host
     labels:
       # homepage integration
       - homepage.group=Smart home
@@ -26,25 +20,11 @@ services:
       - homepage.href=https://ha.${LOCAL_DOMAIN}
       - homepage.description=Home Automations
       - homepage.widget.type=homeassistant
-      - homepage.widget.url=http://homeassistant:8123
+      - homepage.widget.url=http://192.168.1.254:8123
       - homepage.widget.key=${HA_TOKEN}
       - homepage.widget.custom[0].state=sensor.hue_motion_sensor_1_temperature
       - homepage.widget.custom[0].label=Температура вдома
       - homepage.widget.custom[1].state=sensor.hue_motion_sensor_1_illuminance
       - homepage.widget.custom[1].label=Освітлення
-      # auto update docker        
+      # auto update docker
       - "com.centurylinklabs.watchtower.monitor-only=true"
-networks:
-  containers_bridge:
-    external: true
-  macvlan1:
-    name: macvlan1
-    driver: macvlan
-    external: true    
-    driver_opts:
-      parent: ovs_bond0
-    ipam:
-      config:
-        - subnet: 192.168.1.1/24
-          ip_range: 192.168.1.10/31
-          gateway: 192.168.1.1
