@@ -9,6 +9,9 @@ services:
       - TZ=Europe/Kiev
     volumes:
       - ${VOLUME_DATA}/heimdall/config:/config
+    ports:
+      - 8088:80
+      - 8089:443
     restart: unless-stopped
     labels:
       # local heimdall access
