@@ -8,7 +8,7 @@ services:
       - PGID=100
       - TZ=Europe/Kiev
     volumes:
-      - /volume1/docker/heimdall/config:/config
+      - ${VOLUME_DATA}/heimdall/config:/config
     restart: unless-stopped
     labels:
       # local heimdall access
