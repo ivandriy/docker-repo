@@ -11,6 +11,8 @@ services:
     volumes:
       - '${VOLUME_DATA}/plex:/config'
       - '${MEDIA_DATA}:/data/media'
+    devices:
+      - /dev/dri:/dev/dri
     restart: unless-stopped
     labels:
       # homepage integration
