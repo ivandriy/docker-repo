@@ -1,13 +1,12 @@
-version: "3.8"
 services:
   plex-meta-manager:
-    image: lscr.io/linuxserver/plex-meta-manager:latest
+    image: kometateam/kometa
     container_name: plex-meta-manager
     environment:
-      #- PMM_RUN=true
+      - PMM_RUN=true
       - TZ=Europe/Kiev
     volumes:
-      - /volume1/config/plex-meta-manager/config:/config
+      - ${VOLUME_DATA}/plex-meta-manager/config:/config
     restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
