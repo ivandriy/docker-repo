@@ -14,6 +14,7 @@ services:
       - DO_AUTH_TOKEN=${DO_AUTH_TOKEN}
       - HA_HOST=${HA_HOST}
       - LOCAL_DOMAIN=${LOCAL_DOMAIN}
+      - MAIN_DOMAIN=${MAIN_DOMAIN}
       - HB_HOST=${HB_HOST}
       - SYNOLOGY_HOST=${SYNOLOGY_HOST}
     networks:
