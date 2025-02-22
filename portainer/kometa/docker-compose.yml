@@ -1,12 +1,12 @@
 services:
-  plex-meta-manager:
+  kometa:
     image: kometateam/kometa
-    container_name: plex-meta-manager
+    container_name: kometa
     environment:
       #- PMM_RUN=true
       - TZ=Europe/Kiev
     volumes:
-      - ${VOLUME_DATA}/plex-meta-manager/config:/config
+      - ${VOLUME_DATA}/kometa/config:/config
     restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
