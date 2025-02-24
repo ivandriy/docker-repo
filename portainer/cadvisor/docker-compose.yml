@@ -1,0 +1,45 @@
+services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    command:
+      - '--docker_only=true'
+      - "--housekeeping_interval=30s"
+      - "--max_housekeeping_interval=35s"
+      - "--global_housekeeping_interval=30s"
+      - "--event_storage_event_limit=default=0"
+      - "--event_storage_age_limit=default=0"
+      - "--store_container_labels=false"
+      - "--storage_duration=1m0s"
+      - "--allow_dynamic_housekeeping=true"
+    container_name: cadvisor
+    hostname: cadvisor
+    ports:
+    - ${HTTP_PORT}:8080
+    mem_limit: 256m
+    mem_reservation: 64m
+    cpu_shares: 512
+    security_opt:
+      - no-new-privileges=true
+    read_only: true
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    labels:
+      # proxy settings
+      - "traefik.enable=true"    
+      - "traefik.http.routers.cadvisor2.entrypoints=https"
+      - "traefik.http.routers.cadvisor2.rule=Host(`cadvisor2.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.cadvisor2.tls=true"
+      - "traefik.http.routers.cadvisor2.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.cadvisor2.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.cadvisor2.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Monitoring
+      - homepage.name=cAdvisor on BeeLink
+      - homepage.icon=cadvisor.png
+      - homepage.href=https://cadvisor2.${LOCAL_DOMAIN}
+      - homepage.description=Docker monitoring
+      - "com.centurylinklabs.watchtower.enable=true"
