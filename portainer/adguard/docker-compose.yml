@@ -1,4 +1,3 @@
-version: '3'
 services:
   adguardhome:
     image: adguard/adguardhome
@@ -7,10 +6,10 @@ services:
     mem_limit: 2g
     cpu_shares: 768
     environment:
-      TZ: 'Europe/Kyiv'    
+      TZ: 'Europe/Kyiv'
     volumes:
-      - /volume1/docker/adguard-home/work:/opt/adguardhome/work
-      - /volume1/docker/adguard-home/confdir:/opt/adguardhome/conf
-    network_mode: host  
+      - ${VOLUME_DATA}/adguard-home/work:/opt/adguardhome/work
+      - ${VOLUME_DATA}/adguard-home/confdir:/opt/adguardhome/conf
+    network_mode: host
     labels:
-      - "com.centurylinklabs.watchtower.enable=true"   
+      - "com.centurylinklabs.watchtower.enable=true"
