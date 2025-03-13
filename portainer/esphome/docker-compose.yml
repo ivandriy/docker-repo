@@ -1,0 +1,16 @@
+services:
+  esphome:
+    container_name: esphome
+    image: ghcr.io/esphome/esphome
+    volumes:
+      - ${VOLUME_DATA}/esphome/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    environment:
+      - USERNAME=${ESP_USER_NAME}
+      - PASSWORD=${ESP_PASSWORD}
+    labels:
+      # auto update docker
+      - "com.centurylinklabs.watchtower.monitor-only=true"
