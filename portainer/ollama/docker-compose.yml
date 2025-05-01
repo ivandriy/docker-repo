@@ -10,19 +10,6 @@ services:
     labels:
       # auto update docker
       - "com.centurylinklabs.watchtower.enable=true"
-  proxy:
-    image: ghcr.io/jmorganca/ollama-openai-proxy:latest
-    container_name: ollama_proxy
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      - OLLAMA_BASE_URL=http://ollama:11434
-    depends_on:
-      - ollama
-    labels:
-      # auto update docker
-      - "com.centurylinklabs.watchtower.enable=true"
 
 networks:
   default:
