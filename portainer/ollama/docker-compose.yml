@@ -1,0 +1,17 @@
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ${VOLUME_DATA}/ollama:/root/.ollama
+    labels:
+      # auto update docker
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  default:
+    name: containers_bridge
+    external: true
