@@ -1,0 +1,13 @@
+services:
+  scrypted:
+    image: ghcr.io/koush/scrypted
+    container_name: scrypted
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ${VOLUME_DATA}/scrypted:/server/volume
+    environment:
+      - SCRYPTED_WEBHOOK_UPDATE=false  # не оновлювати без твоєї згоди
+    labels:
+      # auto update docker
+      - "com.centurylinklabs.watchtower.enable=false"
