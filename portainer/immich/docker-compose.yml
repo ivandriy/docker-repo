@@ -20,9 +20,17 @@ services:
       disable: false
     labels:
       # proxy settings
+      # local access
       - "traefik.enable=true"
+      - "traefik.http.routers.immich-local.entrypoints=https"
+      - "traefik.http.routers.immich-local.rule=Host(`immich.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.immich-local.tls=true"
+      - "traefik.http.routers.immich-local.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.immich-local.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.immich-local.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # public access
       - "traefik.http.routers.immich.entrypoints=https"
-      - "traefik.http.routers.immich.rule=Host(`immich.${MAIN_DOMAIN}`)"
+      - "traefik.http.routers.immich.rule=Host(`photos.${MAIN_DOMAIN}`)"
       - "traefik.http.routers.immich.tls=true"
       - "traefik.http.routers.immich.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.immich.tls.domains[0].main=${MAIN_DOMAIN}"
@@ -31,7 +39,7 @@ services:
       - homepage.group=Media
       - homepage.name=Immich
       - homepage.icon=immich.png
-      - homepage.href=https://immich.${MAIN_DOMAIN}
+      - homepage.href=https://immich.${LOCAL_DOMAIN}
       - homepage.description=Photo manager
       - homepage.widget.type=immich
       - homepage.widget.url=http://immich-server:2283
