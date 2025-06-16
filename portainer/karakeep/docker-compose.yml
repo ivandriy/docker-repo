@@ -5,7 +5,7 @@ services:
     volumes:
       - ${VOLUME_DATA}/karakeep:/data
     ports:
-      - 3000:3000
+      - 3033:3000
     environment:
       MEILI_ADDR: http://meilisearch:7700
       BROWSER_WEB_URL: http://chrome:9222
