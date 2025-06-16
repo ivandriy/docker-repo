@@ -19,12 +19,12 @@ services:
     labels:
       # proxy settings
       - "traefik.enable=true"
-      - "traefik.http.routers.karakeep-local.entrypoints=https"
-      - "traefik.http.routers.karakeep-local.rule=Host(`karakeep.${LOCAL_DOMAIN}`)"
-      - "traefik.http.routers.karakeep-local.tls=true"
-      - "traefik.http.routers.karakeep-local.tls.certresolver=mydnschallenge"
-      - "traefik.http.routers.karakeep-local.tls.domains[0].main=${LOCAL_DOMAIN}"
-      - "traefik.http.routers.karakeep-local.tls.domains[0].sans=*.${LOCAL_DOMAIN}" 
+      - "traefik.http.routers.karakeep.entrypoints=https"
+      - "traefik.http.routers.karakeep.rule=Host(`keep.${MAIN_DOMAIN}`)"
+      - "traefik.http.routers.karakeep.tls=true"
+      - "traefik.http.routers.karakeep.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.karakeep.tls.domains[0].main=${MAIN_DOMAIN}"
+      - "traefik.http.routers.karakeep.tls.domains[0].sans=*.${MAIN_DOMAIN}"
       # auto update docker
       - "com.centurylinklabs.watchtower.enable=true"
   chrome:
