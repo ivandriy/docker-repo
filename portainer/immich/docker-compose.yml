@@ -9,6 +9,7 @@ services:
       TZ: ${TZ}
     volumes:
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /volume1/Data/Dropbox/Photos/Фото:/mnt/media/photos/by-year:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 2283:2283
