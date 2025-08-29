@@ -1,0 +1,24 @@
+services:
+  graphite:
+    image: ghcr.io/deniszh/graphite-statsd
+    container_name: graphite
+    environment:
+      - TZ=Europe/Kiev
+    ports:
+      - "8081:80"
+      - "2003-2004:2003-2004"
+      - "2023-2024:2023-2024"
+      - "8125:8125/udp"
+      - "8126:8126"
+    volumes:
+      - ${VOLUME_DATA}/graphite/storage:/opt/graphite/storage
+      - ${VOLUME_DATA}/graphite/conf:/opt/graphite/conf
+      - ${VOLUME_DATA}/graphite/statsd:/opt/statsd
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  default:
+    name: containers_bridge
+    external: true
