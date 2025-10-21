@@ -3,7 +3,7 @@ services:
     image: kometateam/kometa
     container_name: kometa
     environment:
-      - PMM_RUN=true
+      #- PMM_RUN=true
       - TZ=Europe/Kiev
     volumes:
       - ${VOLUME_DATA}/kometa/config:/config
