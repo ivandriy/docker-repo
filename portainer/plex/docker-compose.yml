@@ -11,7 +11,7 @@ services:
     volumes:
       - '${VOLUME_DATA}/plex:/config'
       - '${MEDIA_DATA}:/data/media'
-      - '${MEDIA_DATA_2}:/data/media2'
+      #- '${MEDIA_DATA_2}:/data/media2'
     devices:
       - /dev/dri:/dev/dri
     restart: unless-stopped
