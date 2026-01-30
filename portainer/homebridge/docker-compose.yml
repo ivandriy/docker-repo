@@ -39,11 +39,11 @@ networks:
   macvlan1:
     name: macvlan1
     driver: macvlan
-    external: true    
+    external: true
     driver_opts:
-      parent: ovs_bond0
+      parent: ovs_eth0
     ipam:
       config:
         - subnet: 192.168.1.1/24
           ip_range: 192.168.1.10/31
-          gateway: 192.168.1.1     
+          gateway: 192.168.1.1
