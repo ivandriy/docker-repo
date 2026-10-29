@@ -6,6 +6,9 @@ services:
       - ${VOLUME_DATA}/karakeep:/data
     ports:
       - 3033:3000
+    networks:
+      - default
+      - karakeep
     environment:
       MEILI_ADDR: http://meilisearch:7700
       BROWSER_WEB_URL: http://chrome:9222
@@ -19,6 +22,7 @@ services:
     labels:
       # proxy settings
       - "traefik.enable=true"
+      - "traefik.docker.network=containers_bridge"
       - "traefik.http.routers.karakeep.entrypoints=https"
       - "traefik.http.routers.karakeep.rule=Host(`keep.${MAIN_DOMAIN}`)"
       - "traefik.http.routers.karakeep.tls=true"
@@ -28,8 +32,10 @@ services:
       # auto update docker
       - "com.centurylinklabs.watchtower.enable=true"
   chrome:
-    image: gcr.io/zenika-hub/alpine-chrome:123
+    image: zenika/alpine-chrome:124
     restart: unless-stopped
+    networks:
+      - karakeep
     command:
       - --no-sandbox
       - --disable-gpu
@@ -40,6 +46,8 @@ services:
   meilisearch:
     image: getmeili/meilisearch:v1.13.3
     restart: unless-stopped
+    networks:
+      - karakeep
     environment:
       MEILI_NO_ANALYTICS: "true"
     volumes:
@@ -48,3 +56,5 @@ networks:
   default:
     name: containers_bridge
     external: true
+  # chrome and meilisearch are reachable only from web
+  karakeep:
