@@ -30,6 +30,7 @@ services:
       - homepage.href=https://lidarr.${LOCAL_DOMAIN}
       - homepage.description=Music manager
       - homepage.widget.type=lidarr
+      - homepage.widget.fields=["wanted","queued"]
       - homepage.widget.url=http://lidarr:8686
       - homepage.widget.key=${LIDARR_API_KEY}
       # auto update docker

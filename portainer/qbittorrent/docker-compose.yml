@@ -34,6 +34,7 @@ services:
       - homepage.href=https://qb.${LOCAL_DOMAIN}
       - homepage.description=Torrents downloader
       - homepage.widget.type=qbittorrent
+      - homepage.widget.fields=["download","upload","seed"]
       - homepage.widget.url=http://qbittorrent:6004
       # auto update docker          
       - "com.centurylinklabs.watchtower.enable=true"

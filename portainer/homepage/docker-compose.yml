@@ -11,6 +11,8 @@ services:
     volumes:
       - /volume1/docker/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock
+      # for the disk usage widget
+      - /volume1:/mnt/volume1:ro
     restart: unless-stopped
     labels:
       - "traefik.enable=true"    

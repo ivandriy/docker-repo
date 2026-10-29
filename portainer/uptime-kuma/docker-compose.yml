@@ -27,6 +27,7 @@ services:
       - homepage.href=https://uptime-kuma.${LOCAL_DOMAIN}
       - homepage.description=Uptime monitor
       - homepage.widget.type=uptimekuma
+      - homepage.widget.fields=["up","down"]
       - homepage.widget.url=http://uptime-kuma:3001
       - homepage.widget.slug=services
       # auto update docker

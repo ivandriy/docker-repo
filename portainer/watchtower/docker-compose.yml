@@ -27,6 +27,7 @@ services:
       - homepage.icon=watchtower.png
       - homepage.description=Docker auto updates
       - homepage.widget.type=watchtower
+      - homepage.widget.fields=["containers_updated","containers_failed"]
       # container port, not the published HTTP_PORT
       - homepage.widget.url=http://watchtower:8080
       - homepage.widget.key=${WATCHTOWER_HTTP_API_TOKEN}

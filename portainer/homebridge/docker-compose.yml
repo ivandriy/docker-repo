@@ -23,7 +23,7 @@ services:
     labels:
       # homepage integration
       - homepage.group=Smart home
-      - homepage.name=Home Bridge
+      - homepage.name=Homebridge
       - homepage.icon=homebridge.png
       - homepage.href=https://hb.${LOCAL_DOMAIN}
       - homepage.description=HomeKit integrations
