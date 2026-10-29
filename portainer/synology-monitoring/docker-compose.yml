@@ -131,7 +131,7 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"   
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: ghcr.io/google/cadvisor:v0.60.6
     command:
       - '--docker_only=true'
       - "--housekeeping_interval=30s"
