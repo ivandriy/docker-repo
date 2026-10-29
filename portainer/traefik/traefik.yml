@@ -6,8 +6,9 @@ certificatesResolvers:
   mydnschallenge:
     acme:
       dnsChallenge:
-        delayBeforeCheck: 10
-        disablePropagationCheck: true
+        propagation:
+          delayBeforeChecks: 10s
+          disableChecks: true
         provider: digitalocean
         resolvers:
           - "1.1.1.1:53"
@@ -27,7 +28,7 @@ entryPoints:
   ping:
     address: ":8082"
 log:
-  level: DEBUG  
+  level: INFO
 providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
@@ -36,7 +37,7 @@ providers:
     directory: /rules
     watch: true
 api:
-  insecure: true
+  insecure: false
   dashboard: true
 ping:
   entryPoint: ping
