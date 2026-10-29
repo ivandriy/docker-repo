@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
   uptime-kuma:
-    image: louislam/uptime-kuma:1
+    image: louislam/uptime-kuma:2
     container_name: uptime-kuma
     volumes:
       - /volume1/docker/uptime-kuma:/app/data
@@ -29,7 +29,8 @@ services:
       - homepage.widget.url=http://uptime-kuma:3001
       - homepage.widget.slug=services
       # auto update docker
-      - "com.centurylinklabs.watchtower.enable=true"
+      # paused for the v1 -> v2 migration, re-enable once v2 is running
+      # - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge
