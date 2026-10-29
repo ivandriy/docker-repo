@@ -38,7 +38,7 @@ services:
       - "traefik.http.routers.dashboard.entrypoints=https"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.certresolver=mydnschallenge"
-      - "traefik.http.routers.dashboard.middlewares=authtraefik,secure-headers@file"
+      - "traefik.http.routers.dashboard.middlewares=secure-headers@file,authtraefik"
       - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
       # local dashboard access via https
       - "traefik.http.routers.dashboard-local.entrypoints=https"
