@@ -28,19 +28,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
     labels:
-      # proxy settings
-      - "traefik.enable=true"    
-      - "traefik.http.routers.cadvisor2.entrypoints=https"
-      - "traefik.http.routers.cadvisor2.rule=Host(`cadvisor2.${LOCAL_DOMAIN}`)"
-      - "traefik.http.routers.cadvisor2.middlewares=whitelist@file"
-      - "traefik.http.routers.cadvisor2.tls=true"
-      - "traefik.http.routers.cadvisor2.tls.certresolver=mydnschallenge"
-      - "traefik.http.routers.cadvisor2.tls.domains[0].main=${LOCAL_DOMAIN}"
-      - "traefik.http.routers.cadvisor2.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
-      # homepage integration
-      - homepage.group=Monitoring
-      - homepage.name=cAdvisor on BeeLink
-      - homepage.icon=cadvisor.png
-      - homepage.href=https://cadvisor2.${LOCAL_DOMAIN}
-      - homepage.description=Docker monitoring
+      # Runs on the Beelink: Traefik and Homepage on the NAS can't read these
+      # labels, so the route and the Homepage entry live in traefik/rules/cadvisor2.yml
+      # and Homepage's services.yaml.
       - "com.centurylinklabs.watchtower.enable=true"

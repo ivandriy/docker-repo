@@ -1,5 +1,9 @@
 http:
   serversTransports:
-    # DSM serves a self-signed certificate
+    # These backends serve self-signed certificates
     synology-insecure:
+      insecureSkipVerify: true
+    portainer2-insecure:
+      insecureSkipVerify: true
+    unifi-insecure:
       insecureSkipVerify: true

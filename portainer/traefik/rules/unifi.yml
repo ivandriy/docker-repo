@@ -1,0 +1,22 @@
+http:
+  routers:
+    unifi:
+      entryPoints:
+        - "https"
+      service: unifi
+      middlewares:
+        - whitelist
+      rule: Host(`unifi.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+  services:
+    unifi:
+      loadBalancer:
+        serversTransport: unifi-insecure
+        passHostHeader: true
+        servers:
+          - url: "https://192.168.1.1"

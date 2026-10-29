@@ -1,0 +1,22 @@
+http:
+  routers:
+    portainer2:
+      entryPoints:
+        - "https"
+      service: portainer2
+      middlewares:
+        - whitelist
+      rule: Host(`portainer2.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+  services:
+    portainer2:
+      loadBalancer:
+        serversTransport: portainer2-insecure
+        passHostHeader: true
+        servers:
+          - url: "https://192.168.1.131:9443"

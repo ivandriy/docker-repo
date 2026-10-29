@@ -1,0 +1,21 @@
+http:
+  routers:
+    adguard:
+      entryPoints:
+        - "https"
+      service: adguard
+      middlewares:
+        - whitelist
+      rule: Host(`adguard.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+  services:
+    adguard:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://172.20.0.1:9080"

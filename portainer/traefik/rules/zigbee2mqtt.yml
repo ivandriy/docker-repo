@@ -1,0 +1,21 @@
+http:
+  routers:
+    zigbee2mqtt:
+      entryPoints:
+        - "https"
+      service: zigbee2mqtt
+      middlewares:
+        - whitelist
+      rule: Host(`z2mqtt.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+  services:
+    zigbee2mqtt:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://192.168.1.131:8888"

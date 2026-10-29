@@ -25,10 +25,10 @@ services:
       - homepage.group=Network
       - homepage.name=Watchtower
       - homepage.icon=watchtower.png
-      - homepage.href=https://watchtower.${LOCAL_DOMAIN}
       - homepage.description=Docker auto updates
       - homepage.widget.type=watchtower
-      - homepage.widget.url=http://watchtower:${HTTP_PORT}
+      # container port, not the published HTTP_PORT
+      - homepage.widget.url=http://watchtower:8080
       - homepage.widget.key=${WATCHTOWER_HTTP_API_TOKEN}
 
 networks:

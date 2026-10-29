@@ -1,0 +1,21 @@
+http:
+  routers:
+    cadvisor2:
+      entryPoints:
+        - "https"
+      service: cadvisor2
+      middlewares:
+        - whitelist
+      rule: Host(`cadvisor2.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+  services:
+    cadvisor2:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://192.168.1.131:8880"

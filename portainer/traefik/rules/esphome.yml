@@ -1,0 +1,21 @@
+http:
+  routers:
+    esphome:
+      entryPoints:
+        - "https"
+      service: esphome
+      middlewares:
+        - whitelist
+      rule: Host(`esphome.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+  services:
+    esphome:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://192.168.1.131:6052"
