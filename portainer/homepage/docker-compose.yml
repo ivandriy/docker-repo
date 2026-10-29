@@ -5,6 +5,9 @@ services:
     container_name: homepage
     ports:
       - 3000:3000
+    environment:
+      # Homepage v1+ rejects requests for hosts not listed here
+      - HOMEPAGE_ALLOWED_HOSTS=homepage.${LOCAL_DOMAIN},192.168.1.254:3000
     volumes:
       - /volume1/docker/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock
