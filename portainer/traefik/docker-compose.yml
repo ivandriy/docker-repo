@@ -36,16 +36,13 @@ services:
       - "traefik.http.routers.dashboard.rule=Host(`traefik.${MAIN_DOMAIN}`)"
       - "traefik.http.routers.dashboard.service=api@internal"
       - "traefik.http.routers.dashboard.entrypoints=https"
-      - "traefik.http.services.dashboard.loadbalancer.server.port=8080"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.certresolver=mydnschallenge"
-      - "traefik.http.services.dashboard.loadbalancer.passhostheader=true"
       - "traefik.http.routers.dashboard.middlewares=authtraefik"
       - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
       # local dashboard access via https
       - "traefik.http.routers.dashboard-local.entrypoints=https"
       - "traefik.http.routers.dashboard-local.rule=Host(`traefik.${LOCAL_DOMAIN}`)"
-      - "traefik.http.services.dashboard-local.loadbalancer.server.port=8080"
       - "traefik.http.routers.dashboard-local.middlewares=authtraefik"
       - "traefik.http.routers.dashboard-local.tls=true"
       - "traefik.http.routers.dashboard-local.tls.certresolver=mydnschallenge"
@@ -55,13 +52,14 @@ services:
       # local dashboard access via http
       - "traefik.http.routers.dashboard-local-http.entrypoints=http"
       - "traefik.http.routers.dashboard-local-http.rule=Host(`traefik`)"
-      - "traefik.http.services.dashboard-local-http.loadbalancer.server.port=8080"
       - "traefik.http.routers.dashboard-local-http.middlewares=authtraefik"
       - "traefik.http.routers.dashboard-local-http.tls=false"
       - "traefik.http.routers.dashboard-local-http.service=api@internal"      
       # global redirect to https
-      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.rule=HostRegexp(`.+`)"
       - "traefik.http.routers.http-catchall.entrypoints=http"
+      - "traefik.http.routers.http-catchall.priority=1"
+      - "traefik.http.routers.http-catchall.service=noop@internal"
       - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
       # global redirect from www to non-www
       - traefik.http.middlewares.wwwremove.redirectregex.regex=^https://www\.(.*)
