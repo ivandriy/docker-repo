@@ -26,6 +26,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.immich-local.entrypoints=https"
       - "traefik.http.routers.immich-local.rule=Host(`immich.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.immich-local.middlewares=whitelist@file"
       - "traefik.http.routers.immich-local.tls=true"
       - "traefik.http.routers.immich-local.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.immich-local.tls.domains[0].main=${LOCAL_DOMAIN}"

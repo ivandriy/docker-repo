@@ -4,6 +4,8 @@ http:
       entryPoints:
         - "https"
       service: synology
+      middlewares:
+        - whitelist
       rule: Host(`synology.{{ env "LOCAL_DOMAIN" }}`)
       tls:
         certResolver: mydnschallenge
@@ -14,6 +16,7 @@ http:
   services:
     synology:
       loadBalancer:
+        serversTransport: synology-insecure
         passHostHeader: true
         servers:
         - url: {{ expandenv "https://$SYNOLOGY_HOST" }}

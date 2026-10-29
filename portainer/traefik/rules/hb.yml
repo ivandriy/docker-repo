@@ -4,6 +4,8 @@ http:
       entryPoints:
         - "https"
       service: homebridge
+      middlewares:
+        - whitelist
       rule: Host(`hb.{{ env "LOCAL_DOMAIN" }}`)
       tls:
         certResolver: mydnschallenge

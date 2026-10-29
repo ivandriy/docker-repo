@@ -41,5 +41,3 @@ api:
   dashboard: true
 ping:
   entryPoint: ping
-serversTransport:
-  insecureSkipVerify: true  

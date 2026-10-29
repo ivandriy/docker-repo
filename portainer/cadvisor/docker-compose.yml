@@ -32,6 +32,7 @@ services:
       - "traefik.enable=true"    
       - "traefik.http.routers.cadvisor2.entrypoints=https"
       - "traefik.http.routers.cadvisor2.rule=Host(`cadvisor2.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.cadvisor2.middlewares=whitelist@file"
       - "traefik.http.routers.cadvisor2.tls=true"
       - "traefik.http.routers.cadvisor2.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.cadvisor2.tls.domains[0].main=${LOCAL_DOMAIN}"

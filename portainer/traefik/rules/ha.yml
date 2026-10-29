@@ -16,6 +16,8 @@ http:
       entryPoints:
         - "https"
       service: homeassistant
+      middlewares:
+        - whitelist
       rule: Host(`ha.{{ env "LOCAL_DOMAIN" }}`)
       tls:
         certResolver: mydnschallenge

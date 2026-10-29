@@ -1,0 +1,5 @@
+http:
+  serversTransports:
+    # DSM serves a self-signed certificate
+    synology-insecure:
+      insecureSkipVerify: true

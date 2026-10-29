@@ -13,6 +13,7 @@ services:
       - "traefik.enable=true"    
       - "traefik.http.routers.homepage.entrypoints=https"
       - "traefik.http.routers.homepage.rule=Host(`homepage.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.homepage.middlewares=whitelist@file"
       - "traefik.http.routers.homepage.tls=true"
       - "traefik.http.routers.homepage.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.homepage.tls.domains[0].main=${LOCAL_DOMAIN}"

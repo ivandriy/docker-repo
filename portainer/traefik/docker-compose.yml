@@ -43,7 +43,7 @@ services:
       # local dashboard access via https
       - "traefik.http.routers.dashboard-local.entrypoints=https"
       - "traefik.http.routers.dashboard-local.rule=Host(`traefik.${LOCAL_DOMAIN}`)"
-      - "traefik.http.routers.dashboard-local.middlewares=authtraefik"
+      - "traefik.http.routers.dashboard-local.middlewares=authtraefik,whitelist@file"
       - "traefik.http.routers.dashboard-local.tls=true"
       - "traefik.http.routers.dashboard-local.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.dashboard-local.tls.domains[0].main=${LOCAL_DOMAIN}"
