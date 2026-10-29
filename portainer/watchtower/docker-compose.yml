@@ -1,6 +1,6 @@
 services:
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower:1
     restart: unless-stopped
     container_name: watchtower
     volumes:
