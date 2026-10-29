@@ -37,6 +37,8 @@ services:
       - homepage.href=https://grafana.${LOCAL_DOMAIN}
       - homepage.description=Monitoring dashboards
       - homepage.widget.type=grafana
+      # Grafana 11+ dropped the legacy alerts API that version 1 reads
+      - homepage.widget.version=2
       - homepage.widget.url=http://grafana:3000
       - homepage.widget.username=${GRAFANA_USERNAME}
       - homepage.widget.password=${GRAFANA_PASSWORD}
