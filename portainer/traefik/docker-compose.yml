@@ -32,13 +32,7 @@ services:
       start_period: 5s            
     labels:
       - "traefik.enable=true"
-      # dashboard config
-      - "traefik.http.routers.dashboard.rule=Host(`traefik.${MAIN_DOMAIN}`)"
-      - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.entrypoints=https"
-      - "traefik.http.routers.dashboard.tls=true"
-      - "traefik.http.routers.dashboard.tls.certresolver=mydnschallenge"
-      - "traefik.http.routers.dashboard.middlewares=secure-headers@file,authtraefik"
+      # dashboard auth (the dashboard is LAN-only, no public router)
       - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
       # local dashboard access via https
       - "traefik.http.routers.dashboard-local.entrypoints=https"
@@ -49,10 +43,10 @@ services:
       - "traefik.http.routers.dashboard-local.tls.domains[0].main=${LOCAL_DOMAIN}"
       - "traefik.http.routers.dashboard-local.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
       - "traefik.http.routers.dashboard-local.service=api@internal"
-      # local dashboard access via http
+      # local dashboard access via http (used by the Homepage widget over the Docker network)
       - "traefik.http.routers.dashboard-local-http.entrypoints=http"
       - "traefik.http.routers.dashboard-local-http.rule=Host(`traefik`)"
-      - "traefik.http.routers.dashboard-local-http.middlewares=authtraefik"
+      - "traefik.http.routers.dashboard-local-http.middlewares=whitelist-docker@file,authtraefik"
       - "traefik.http.routers.dashboard-local-http.tls=false"
       - "traefik.http.routers.dashboard-local-http.service=api@internal"      
       # global redirect to https

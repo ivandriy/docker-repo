@@ -7,3 +7,11 @@ http:
           - "192.168.1.0/24"
           # VPN clients
           - "192.168.3.0/24"
+
+    # Same, plus containers on the Docker bridge (e.g. Homepage widgets)
+    whitelist-docker:
+      ipAllowList:
+        sourceRange:
+          - "192.168.1.0/24"
+          - "192.168.3.0/24"
+          - "172.20.0.0/16"
