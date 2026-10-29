@@ -10,18 +10,16 @@ services:
     build:
       context: ./jm
     container_name: joomla
+    restart: always
     environment:
-      JOOMLA_DATABASE_HOST: jm-mariadb
-      JOOMLA_DATABASE_PORT_NUMBER: 3306
-      JOOMLA_DATABASE_NAME: ${JOOMLA_DB_NAME}
-      JOOMLA_DATABASE_USER: ${JOOMLA_DB_USER}
-      JOOMLA_DATABASE_PASSWORD: ${JOOMLA_DB_PASSWORD}
-      JOOMLA_SITE_NAME: ${JOOMLA_BLOG_NAME}
-      JOOMLA_USERNAME: ${JOOMLA_ADMIN_USERNAME}
-      JOOMLA_PASSWORD: ${JOOMLA_ADMIN_PASSWORD}
-      JOOMLA_EMAIL: ${JOOMLA_ADMIN_EMAIL}
+      # Only used by the entrypoint's DB check; the site reads configuration.php
+      JOOMLA_DB_HOST: jm-mariadb:3306
+      JOOMLA_DB_NAME: ${JOOMLA_DB_NAME}
+      JOOMLA_DB_USER: ${JOOMLA_DB_USER}
+      JOOMLA_DB_PASSWORD: ${JOOMLA_DB_PASSWORD}
     volumes:
-      - /volume1/docker/joomla/data:/bitnami/joomla
+      # Old Bitnami data stays in /volume1/docker/joomla/data for rollback
+      - /volume1/docker/joomla/html:/var/www/html
     depends_on:
         - jm-mariadb
     labels:
@@ -30,7 +28,7 @@ services:
       - "traefik.http.routers.joomla.rule=Host(`${TRAEFIK_JOOMLA}`) || Host(`www.${TRAEFIK_JOOMLA}`)"
       - "traefik.http.routers.joomla.service=joomla"
       - "traefik.http.routers.joomla.entrypoints=https"
-      - "traefik.http.services.joomla.loadbalancer.server.port=8080"
+      - "traefik.http.services.joomla.loadbalancer.server.port=80"
       - "traefik.http.routers.joomla.tls=true"
       - "traefik.http.routers.joomla.tls.certresolver=mydnschallenge"
       - "traefik.http.services.joomla.loadbalancer.passhostheader=true"
