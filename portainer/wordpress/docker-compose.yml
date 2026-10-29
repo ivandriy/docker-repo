@@ -10,21 +10,23 @@ services:
     build:
       context: ./wp
     container_name: wordpress
+    restart: always
     environment:
-      WORDPRESS_DATABASE_HOST: wp-mariadb
-      WORDPRESS_DATABASE_PORT_NUMBER: 3306
-      WORDPRESS_DATABASE_NAME: ${WORDPRESS_DB_NAME}
-      WORDPRESS_DATABASE_USER: ${WORDPRESS_DB_USER}
-      WORDPRESS_DATABASE_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_HOST: wp-mariadb:3306
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
-      WORDPRESS_BLOG_NAME: ${WORDPRESS_BLOG_NAME}
-      WORDPRESS_FIRST_NAME: ${WORDPRESS_ADMIN_NAME}
-      WORDPRESS_LAST_NAME: ${WORDPRESS_ADMIN_LASTNAME}
-      WORDPRESS_USERNAME: ${WORDPRESS_ADMIN_USERNAME}
-      WORDPRESS_PASSWORD: ${WORDPRESS_ADMIN_PASSWORD}
-      WORDPRESS_EMAIL: ${WORDPRESS_ADMIN_EMAIL}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_REDIS_HOST', 'wp-redis');
+        define('WP_REDIS_PORT', 6379);
+        define('FS_METHOD', 'direct');
+        define('WP_HOME', 'https://${TRAEFIK_WORDPRESS}');
+        define('WP_SITEURL', 'https://${TRAEFIK_WORDPRESS}');
+        define('WP_AUTO_UPDATE_CORE', 'minor');
     volumes:
-      - /volume1/docker/wordpress/data:/bitnami/wordpress
+      # Old Bitnami data stays in /volume1/docker/wordpress/data for rollback
+      - /volume1/docker/wordpress/html:/var/www/html
     depends_on:
         - wp-mariadb
         - wp-redis
@@ -34,7 +36,7 @@ services:
       - "traefik.http.routers.wordpress.rule=Host(`${TRAEFIK_WORDPRESS}`) || Host(`www.${TRAEFIK_WORDPRESS}`)"
       - "traefik.http.routers.wordpress.service=wordpress"
       - "traefik.http.routers.wordpress.entrypoints=https"
-      - "traefik.http.services.wordpress.loadbalancer.server.port=8080"
+      - "traefik.http.services.wordpress.loadbalancer.server.port=80"
       - "traefik.http.routers.wordpress.tls=true"
       - "traefik.http.routers.wordpress.tls.certresolver=mydnschallenge"
       - "traefik.http.services.wordpress.loadbalancer.passhostheader=true"
