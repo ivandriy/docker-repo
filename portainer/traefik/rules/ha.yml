@@ -1,6 +1,18 @@
 http:
   routers:
-    homeassistant:
+    homeassistant_main:
+      entryPoints:
+        - "https"
+      service: homeassistant
+      rule: Host(`ha.{{ env "MAIN_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "MAIN_DOMAIN" }}'
+            sans:
+              - '*.{{ env "MAIN_DOMAIN" }}'
+
+    homeassistant_local:
       entryPoints:
         - "https"
       service: homeassistant
@@ -11,9 +23,10 @@ http:
           - main: '{{ env "LOCAL_DOMAIN" }}'
             sans:
               - '*.{{ env "LOCAL_DOMAIN" }}'
+
   services:
     homeassistant:
       loadBalancer:
         passHostHeader: true
         servers:
-        - url: {{ expandenv "http://$HA_HOST" }}
+          - url: {{ expandenv "http://$HA_HOST" }}
