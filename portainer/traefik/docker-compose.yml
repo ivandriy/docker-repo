@@ -38,7 +38,7 @@ services:
       - "traefik.http.routers.dashboard.entrypoints=https"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.certresolver=mydnschallenge"
-      - "traefik.http.routers.dashboard.middlewares=authtraefik"
+      - "traefik.http.routers.dashboard.middlewares=authtraefik,secure-headers@file"
       - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_BASIC_AUTH}"
       # local dashboard access via https
       - "traefik.http.routers.dashboard-local.entrypoints=https"
@@ -64,6 +64,7 @@ services:
       # global redirect from www to non-www
       - traefik.http.middlewares.wwwremove.redirectregex.regex=^https://www\.(.*)
       - traefik.http.middlewares.wwwremove.redirectregex.replacement=https://$${1}
+      - traefik.http.middlewares.wwwremove.redirectregex.permanent=true
       # middleware redirect
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"

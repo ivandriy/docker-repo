@@ -34,6 +34,7 @@ services:
       # public access
       - "traefik.http.routers.immich.entrypoints=https"
       - "traefik.http.routers.immich.rule=Host(`photos.${MAIN_DOMAIN}`)"
+      - "traefik.http.routers.immich.middlewares=hsts@file"
       - "traefik.http.routers.immich.tls=true"
       - "traefik.http.routers.immich.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.immich.tls.domains[0].main=${MAIN_DOMAIN}"

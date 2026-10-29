@@ -4,6 +4,8 @@ http:
       entryPoints:
         - "https"
       service: homeassistant
+      middlewares:
+        - hsts
       rule: Host(`ha.{{ env "MAIN_DOMAIN" }}`)
       tls:
         certResolver: mydnschallenge

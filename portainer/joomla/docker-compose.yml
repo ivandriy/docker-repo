@@ -32,7 +32,7 @@ services:
       - "traefik.http.routers.joomla.tls=true"
       - "traefik.http.routers.joomla.tls.certresolver=mydnschallenge"
       - "traefik.http.services.joomla.loadbalancer.passhostheader=true"
-      - "traefik.http.routers.joomla.middlewares=wwwremove,compresstraefik"
+      - "traefik.http.routers.joomla.middlewares=wwwremove,compresstraefik,secure-headers@file"
       - "traefik.http.middlewares.compresstraefik.compress=true"
 
       # Watchtower Update

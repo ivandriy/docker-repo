@@ -22,7 +22,7 @@ services:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=true"
       # Ip filtering
-      - "traefik.http.routers.bitwarden.middlewares=whitelist@file"
+      - "traefik.http.routers.bitwarden.middlewares=whitelist@file,hsts@file"
 
     logging:
       driver: "syslog"

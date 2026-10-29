@@ -1,0 +1,20 @@
+http:
+  middlewares:
+    # Full set for sites that send no security headers of their own
+    secure-headers:
+      headers:
+        # 1 day while testing; raise to 31536000 (1 year) once it has run cleanly
+        stsSeconds: 86400
+        contentTypeNosniff: true
+        # SAMEORIGIN, not DENY: WordPress customizer and Joomla admin frame their own pages
+        customFrameOptionsValue: SAMEORIGIN
+        referrerPolicy: strict-origin-when-cross-origin
+        permissionsPolicy: "camera=(), microphone=(), geolocation=()"
+        customResponseHeaders:
+          Server: ""
+          X-Powered-By: ""
+
+    # HSTS only, for apps that already set their own security headers
+    hsts:
+      headers:
+        stsSeconds: 86400

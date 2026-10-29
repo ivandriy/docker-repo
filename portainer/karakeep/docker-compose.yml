@@ -25,6 +25,7 @@ services:
       - "traefik.docker.network=containers_bridge"
       - "traefik.http.routers.karakeep.entrypoints=https"
       - "traefik.http.routers.karakeep.rule=Host(`keep.${MAIN_DOMAIN}`)"
+      - "traefik.http.routers.karakeep.middlewares=hsts@file"
       - "traefik.http.routers.karakeep.tls=true"
       - "traefik.http.routers.karakeep.tls.certresolver=mydnschallenge"
       - "traefik.http.routers.karakeep.tls.domains[0].main=${MAIN_DOMAIN}"
