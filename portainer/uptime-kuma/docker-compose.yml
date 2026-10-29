@@ -29,8 +29,7 @@ services:
       - homepage.widget.url=http://uptime-kuma:3001
       - homepage.widget.slug=services
       # auto update docker
-      # paused for the v1 -> v2 migration, re-enable once v2 is running
-      # - "com.centurylinklabs.watchtower.enable=true"
+      - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge
