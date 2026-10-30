@@ -231,3 +231,18 @@ Delete the 8443 port forward. That alone closes the new path. Then remove the st
 - Networks that block outbound 8443 (some hotel and office Wi-Fi). The 443 route on the NAS still works there while the NAS is on.
 - With the NAS off, home DNS still depends on clients falling back to AdGuard2. Not part of this change.
 - One more internet-facing Traefik to keep patched. Watchtower handles the image. The config copies are the part that can drift.
+
+## Follow-up: dashboard on the Beelink (done 2026-10-30, commit b499c6b)
+
+The Beelink serves its own dashboard at `https://traefik2.local.ivanskiy.com`, with no NAS in the path.
+
+- Entrypoint `https-lan` on the Beelink's `:443`. The router forwards WAN 443 to the NAS, so this port is LAN-only. 8443 stays HA-only.
+- `rules-beelink/dashboard.yml`: `api@internal` with `whitelist` (shared `rules/whitelist.yml`, now also copied to the Beelink) and basic auth from `TRAEFIK_BASIC_AUTH`, the same hash as the NAS dashboard. Stack env vars added: `LOCAL_DOMAIN`, `TRAEFIK_BASIC_AUTH`.
+- Its own `*.local.ivanskiy.com` certificate.
+- DNS: rewrite `traefik2.local.ivanskiy.com` to `192.168.1.131` in both AdGuards. The exact rewrite wins over the `*.local` wildcard.
+- Homepage card "Traefik (BeeLink)" links to the dashboard and has the Traefik widget (routers, services). The status dot still monitors HA on 8443.
+- Access log: Traefik v3 doesn't log `api@internal` requests unless `accessLog.addInternals` is set.
+
+Verified: 401 without or with wrong credentials, 200 on the API with the right ones, not reachable on 8443 or the public IP, and with the NAS Traefik stopped the dashboard (via AdGuard2) and HA on 8443 both kept working.
+
+Shared rule files to copy to both hosts when they change: `headers.yml`, `tls.yml`, `whitelist.yml`.
