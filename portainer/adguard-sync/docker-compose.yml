@@ -1,0 +1,29 @@
+# Beelink only. Copies the NAS AdGuard config (origin) to the Beelink AdGuard (replica) every hour.
+# Runs on the Beelink so the replica keeps its last synced config while the NAS is off.
+# Make changes in the NAS AdGuard UI; edits made on the Beelink are overwritten.
+# Stack env in Portainer: ADGUARD_USERNAME, ORIGIN_PASSWORD, REPLICA_PASSWORD.
+services:
+  adguardhome-sync:
+    image: ghcr.io/bakito/adguardhome-sync:v0.9.5
+    container_name: adguardhome-sync
+    command: run
+    restart: unless-stopped
+    mem_limit: 128m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges=true
+    read_only: true
+    environment:
+      TZ: 'Europe/Kyiv'
+      CRON: '0 * * * *'
+      RUN_ON_START: 'true'
+      API_PORT: '0'
+      ORIGIN_URL: http://192.168.1.254:9080
+      ORIGIN_USERNAME: ${ADGUARD_USERNAME}
+      ORIGIN_PASSWORD: ${ORIGIN_PASSWORD}
+      REPLICA1_URL: http://192.168.1.131:9080
+      REPLICA1_USERNAME: ${ADGUARD_USERNAME}
+      REPLICA1_PASSWORD: ${REPLICA_PASSWORD}
+      # DHCP is off on both, and the hosts have different interface names.
+      FEATURES_DHCP_SERVER_CONFIG: 'false'
+      FEATURES_DHCP_STATIC_LEASES: 'false'
