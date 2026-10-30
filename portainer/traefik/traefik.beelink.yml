@@ -1,0 +1,39 @@
+---
+# Beelink instance, copied to /opt/portainer/volumes/traefik/traefik.yml
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+certificatesResolvers:
+  mydnschallenge:
+    acme:
+      dnsChallenge:
+        propagation:
+          delayBeforeChecks: 10s
+          disableChecks: true
+        provider: digitalocean
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+      email: andrii@ivanskiy.com
+      storage: /letsencrypt/acme.json
+entryPoints:
+  https-alt:
+    address: ":8443"
+    transport:
+      respondingTimeouts:
+        readTimeout: 600s
+        idleTimeout: 600s
+        writeTimeout: 600s
+  ping:
+    address: "127.0.0.1:8082"
+log:
+  level: INFO
+accessLog: {}
+providers:
+  file:
+    directory: /rules
+    watch: true
+api:
+  dashboard: false
+ping:
+  entryPoint: ping

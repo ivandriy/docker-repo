@@ -1,0 +1,24 @@
+# Beelink instance only, copied to /opt/portainer/volumes/traefik/rules/ha.yml.
+# Kept out of rules/: the NAS instance has no https-alt entrypoint.
+http:
+  routers:
+    homeassistant_main:
+      entryPoints:
+        - "https-alt"
+      service: homeassistant
+      middlewares:
+        - hsts
+      rule: Host(`ha.{{ env "MAIN_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "MAIN_DOMAIN" }}'
+            sans:
+              - '*.{{ env "MAIN_DOMAIN" }}'
+
+  services:
+    homeassistant:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://127.0.0.1:8123"

@@ -1,0 +1,24 @@
+# Beelink instance: serves Home Assistant on 8443 so it stays reachable when the NAS is off.
+# The NAS instance (docker-compose.yml) serves everything else.
+services:
+  traefik:
+    image: "traefik:v3.7"
+    container_name: "traefik"
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - "/opt/portainer/volumes/traefik/traefik.yml:/traefik.yml:ro"
+      - "/opt/portainer/volumes/traefik/rules:/rules:ro"
+      - "/opt/portainer/volumes/traefik/letsencrypt:/letsencrypt"
+    environment:
+      - DO_AUTH_TOKEN=${DO_AUTH_TOKEN}
+      - MAIN_DOMAIN=${MAIN_DOMAIN}
+    healthcheck:
+      test: ["CMD", "wget", "http://127.0.0.1:8082/ping", "--spider"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    labels:
+      # Watchtower Update
+      - "com.centurylinklabs.watchtower.enable=true"
