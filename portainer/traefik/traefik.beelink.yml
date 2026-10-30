@@ -24,6 +24,9 @@ entryPoints:
         readTimeout: 600s
         idleTimeout: 600s
         writeTimeout: 600s
+  # LAN only: the router forwards WAN 443 to the NAS, not here
+  https-lan:
+    address: ":443"
   ping:
     address: "127.0.0.1:8082"
 log:
@@ -34,6 +37,7 @@ providers:
     directory: /rules
     watch: true
 api:
-  dashboard: false
+  insecure: false
+  dashboard: true
 ping:
   entryPoint: ping

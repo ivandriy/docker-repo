@@ -1,0 +1,24 @@
+# Beelink instance only, copied to /opt/portainer/volumes/traefik/rules/dashboard.yml.
+# Served by the Beelink itself on https-lan, so it works with the NAS off.
+http:
+  routers:
+    dashboard_local:
+      entryPoints:
+        - "https-lan"
+      service: api@internal
+      middlewares:
+        - whitelist
+        - authtraefik
+      rule: Host(`traefik2.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+
+  middlewares:
+    authtraefik:
+      basicAuth:
+        users:
+          - '{{ env "TRAEFIK_BASIC_AUTH" }}'

@@ -13,6 +13,9 @@ services:
     environment:
       - DO_AUTH_TOKEN=${DO_AUTH_TOKEN}
       - MAIN_DOMAIN=${MAIN_DOMAIN}
+      - LOCAL_DOMAIN=${LOCAL_DOMAIN}
+      # same htpasswd hash as the NAS dashboard
+      - TRAEFIK_BASIC_AUTH=${TRAEFIK_BASIC_AUTH}
     healthcheck:
       test: ["CMD", "wget", "http://127.0.0.1:8082/ping", "--spider"]
       interval: 10s
