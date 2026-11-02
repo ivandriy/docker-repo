@@ -30,30 +30,35 @@ services:
       # files saved by garmin_download_activity
       - garmin-downloads:/home/garmin/Downloads/garmin
 
-  # Every Monday at REPORT_TIME sends last week's summary to Telegram, for pasting into ChatGPT.
-  # weekly-report/report.py is copied to /opt/portainer/volumes/garmin-mcp/report.py.
-  # Send one now: docker exec garmin-report python /app/report.py --now
+  # Every Sunday at REPORT_TIME sends the week (Monday to now) to Telegram: a short digest and the
+  # full Markdown report for ChatGPT, with HR zones and swim intervals from each activity's FIT file.
+  # The first run covers 28 days. Built from weekly-report/ on each Portainer redeploy.
+  # Send one now: docker exec garmin-report python -u /app/report.py --now
   garmin-report:
-    image: python:3.12-slim
+    build: ./weekly-report
+    image: garmin-report:local
     container_name: garmin-report
-    command: ["python", "-u", "/app/report.py"]
     restart: unless-stopped
     depends_on:
       - garmin-mcp
-    mem_limit: 64m
+    mem_limit: 128m
     cpu_shares: 128
     security_opt:
       - no-new-privileges=true
     read_only: true
-    user: "65534:65534"
     environment:
       TZ: 'Europe/Kyiv'
-      REPORT_TIME: '08:00'
+      REPORT_WEEKDAY: '6'
+      REPORT_TIME: '19:00'
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
     volumes:
-      - /opt/portainer/volumes/garmin-mcp/report.py:/app/report.py:ro
+      # FIT files that garmin-mcp downloads
+      - garmin-downloads:/fit:ro
+      # first-run flag and the last HR zone settings
+      - garmin-report-state:/state
 
 volumes:
   garmin-config:
   garmin-downloads:
+  garmin-report-state:
