@@ -531,8 +531,8 @@ def hr_zones(a):
                f"- Sum of recorded zone durations (all time_in_hr_zone values, including below Z1 and above Z5): "
                f"{hms(total)} ({total:.3f} s)",
                f"- Timer minus recorded zone time: {hms(gap) if gap is not None else NA} "
-               f"({val(gap, 's', '{:+.3f}')}), unexplained: the source does not say whether it is missing HR, "
-               "pauses or something else",
+               f"({val(gap, 's', '{:+.3f}')}). "
+               + ("Timer and recorded zone durations match." if gap == 0 else "Cause not established by the source."),
                f"- Share = zone_duration_seconds / {total:.3f} s (sum of recorded zone durations) × 100, "
                "calculated by exporter",
                ""])
