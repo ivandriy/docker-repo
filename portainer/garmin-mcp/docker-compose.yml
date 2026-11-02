@@ -36,7 +36,8 @@ services:
   # Send one now: docker exec garmin-report python -u /app/report.py --now
   garmin-report:
     build: ./weekly-report
-    image: garmin-report:local
+    # built locally, never pulled: keeps Portainer's "pull and redeploy" from failing
+    pull_policy: build
     container_name: garmin-report
     restart: unless-stopped
     depends_on:
