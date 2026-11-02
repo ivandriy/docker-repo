@@ -4,7 +4,8 @@
 # serves it at https://garmin.local.ivanskiy.com/mcp behind the LAN/VPN whitelist
 # (portainer/traefik/rules-beelink/garmin.yml).
 # Stack env in Portainer: GARMIN_PERSONAL_API_KEY, from
-# https://connect.garmin.com/app/settings/personalApiToken (expires after 30 days to a year).
+# https://connect.garmin.com/app/settings/personalApiToken (expires after 30 days to a year),
+# TELEGRAM_BOT_TOKEN (from @BotFather) and TELEGRAM_CHAT_ID for garmin-report.
 services:
   garmin-mcp:
     image: ghcr.io/mason-levyy/garmin-personal-mcp:0.2.0
@@ -28,6 +29,30 @@ services:
       - garmin-config:/home/garmin/.config/garmin
       # files saved by garmin_download_activity
       - garmin-downloads:/home/garmin/Downloads/garmin
+
+  # Every Monday at REPORT_TIME sends last week's summary to Telegram, for pasting into ChatGPT.
+  # weekly-report/report.py is copied to /opt/portainer/volumes/garmin-mcp/report.py.
+  # Send one now: docker exec garmin-report python /app/report.py --now
+  garmin-report:
+    image: python:3.12-slim
+    container_name: garmin-report
+    command: ["python", "-u", "/app/report.py"]
+    restart: unless-stopped
+    depends_on:
+      - garmin-mcp
+    mem_limit: 64m
+    cpu_shares: 128
+    security_opt:
+      - no-new-privileges=true
+    read_only: true
+    user: "65534:65534"
+    environment:
+      TZ: 'Europe/Kyiv'
+      REPORT_TIME: '08:00'
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+    volumes:
+      - /opt/portainer/volumes/garmin-mcp/report.py:/app/report.py:ro
 
 volumes:
   garmin-config:
