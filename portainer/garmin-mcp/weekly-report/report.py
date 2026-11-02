@@ -42,6 +42,9 @@ NA = "N/A"
 RHR_FLAG_BPM = 10  # flag a resting HR this far from the period median
 FAST_LENGTH_S = 15  # flag 25 m lengths faster than this
 LOW_STROKES = 3  # flag lengths with this many strokes or fewer
+FIT_HALF_UNIT_S = 0.0005  # FIT times are whole milliseconds, so each value carries up to ±0.5 ms
+PRECISION_NOTE = ("Calculations use original source precision before rounding. Displayed durations and activity "
+                  "loads are rounded independently, so their sums may differ slightly from reported totals.")
 
 # Probed by hand with this key; the exporter has no other path to these metrics.
 UNAVAILABLE = [
@@ -59,7 +62,6 @@ UNAVAILABLE_CHECKED = "2026-11-02T11:05+02:00"
 FEEL = {0: "very weak", 25: "weak", 50: "normal", 75: "strong", 100: "very strong"}
 FEEL_UK = {0: "дуже слабко", 25: "слабко", 50: "нормально", 75: "добре", 100: "дуже добре"}
 DAYS_UK = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]
-DAY_ROW = "{:<5} {:>6} {:>5} {:>2} {:>3} {:>3}"
 TYPES_UK = {"lap_swimming": "Басейн", "treadmill_running": "Доріжка", "running": "Біг",
             "elliptical": "Еліпс", "strength_training": "Силове", "cycling": "Вело",
             "indoor_cycling": "Велотренажер", "walking": "Ходьба"}
@@ -211,14 +213,23 @@ def session_zone(a):
 
 
 def swim_times(a):
-    """Timer, Garmin-detected swimming and recorded rest/idle seconds, unrounded."""
+    """Timer, swimming and rest/idle seconds (unrounded), the signed residual and its rounding tolerance."""
     s = session_of(a)
     laps = (a.get("_fit") or {}).get("lap_mesgs", [])
-    rest = sum(l.get("total_timer_time") or 0 for l in laps if not l.get("num_active_lengths"))
+    rest_laps = [l.get("total_timer_time") or 0 for l in laps if not l.get("num_active_lengths")]
+    rest = sum(rest_laps)
     timer, swim = s.get("total_timer_time"), s.get("active_time")
-    # + 0.0 turns a rounded -0.0 into 0.0
-    diff = None if timer is None or swim is None else round(timer - swim - rest, 1) + 0.0
-    return timer, swim, rest, diff
+    # rounding to 3 decimals only drops float noise; + 0.0 drops -0.0
+    diff = None if timer is None or swim is None else round(timer - swim - rest, 3) + 0.0
+    tolerance = FIT_HALF_UNIT_S * (len(rest_laps) + 2)
+    return timer, swim, rest, diff, tolerance
+
+
+def residual(diff, tolerance):
+    if diff is None:
+        return NA, NA
+    ok = abs(diff) <= tolerance + 1e-9
+    return f"{diff:+.3f} s", f"{'reconciled' if ok else 'not reconciled'} (tolerance ±{tolerance:.4f} s)"
 
 
 def rhr_flags(data, start, end):
@@ -328,9 +339,11 @@ def week_section(data, start, end, flags):
         f"rounding). This is not Garmin's Acute Load.",
     ]
     if swims:
-        timer, swim, rest, diff = (sum(x[i] or 0 for x in swims) for i in range(4))
+        timer, swim, rest = (sum(x[i] or 0 for x in swims) for i in range(3))
+        shown, status = residual(round(timer - swim - rest, 3) + 0.0, sum(x[4] for x in swims))
         lines.append(f"- Pool swims ({len(swims)}): timer {hms(timer)}, Garmin-detected swimming time {hms(swim)}, "
-                     f"Garmin-recorded rest/idle {hms(rest)}, unclassified difference {diff:.1f} s")
+                     f"Garmin-recorded rest/idle {hms(rest)}, residual {shown}, {status}; "
+                     f"totals summed from unrounded values")
     lines += [
         "",
         f"Garmin-provided, as of {last_hrv.get('calendarDate', NA)}:",
@@ -401,22 +414,34 @@ def quality_section(data, start, end, flags):
                   "Stroke types are Garmin-detected; no user-confirmed stroke type exists in the source. "
                   "Rest/idle records are what Garmin did not classify as swimming: they can be real rest, coaching, "
                   "unrecognised drills or other movement. Nothing below changes the records.", ""]
+        lines += ["Time reconciliation: residual_seconds = timer_seconds − swimming_seconds − rest_idle_seconds, "
+                  "from the unrounded FIT values (session total_timer_time, session active_time, and the sum of "
+                  "total_timer_time over laps with no active lengths). FIT stores times in milliseconds, so seconds "
+                  "and the signed residual are shown with 3 decimals. Each FIT value is rounded to 1 ms, so it can be "
+                  "off by up to 0.5 ms; the tolerance is 0.5 ms × (number of rest/idle laps summed + 2). Status is "
+                  "\"reconciled\" when |residual| is within it; the actual residual is shown either way. The hh:mm:ss "
+                  "columns are rounded independently, so they can appear not to add up (for example 1 s) while "
+                  "the raw residual is zero.", ""]
         rows = []
         for a in swims:
-            timer, swim, rest, diff = swim_times(a)
+            timer, swim, rest, diff, tolerance = swim_times(a)
+            shown, status = residual(diff, tolerance)
+            rows.append([f"{activity_date(a)} ({a['activityId']})", val(timer, "s", "{:.3f}"), val(swim, "s", "{:.3f}"),
+                         val(rest, "s", "{:.3f}"), shown, status, hms(timer), hms(swim), hms(rest)])
+        lines += md_table(["Swim", "Timer", "Garmin-detected swimming", "Garmin-recorded rest/idle", "Residual",
+                           "Status", "Timer (rounded)", "Swimming (rounded)", "Rest/idle (rounded)"], rows)
+        lines += ["", "Detection quality (review flags, records unchanged):", ""]
+        rows = []
+        for a in swims:
             active, strokes, fast, low, drills = swim_quality(a)
             mix = ", ".join(f"{k} {v}" for k, v in sorted(strokes.items(), key=lambda kv: -kv[1]))
-            rows.append([f"{activity_date(a)} ({a['activityId']})", hms(timer), hms(swim), hms(rest),
-                         f"{diff:.1f} s" if diff is not None else NA, len(active), mix,
-                         len(fast), len(low), drills])
-        lines += md_table(["Swim", "Timer time", "Garmin-detected swimming time", "Garmin-recorded rest/idle time",
-                           "Unclassified difference", "Active lengths", "Garmin-detected stroke types",
+            rows.append([f"{activity_date(a)} ({a['activityId']})", len(active), mix, len(fast), len(low), drills])
+        lines += md_table(["Swim", "Active lengths", "Garmin-detected stroke types",
                            f"Lengths under {FAST_LENGTH_S} s", f"Lengths with ≤{LOW_STROKES} strokes",
                            "Drill intervals"], rows)
-        lines += ["", "Fast lengths and low stroke counts are review flags only: they limit confidence in pace and "
-                  "technique comparisons and do not prove a detection error. Lower SWOLF or faster detected pace "
-                  "is not confirmed technique improvement. The difference column is timer − swimming − rest/idle; "
-                  "a few seconds are consistent with rounding in the source.", ""]
+        lines += ["", "Fast lengths and low stroke counts limit confidence in pace and technique comparisons; they "
+                  "do not prove a detection error. Lower SWOLF or faster detected pace is not confirmed technique "
+                  "improvement.", ""]
 
     lines += ["### Metrics that could not be retrieved", "",
               "These metrics could not be retrieved through the endpoints used by this exporter as of the "
@@ -495,17 +520,29 @@ def hr_zones(a):
         if i in (0, len(times) - 1) and not seconds:
             continue
         rows.append([name, f"{raw} bpm", hms(seconds), f"{seconds / total * 100:.1f} %" if total else NA])
+    timer = session_of(a).get("total_timer_time")
+    gap = None if timer is None else round(timer - total, 3) + 0.0
     return ([f"Time in HR zones (this activity's FIT values: hr_calc_type={z.get('hr_calc_type', NA)}, "
              f"max {val(z.get('max_heart_rate'), 'bpm')}, resting {val(z.get('resting_heart_rate'), 'bpm')}, "
-             f"LTHR {val(z.get('threshold_heart_rate'), 'bpm')}; raw boundaries, share calculated by exporter):", ""]
-            + md_table(["Zone", "Raw FIT boundaries", "Time", "Share"], rows) + [""])
+             f"LTHR {val(z.get('threshold_heart_rate'), 'bpm')}; raw boundaries):", ""]
+            + md_table(["Zone", "Raw FIT boundaries", "Time", "Share"], rows)
+            + ["",
+               f"- Activity timer time: {hms(timer)} ({val(timer, 's', '{:.3f}')})",
+               f"- Sum of recorded zone durations (all time_in_hr_zone values, including below Z1 and above Z5): "
+               f"{hms(total)} ({total:.3f} s)",
+               f"- Timer minus recorded zone time: {hms(gap) if gap is not None else NA} "
+               f"({val(gap, 's', '{:+.3f}')}), unexplained: the source does not say whether it is missing HR, "
+               "pauses or something else",
+               f"- Share = zone_duration_seconds / {total:.3f} s (sum of recorded zone durations) × 100, "
+               "calculated by exporter",
+               ""])
 
 
 def swim_section(a):
     fit = a["_fit"]
     session = session_of(a)
     laps = fit.get("lap_mesgs", [])
-    timer, swim, rest, diff = swim_times(a)
+    timer, swim, rest, diff, tolerance = swim_times(a)
     unit = "m" if session.get("pool_length_unit") == "metric" else session.get("pool_length_unit") or ""
     lines = [
         "Pool swim:",
@@ -515,7 +552,7 @@ def swim_section(a):
         f"- Timer time: {hms(timer)}",
         f"- Garmin-detected swimming time: {hms(swim)}",
         f"- Garmin-recorded rest/idle time: {hms(rest)} (sum of the rest/idle intervals, added by exporter)",
-        f"- Unclassified difference (timer − swimming − rest/idle): {f'{diff:.1f} s' if diff is not None else NA}",
+        "- Residual (timer − swimming − rest/idle, unrounded): {}, {}".format(*residual(diff, tolerance)),
         f"- Active lengths: {val(session.get('num_active_lengths'))}, avg strokes per length "
         f"{val(session.get('avg_strokes_per_length'))}, avg SWOLF {val(session.get('avg_swolf'))}",
         "- Stroke count: Garmin counts one stroke per full arm cycle of the arm wearing the watch.",
@@ -583,6 +620,7 @@ def build_markdown(data, start, end, now, initial, zones_changed):
     lines += [
         "- Missing values are N/A, never 0. Garmin-provided values and exporter calculations are labeled.",
         "- Units: durations hh:mm:ss, distance in meters, HR in bpm, HRV in ms.",
+        f"- {PRECISION_NOTE}",
         "",
         "## Days",
         "",
@@ -714,50 +752,10 @@ def build_digest(data, start, end, now, initial):
         f"🧠 Стрес: <b>{num(avg([d.get('stress', {}).get('avgLevel') for d in daily]))}</b>",
         f"🔥 Інтенсивність: <b>{moderate + 2 * vigorous} хв</b> · навантаження "
         f"{val(load, fmt='{:.1f}') if load is not None else '–'} ({len(acts)} трен.)",
-        "",
-        "<b>Дні</b>",
-        "<pre>" + DAY_ROW.format("День", "Кроки", "Сон", "Оц", "HRV", "ЧСС"),
     ]
-    for d, dd, s, h in zip(days, daily, sleep, hrv):
-        rhr = dd.get("heartRate", {}).get("restingValue")
-        out.append(DAY_ROW.format(
-            f"{DAYS_UK[d.weekday()]} {d:%d}",
-            thousands(dd.get("movement", {}).get("steps", {}).get("value")),
-            hm(s.get("sleepTimeSeconds")) if s else "–",
-            num(s.get("sleepScores", {}).get("overall", {}).get("value")) if s else "–",
-            num(h.get("lastNightAvg")) if h else "–",
-            num(rhr),
-        ) + ("⚠" if d in flags else ""))
-    out[-1] += "</pre>"
     week_flags = [d for d in flags if week_start <= d <= end]
     if week_flags:
-        out.append("⚠ Пульс спокою під питанням: " + ", ".join(f"{d:%d.%m}" for d in week_flags)
-                   + " (перевір у Garmin Connect)")
-    out += ["", "<b>Тренування</b>"]
-    if not acts:
-        out.append("Немає записаних тренувань.")
-    for a in acts:
-        start_local = local_from_gmt(a["startTimeGMT"])
-        session = session_of(a)
-        type_key = a.get("activityType", {}).get("typeKey", "")
-        parts = [f"{DAYS_UK[start_local.weekday()]} {start_local:%H:%M}",
-                 f"<b>{html.escape(TYPES_UK.get(type_key, a.get('activityName') or type_key))}</b>"]
-        if a.get("distance"):
-            parts.append(f"{a['distance']:.0f} м")
-        parts.append(hm(a.get("duration")))
-        if type_key == "lap_swimming" and a.get("_fit"):
-            parts.append(f"плав. {hm(swim_times(a)[1])}")
-        if a.get("averageHR"):
-            parts.append(f"ЧСС {a['averageHR']:.0f}/{(a.get('maxHR') or 0):.0f}")
-        if a.get("aerobicTrainingEffect") is not None:
-            parts.append(f"TE {a['aerobicTrainingEffect']:.1f}/{(a.get('anaerobicTrainingEffect') or 0):.1f}")
-        if a.get("activityTrainingLoad") is not None:
-            parts.append(f"навант. {a['activityTrainingLoad']:.1f}")
-        if session.get("workout_feel") is not None:
-            parts.append(FEEL_UK.get(session["workout_feel"], str(session["workout_feel"])))
-        if session.get("workout_rpe") is not None:
-            parts.append(f"RPE {session['workout_rpe'] / 10:g}")
-        out.append("• " + " · ".join(parts))
+        out.append("⚠ Пульс спокою під питанням: " + ", ".join(f"{d:%d.%m}" for d in week_flags))
     out += ["", "📎 Повний звіт для ChatGPT: .md і .html нижче" + (" (28 днів)." if initial else ".")]
     return "\n".join(out)
 
