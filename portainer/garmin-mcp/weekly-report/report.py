@@ -2,20 +2,22 @@
 
 Every Sunday at REPORT_TIME (Europe/Kyiv) it pulls Monday to now from the garmin-mcp
 server plus each activity's FIT file, then sends a short Ukrainian digest to Telegram
-and the full English Markdown report as a .md file. The first run covers 28 days.
+and the full English report as .md and .html files. The first run covers 28 days.
 
   python report.py           run forever on the weekly schedule
   python report.py --now     send this week's report once and exit
   python report.py --print   print the Markdown report and the digest, no Telegram
+  python report.py --html F  also write the HTML report to file F (with --print)
   python report.py --initial force the 28-day history on a one-off run
 """
 
 import datetime as dt
-import glob
 import hashlib
 import html
 import json
 import os
+import re
+import statistics
 import sys
 import time
 import urllib.request
@@ -37,25 +39,30 @@ MCP_FIT_DIR = "/home/garmin/Downloads/garmin"
 STATE_FILE = os.environ.get("STATE_FILE", "/state/state.json")
 TZ = ZoneInfo("Europe/Kyiv")
 NA = "N/A"
+RHR_FLAG_BPM = 10  # flag a resting HR this far from the period median
+FAST_LENGTH_S = 15  # flag 25 m lengths faster than this
+LOW_STROKES = 3  # flag lengths with this many strokes or fewer
 
+# Probed by hand with this key; the exporter has no other path to these metrics.
 UNAVAILABLE = [
-    ("Training Readiness (morning score and timestamp)", "not exposed by the Garmin Personal API"),
-    ("Recovery Time (remaining hours and timestamp)", "not exposed by the Garmin Personal API"),
-    ("Acute Load, Chronic Load, Load Ratio, optimal Acute Load range", "not exposed by the Garmin Personal API"),
-    ("Training Status", "not exposed by the Garmin Personal API"),
-    ("Load Focus (low aerobic, high aerobic, anaerobic) and targets", "not exposed by the Garmin Personal API"),
-    ("Confirmed rest day", "Garmin has no rest-day record in the Personal API"),
-    ("Structured workout name", "only when an activity followed a Garmin workout; none of these did unless shown"),
+    ("Training Readiness (morning score, timestamp)", "metrics-service /metrics/trainingreadiness/{date}", "404"),
+    ("Recovery Time (remaining hours, timestamp)", "metrics-service /metrics/trainingreadiness/{date}", "404"),
+    ("Acute Load, Chronic Load, Load Ratio, optimal range",
+     "metrics-service /metrics/trainingstatus/aggregated/{date}", "404"),
+    ("Training Status", "metrics-service /metrics/trainingstatus/aggregated/{date}", "404"),
+    ("Load Focus and targets", "metrics-service /metrics/trainingstatus/aggregated/{date}", "404"),
+    ("Confirmed rest day", "no endpoint known", "not tested"),
+    ("User-confirmed stroke type", "not present in activity summary or FIT file", "n/a"),
 ]
-UNAVAILABLE_NOTE = ("The Personal API's metrics service answers HTTP 404 for these, checked 2026-11-02. "
-                    "They exist only in the Garmin Connect app.")
+UNAVAILABLE_CHECKED = "2026-11-02T11:05+02:00"
 
 FEEL = {0: "very weak", 25: "weak", 50: "normal", 75: "strong", 100: "very strong"}
 FEEL_UK = {0: "дуже слабко", 25: "слабко", 50: "нормально", 75: "добре", 100: "дуже добре"}
 DAYS_UK = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]
 DAY_ROW = "{:<5} {:>6} {:>5} {:>2} {:>3} {:>3}"
 TYPES_UK = {"lap_swimming": "Басейн", "treadmill_running": "Доріжка", "running": "Біг",
-            "elliptical": "Еліпс", "strength_training": "Силове", "cycling": "Вело", "walking": "Ходьба"}
+            "elliptical": "Еліпс", "strength_training": "Силове", "cycling": "Вело",
+            "indoor_cycling": "Велотренажер", "walking": "Ходьба"}
 
 opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
@@ -67,7 +74,7 @@ class Mcp:
         self._rpc("initialize", {
             "protocolVersion": "2025-06-18",
             "capabilities": {},
-            "clientInfo": {"name": "garmin-weekly-report", "version": "2"},
+            "clientInfo": {"name": "garmin-weekly-report", "version": "3"},
         })
         self._post({"jsonrpc": "2.0", "method": "notifications/initialized"})
 
@@ -108,8 +115,9 @@ class Mcp:
 def hms(seconds):
     if seconds is None:
         return NA
-    seconds = round(seconds)
-    return f"{seconds // 3600:02d}:{seconds % 3600 // 60:02d}:{seconds % 60:02d}"
+    sign = "-" if seconds < 0 else ""
+    seconds = round(abs(seconds))
+    return f"{sign}{seconds // 3600:02d}:{seconds % 3600 // 60:02d}:{seconds % 60:02d}"
 
 
 def hm(seconds):
@@ -143,6 +151,19 @@ def md_table(header, rows):
     out = ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
     out += ["| " + " | ".join(str(c) for c in row) + " |" for row in rows]
     return out
+
+
+def dates(start, end):
+    return [start + dt.timedelta(days=i) for i in range((end - start).days + 1)]
+
+
+def activity_date(a):
+    return local_from_gmt(a["startTimeGMT"]).date()
+
+
+def load_sum(acts):
+    loads = [a["activityTrainingLoad"] for a in acts if a.get("activityTrainingLoad") is not None]
+    return (round(sum(loads), 1) if loads else None), len(loads)
 
 
 # data
@@ -180,24 +201,67 @@ def fetch(start, end):
     return data
 
 
+def session_of(a):
+    return ((a.get("_fit") or {}).get("session_mesgs") or [{}])[0]
+
+
+def session_zone(a):
+    return next((z for z in (a.get("_fit") or {}).get("time_in_zone_mesgs", [])
+                 if z.get("reference_mesg") == "session"), None)
+
+
+def swim_times(a):
+    """Timer, Garmin-detected swimming and recorded rest/idle seconds, unrounded."""
+    s = session_of(a)
+    laps = (a.get("_fit") or {}).get("lap_mesgs", [])
+    rest = sum(l.get("total_timer_time") or 0 for l in laps if not l.get("num_active_lengths"))
+    timer, swim = s.get("total_timer_time"), s.get("active_time")
+    # + 0.0 turns a rounded -0.0 into 0.0
+    diff = None if timer is None or swim is None else round(timer - swim - rest, 1) + 0.0
+    return timer, swim, rest, diff
+
+
+def rhr_flags(data, start, end):
+    values = {d: data["daily"].get(d.isoformat(), {}).get("heartRate", {}).get("restingValue")
+              for d in dates(start, end)}
+    flags = {}
+    for day, v in values.items():
+        others = [x for d, x in values.items() if d != day and x is not None]
+        if v is not None and len(others) >= 3 and abs(v - statistics.median(others)) >= RHR_FLAG_BPM:
+            flags[day] = statistics.median(others)
+    return flags
+
+
+def swim_quality(a):
+    fit = a.get("_fit") or {}
+    session = session_of(a)
+    pool = session.get("pool_length")
+    active = [l for l in fit.get("length_mesgs", []) if l.get("length_type") == "active"]
+    strokes = {}
+    for l in active:
+        strokes[l.get("swim_stroke") or NA] = strokes.get(l.get("swim_stroke") or NA, 0) + 1
+    fast = [l for l in active if pool and pool <= 25 and (l.get("total_timer_time") or 99) < FAST_LENGTH_S]
+    low = [l for l in active if l.get("total_strokes") is not None and l["total_strokes"] <= LOW_STROKES]
+    drills = sum(1 for l in fit.get("lap_mesgs", []) if l.get("swim_stroke") == "drill")
+    return active, strokes, fast, low, drills
+
+
 # Markdown report (English, for ChatGPT)
 
-def day_section(data, start, end, partial_note):
+def day_section(data, start, end, partial, flags):
     rows = []
-    day = start
-    while day <= end:
+    for day in dates(start, end):
         key = day.isoformat()
-        d, s, h = data["daily"].get(key), data["sleep"].get(key), data["hrv"].get(key)
-        acts = [a for a in data["activities"] if local_from_gmt(a["startTimeGMT"]).date() == day]
-        d = d or {}
+        d, s, h = data["daily"].get(key) or {}, data["sleep"].get(key), data["hrv"].get(key)
+        acts = [a for a in data["activities"] if activity_date(a) == day]
         steps = d.get("movement", {}).get("steps", {})
         im = d.get("intensityMinutes", {})
         bb = d.get("bodyBattery", {})
         base = (h or {}).get("baseline") or {}
-        sleep_scores = (s or {}).get("sleepScores", {})
+        rhr = d.get("heartRate", {}).get("restingValue")
         if not d.get("includesWellnessData"):
             status = "missing wellness data"
-        elif day == end and partial_note:
+        elif day == end and partial:
             status = "partial day"
         else:
             status = "complete"
@@ -207,11 +271,11 @@ def day_section(data, start, end, partial_note):
             val(steps.get("value")),
             val(d.get("calories", {}).get("burnedActive"), "kcal"),
             f"{val(im.get('moderate'))} / {val(im.get('vigorous'))}" if im else NA,
-            val(d.get("heartRate", {}).get("restingValue"), "bpm"),
+            val(rhr, "bpm") + (" ⚠ flagged" if day in flags else ""),
             val(d.get("stress", {}).get("avgLevel")),
             f"{val(bb.get('minValue'))}–{val(bb.get('maxValue'))}" if bb else NA,
             hms(s.get("sleepTimeSeconds")) if s else NA,
-            val(sleep_scores.get("overall", {}).get("value")),
+            val((s or {}).get("sleepScores", {}).get("overall", {}).get("value")),
             hms(s.get("deepSleepSeconds")) if s else NA,
             hms(s.get("remSleepSeconds")) if s else NA,
             val((h or {}).get("lastNightAvg"), "ms"),
@@ -221,7 +285,6 @@ def day_section(data, start, end, partial_note):
             ", ".join(f"{local_from_gmt(a['startTimeGMT']):%H:%M} {a.get('activityName')}" for a in acts)
             or "no recorded activity",
         ])
-        day += dt.timedelta(days=1)
     header = ["Date", "Data", "Steps", "Active calories", "Intensity min moderate / vigorous",
               "Resting HR", "Stress avg (0-100)", "Body Battery min–max", "Sleep", "Sleep score",
               "Deep sleep", "REM sleep", "HRV night avg", "HRV 7-day avg", "HRV balanced baseline",
@@ -229,62 +292,158 @@ def day_section(data, start, end, partial_note):
     return md_table(header, rows)
 
 
-def week_section(data, start, end):
-    days = []
-    day = start
-    while day <= end:
-        days.append(day.isoformat())
-        day += dt.timedelta(days=1)
-    daily = [data["daily"].get(k, {}) for k in days]
-    sleep = [data["sleep"].get(k, {}) for k in days]
-    hrv = [data["hrv"].get(k, {}) for k in days]
+def week_section(data, start, end, flags):
+    keys = [d.isoformat() for d in dates(start, end)]
+    daily = [data["daily"].get(k, {}) for k in keys]
+    sleep = [data["sleep"].get(k, {}) for k in keys]
+    hrv = [data["hrv"].get(k, {}) for k in keys]
     steps = [d.get("movement", {}).get("steps", {}).get("value") for d in daily]
     moderate = sum(d.get("intensityMinutes", {}).get("moderate") or 0 for d in daily)
     vigorous = sum(d.get("intensityMinutes", {}).get("vigorous") or 0 for d in daily)
-    loads = [a.get("activityTrainingLoad") for a in data["activities"]
-             if start <= local_from_gmt(a["startTimeGMT"]).date() <= end]
+    rhr = {d: data["daily"].get(d.isoformat(), {}).get("heartRate", {}).get("restingValue") for d in dates(start, end)}
+    acts = [a for a in data["activities"] if start <= activity_date(a) <= end]
+    loads, n_loads = load_sum(acts)
+    swims = [swim_times(a) for a in acts if a.get("activityType", {}).get("typeKey") == "lap_swimming" and a.get("_fit")]
     last_hrv = next((h for h in reversed(hrv) if h), {})
     base = last_hrv.get("baseline") or {}
-    return [
+    lines = [
         "Calculated by this exporter from the daily Garmin values above:",
         "",
         f"- Steps: {thousands(sum(v for v in steps if v))} total, {thousands(round(avg(steps) or 0))} per day",
         f"- Intensity minutes: {moderate} moderate + {vigorous} vigorous = "
         f"{moderate + 2 * vigorous} (moderate + 2 × vigorous, Garmin's weekly-goal formula)",
-        f"- Resting HR avg: {val(avg([d.get('heartRate', {}).get('restingValue') for d in daily]), 'bpm')}",
+        f"- Resting HR mean, all reported values: {val(avg(rhr.values()), 'bpm')}",
+    ]
+    flagged = [d for d in rhr if d in flags]
+    if flagged:
+        kept = [v for d, v in rhr.items() if d not in flags]
+        lines.append(f"- Resting HR mean without flagged {', '.join(f'{d:%m-%d}' for d in flagged)} "
+                     f"(diagnostic sensitivity check, not a corrected Garmin value): {val(avg(kept), 'bpm')}")
+    lines += [
         f"- Stress avg: {val(avg([d.get('stress', {}).get('avgLevel') for d in daily]))}",
         f"- Sleep avg: {hms(avg([s.get('sleepTimeSeconds') for s in sleep]))}, "
         f"score avg {val(avg([s.get('sleepScores', {}).get('overall', {}).get('value') for s in sleep]))}",
         f"- HRV night avg: {val(avg([h.get('lastNightAvg') for h in hrv]), 'ms')}",
-        f"- Sum of activity exercise loads: {val(round(sum(l for l in loads if l)) if loads else None)} "
-        f"({len(loads)} activities). This is not Garmin's Acute Load.",
+        f"- Sum of activity exercise loads: {val(loads, fmt='{:.1f}')} ({n_loads} activities, summed before "
+        f"rounding). This is not Garmin's Acute Load.",
+    ]
+    if swims:
+        timer, swim, rest, diff = (sum(x[i] or 0 for x in swims) for i in range(4))
+        lines.append(f"- Pool swims ({len(swims)}): timer {hms(timer)}, Garmin-detected swimming time {hms(swim)}, "
+                     f"Garmin-recorded rest/idle {hms(rest)}, unclassified difference {diff:.1f} s")
+    lines += [
         "",
         f"Garmin-provided, as of {last_hrv.get('calendarDate', NA)}:",
         "",
         f"- HRV 7-day avg {val(last_hrv.get('weeklyAvg'), 'ms')}, status {last_hrv.get('status') or NA}, "
         f"balanced baseline {val(base.get('balancedLow'))}–{val(base.get('balancedUpper'), 'ms')}",
     ]
+    return lines
 
 
-def zones_section(zones, title):
-    lines = [f"## {title}", "", f"Retrieved {dt.datetime.now(TZ):%Y-%m-%dT%H:%M%z} from Garmin Connect.", ""]
+def zone_configs(data):
+    """Distinct zone settings recorded in the activities' FIT files."""
+    configs = {}
+    for a in data["activities"]:
+        z = session_zone(a)
+        if not z:
+            continue
+        key = (tuple(z.get("hr_zone_high_boundary") or ()), z.get("hr_calc_type"), z.get("max_heart_rate"),
+               z.get("resting_heart_rate"), z.get("threshold_heart_rate"))
+        configs.setdefault(key, []).append(a)
+    return configs
+
+
+def quality_section(data, start, end, flags):
+    lines = ["## Data quality", ""]
+
+    lines += ["### Heart-rate zones", ""]
+    profile = next((z for z in data["zones"] if z.get("sport") == "DEFAULT"), (data["zones"] or [{}])[0])
+    floors = [profile.get(f"zone{i}Floor") for i in range(1, 6)]
+    lines += [
+        f"Current profile (Garmin Connect heart-rate zone settings, retrieved {dt.datetime.now(TZ):%Y-%m-%dT%H:%M%z}): "
+        f"trainingMethod={profile.get('trainingMethod')}, maxHeartRateUsed={profile.get('maxHeartRateUsed')}, "
+        f"restingHeartRateUsed={profile.get('restingHeartRateUsed')}, "
+        f"lactateThresholdHeartRateUsed={profile.get('lactateThresholdHeartRateUsed')}, "
+        f"zone1Floor..zone5Floor={floors}. These are current settings, not proof of what older activities used.",
+        "",
+        "Recorded in the activity FIT files (message time_in_zone, reference_mesg=session):",
+        "",
+    ]
+    for (bounds, method, max_hr, rest_hr, lthr), acts in zone_configs(data).items():
+        lines.append(f"- {len(acts)} activities ({activity_date(acts[0])} to {activity_date(acts[-1])}): "
+                     f"hr_calc_type={method}, max_heart_rate={max_hr}, resting_heart_rate={rest_hr}, "
+                     f"threshold_heart_rate={lthr}, hr_zone_high_boundary={list(bounds)}")
+        if list(bounds[:5]) == floors and max_hr == profile.get("maxHeartRateUsed"):
+            lines.append("  - The first five raw values equal the profile's zone1Floor..zone5Floor and the last equals "
+                         "max HR, so each value reads as the lower bound of the next zone. The FIT profile does not "
+                         "state which end is inclusive; tables below show the raw values without any +1 adjustment.")
+        if method == "percent_hrr" and max_hr and rest_hr:
+            pct = [f"{(b - rest_hr) / (max_hr - rest_hr) * 100:.1f}" for b in bounds[:5]]
+            lines.append(f"  - Diagnostic: as % of heart-rate reserve these floors are {pct}. They are not round "
+                         "percentages, so the zones may be custom or rounded by Garmin. Not recalculated.")
+    lines += ["- Each activity's zone table uses only that activity's own FIT values.", ""]
+
+    lines += ["### Resting HR", ""]
+    if not flags:
+        lines.append(f"No daily resting HR differs by {RHR_FLAG_BPM} bpm or more from the period median.")
+    for day, median in flags.items():
+        hr = data["daily"].get(day.isoformat(), {}).get("heartRate", {})
+        lines.append(f"- {day}: heartRate.restingValue={hr.get('restingValue')} bpm (daily summary field for "
+                     f"resting HR, not the minimum), heartRate.minValue={hr.get('minValue')}, "
+                     f"heartRate.maxValue={hr.get('maxValue')}. Median of the other days {median:g} bpm. "
+                     "Kept as reported; verify in Garmin Connect (possible sensor artifact).")
+    lines.append("")
+
+    swims = [a for a in data["activities"] if a.get("activityType", {}).get("typeKey") == "lap_swimming" and a.get("_fit")]
+    if swims:
+        lines += ["### Pool swims", "",
+                  "Stroke types are Garmin-detected; no user-confirmed stroke type exists in the source. "
+                  "Rest/idle records are what Garmin did not classify as swimming: they can be real rest, coaching, "
+                  "unrecognised drills or other movement. Nothing below changes the records.", ""]
+        rows = []
+        for a in swims:
+            timer, swim, rest, diff = swim_times(a)
+            active, strokes, fast, low, drills = swim_quality(a)
+            mix = ", ".join(f"{k} {v}" for k, v in sorted(strokes.items(), key=lambda kv: -kv[1]))
+            rows.append([f"{activity_date(a)} ({a['activityId']})", hms(timer), hms(swim), hms(rest),
+                         f"{diff:.1f} s" if diff is not None else NA, len(active), mix,
+                         len(fast), len(low), drills])
+        lines += md_table(["Swim", "Timer time", "Garmin-detected swimming time", "Garmin-recorded rest/idle time",
+                           "Unclassified difference", "Active lengths", "Garmin-detected stroke types",
+                           f"Lengths under {FAST_LENGTH_S} s", f"Lengths with ≤{LOW_STROKES} strokes",
+                           "Drill intervals"], rows)
+        lines += ["", "Fast lengths and low stroke counts are review flags only: they limit confidence in pace and "
+                  "technique comparisons and do not prove a detection error. Lower SWOLF or faster detected pace "
+                  "is not confirmed technique improvement. The difference column is timer − swimming − rest/idle; "
+                  "a few seconds are consistent with rounding in the source.", ""]
+
+    lines += ["### Metrics that could not be retrieved", "",
+              "These metrics could not be retrieved through the endpoints used by this exporter as of the "
+              "verification date. They are N/A throughout the report. The cause of each 404 is unresolved.", ""]
+    lines += md_table(["Metric", "Endpoint or service", "HTTP status", "Checked"],
+                      [[m, f"`{e}`", s, UNAVAILABLE_CHECKED] for m, e, s in UNAVAILABLE])
+    return lines + [""]
+
+
+def zones_settings_section(zones, title):
+    lines = [f"## {title}", "", f"Retrieved {dt.datetime.now(TZ):%Y-%m-%dT%H:%M%z} from the Garmin Connect "
+             "heart-rate zone settings (current values; activities keep the zones recorded in their own files).", ""]
     rows = []
     for z in zones:
         floors = [z.get(f"zone{i}Floor") for i in range(1, 6)]
-        ranges = [f"{floors[i]}–{(floors[i + 1] - 1) if i < 4 else z.get('maxHeartRateUsed')}" for i in range(5)]
         rows.append([z.get("sport", NA), z.get("trainingMethod", NA), val(z.get("maxHeartRateUsed"), "bpm"),
                      val(z.get("restingHeartRateUsed"), "bpm"), val(z.get("lactateThresholdHeartRateUsed"), "bpm")]
-                    + [f"{r} bpm" for r in ranges])
-    lines += md_table(["Sport", "Method", "Max HR", "Resting HR used", "LTHR used",
-                       "Z1", "Z2", "Z3", "Z4", "Z5"], rows)
-    lines += ["", "Methods: HR_RESERVE = % of heart-rate reserve, MAX_HR = % of max HR, "
-              "LACTATE_THRESHOLD = % of LTHR. Each activity below lists the zones its device used."]
-    return lines
+                    + [val(f, "bpm") for f in floors])
+    lines += md_table(["Sport", "trainingMethod", "Max HR", "Resting HR used", "LTHR used",
+                       "zone1Floor", "zone2Floor", "zone3Floor", "zone4Floor", "zone5Floor"], rows)
+    return lines + ["", "trainingMethod: HR_RESERVE = % of heart-rate reserve, MAX_HR = % of max HR, "
+                    "LACTATE_THRESHOLD = % of LTHR.", ""]
 
 
 def activity_section(a):
     fit = a.get("_fit") or {}
-    session = (fit.get("session_mesgs") or [{}])[0]
+    session = session_of(a)
     start = local_from_gmt(a["startTimeGMT"])
     type_key = a.get("activityType", {}).get("typeKey", NA)
     lines = [f"### {start:%a %Y-%m-%d %H:%M} · {a.get('activityName') or type_key}", ""]
@@ -312,53 +471,55 @@ def activity_section(a):
     if a.get("description"):
         lines.append(f"- Notes: {a['description']}")
     lines.append("")
-    lines += hr_zones(fit)
+    lines += hr_zones(a)
     if type_key == "lap_swimming" and fit:
-        lines += swim_section(fit, session)
+        lines += swim_section(a)
     return lines
 
 
-def hr_zones(fit):
-    session_zone = next((z for z in fit.get("time_in_zone_mesgs", []) if z.get("reference_mesg") == "session"), None)
-    if not session_zone or not session_zone.get("time_in_hr_zone"):
+def hr_zones(a):
+    z = session_zone(a)
+    if not z or not z.get("time_in_hr_zone"):
         return ["Time in HR zones: not in the FIT file.", ""]
-    times = session_zone["time_in_hr_zone"]
-    high = session_zone.get("hr_zone_high_boundary") or []
+    times = z["time_in_hr_zone"]
+    bounds = z.get("hr_zone_high_boundary") or []
     total = sum(t for t in times if t)
     rows = []
-    names = ["Below Z1"] + [f"Z{i}" for i in range(1, 6)] + ["Above Z5"]
     for i, seconds in enumerate(times):
         if i == 0:
-            bounds = f"< {high[0] + 1}" if high else NA
-        elif i < len(high):
-            bounds = f"{high[i - 1] + 1}–{high[i]}"
+            name, raw = "Below Z1", f"up to {bounds[0]}" if bounds else NA
+        elif i < len(bounds):
+            name, raw = f"Z{i}", f"{bounds[i - 1]} to {bounds[i]}"
         else:
-            bounds = f"> {high[-1]}" if high else NA
+            name, raw = "Above Z5", f"from {bounds[-1]}" if bounds else NA
         if i in (0, len(times) - 1) and not seconds:
             continue
-        rows.append([names[i] if i < len(names) else f"#{i}", f"{bounds} bpm", hms(seconds),
-                     f"{seconds / total * 100:.1f} %" if total else NA])
-    method = session_zone.get("hr_calc_type", NA)
-    return ([f"Time in HR zones (device zones: {method}, max {val(session_zone.get('max_heart_rate'), 'bpm')}, "
-             f"resting {val(session_zone.get('resting_heart_rate'), 'bpm')}, "
-             f"LTHR {val(session_zone.get('threshold_heart_rate'), 'bpm')}; % calculated by exporter):", ""]
-            + md_table(["Zone", "Range", "Time", "Share"], rows) + [""])
+        rows.append([name, f"{raw} bpm", hms(seconds), f"{seconds / total * 100:.1f} %" if total else NA])
+    return ([f"Time in HR zones (this activity's FIT values: hr_calc_type={z.get('hr_calc_type', NA)}, "
+             f"max {val(z.get('max_heart_rate'), 'bpm')}, resting {val(z.get('resting_heart_rate'), 'bpm')}, "
+             f"LTHR {val(z.get('threshold_heart_rate'), 'bpm')}; raw boundaries, share calculated by exporter):", ""]
+            + md_table(["Zone", "Raw FIT boundaries", "Time", "Share"], rows) + [""])
 
 
-def swim_section(fit, session):
+def swim_section(a):
+    fit = a["_fit"]
+    session = session_of(a)
     laps = fit.get("lap_mesgs", [])
-    lengths = fit.get("length_mesgs", [])
-    rest = sum(l.get("total_timer_time") or 0 for l in laps if not l.get("num_active_lengths"))
+    timer, swim, rest, diff = swim_times(a)
+    unit = "m" if session.get("pool_length_unit") == "metric" else session.get("pool_length_unit") or ""
     lines = [
         "Pool swim:",
         "",
-        f"- Pool length: {val(session.get('pool_length'))} {('m' if session.get('pool_length_unit') == 'metric' else session.get('pool_length_unit') or '')}",
+        f"- Pool length: {val(session.get('pool_length'))} {unit}",
         f"- Total distance: {val(session.get('total_distance'), 'm', '{:.0f}')}",
-        f"- Swimming time (Garmin active time): {hms(session.get('active_time'))}",
-        f"- Rest time: {hms(rest)} (sum of the rest intervals Garmin recorded, added up by exporter)",
+        f"- Timer time: {hms(timer)}",
+        f"- Garmin-detected swimming time: {hms(swim)}",
+        f"- Garmin-recorded rest/idle time: {hms(rest)} (sum of the rest/idle intervals, added by exporter)",
+        f"- Unclassified difference (timer − swimming − rest/idle): {f'{diff:.1f} s' if diff is not None else NA}",
         f"- Active lengths: {val(session.get('num_active_lengths'))}, avg strokes per length "
         f"{val(session.get('avg_strokes_per_length'))}, avg SWOLF {val(session.get('avg_swolf'))}",
-        "- Stroke count: Garmin counts one stroke per arm cycle (each time the watch arm completes a stroke).",
+        "- Stroke count: Garmin counts one stroke per full arm cycle of the arm wearing the watch.",
+        "- Individual pool lengths are in the appendix.",
         "",
         "Intervals (Garmin laps):",
         "",
@@ -367,34 +528,48 @@ def swim_section(fit, session):
     for i, lap in enumerate(laps, 1):
         active = lap.get("num_active_lengths") or 0
         stroke = lap.get("swim_stroke")
-        kind = "rest" if not active else ("drill" if stroke == "drill" else "swim")
+        kind = "rest/idle" if not active else ("drill" if stroke == "drill" else "swim")
         rows.append([i, kind, val(lap.get("total_distance"), "m", "{:.0f}") if active else "0 m",
-                     hms(lap.get("total_timer_time")), stroke or ("–" if kind == "rest" else NA),
+                     hms(lap.get("total_timer_time")), stroke or ("–" if not active else NA),
                      val(lap.get("total_strokes")) if active else "–",
                      val(lap.get("avg_swolf")) if active else "–",
                      f"{val(lap.get('avg_heart_rate'))}/{val(lap.get('max_heart_rate'))} bpm"
                      if lap.get("avg_heart_rate") else NA])
-    lines += md_table(["#", "Type", "Distance", "Duration", "Stroke", "Strokes", "SWOLF", "HR avg/max"], rows)
-    lines += ["", "Pool lengths (Garmin length records; idle = rest):", ""]
-    owner = {}
-    for i, lap in enumerate(laps, 1):
-        first, count = lap.get("first_length_index"), lap.get("num_lengths") or 0
-        if first is not None:
-            for j in range(first, first + count):
-                owner[j] = i
-    rows = []
-    for j, length in enumerate(lengths):
-        if length.get("length_type") != "active":
-            continue
-        rows.append([j + 1, owner.get(j, NA), length.get("swim_stroke") or NA, hms(length.get("total_timer_time")),
-                     val(length.get("total_strokes")), val(length.get("avg_swimming_cadence"), "strokes/min")])
-    lines += md_table(["Length", "Interval", "Stroke", "Time", "Strokes", "Cadence"], rows)
+    lines += md_table(["#", "Garmin record type", "Distance", "Duration", "Garmin-detected stroke", "Strokes",
+                       "SWOLF", "HR avg/max"], rows)
     return lines + [""]
+
+
+def lengths_appendix(activities):
+    lines = ["## Appendix: pool lengths", "",
+             "Garmin length records (active lengths only). Stroke types are Garmin-detected.", ""]
+    for a in activities:
+        fit = a.get("_fit") or {}
+        if a.get("activityType", {}).get("typeKey") != "lap_swimming" or not fit:
+            continue
+        laps = fit.get("lap_mesgs", [])
+        owner = {}
+        for i, lap in enumerate(laps, 1):
+            first, count = lap.get("first_length_index"), lap.get("num_lengths") or 0
+            if first is not None:
+                for j in range(first, first + count):
+                    owner[j] = i
+        rows = []
+        for j, length in enumerate(fit.get("length_mesgs", [])):
+            if length.get("length_type") != "active":
+                continue
+            rows.append([j + 1, owner.get(j, NA), length.get("swim_stroke") or NA, hms(length.get("total_timer_time")),
+                         val(length.get("total_strokes")), val(length.get("avg_swimming_cadence"), "strokes/min")])
+        lines += [f"### {local_from_gmt(a['startTimeGMT']):%a %Y-%m-%d %H:%M} · {a['activityId']}", ""]
+        lines += md_table(["Length", "Interval", "Garmin-detected stroke", "Time", "Strokes", "Cadence"], rows)
+        lines.append("")
+    return lines
 
 
 def build_markdown(data, start, end, now, initial, zones_changed):
     year, week, _ = end.isocalendar()
-    partial = now.date() == end and now.hour < 24
+    partial = now.date() == end
+    flags = rhr_flags(data, start, end)
     lines = [
         f"# Garmin training report {year}-W{week:02d}",
         "",
@@ -412,27 +587,96 @@ def build_markdown(data, start, end, now, initial, zones_changed):
         "## Days",
         "",
     ]
-    lines += day_section(data, start, end, partial)
-    weeks = []
+    lines += day_section(data, start, end, partial, flags)
     s = start
     while s <= end:
-        weeks.append((s, min(s + dt.timedelta(days=6), end)))
+        we = min(s + dt.timedelta(days=6), end)
+        y, w, _ = s.isocalendar()
+        lines += ["", f"## Week {y}-W{w:02d} ({s} to {we})", ""] + week_section(data, s, we, flags)
         s += dt.timedelta(days=7)
-    for ws, we in weeks:
-        y, w, _ = ws.isocalendar()
-        lines += ["", f"## Week {y}-W{w:02d} ({ws} to {we})", ""] + week_section(data, ws, we)
-    lines += ["", "## Training load and readiness", "",
-              "Not available. Requested but not retrievable:", ""]
-    lines += [f"- {name}: {reason}" for name, reason in UNAVAILABLE]
-    lines += ["", UNAVAILABLE_NOTE, ""]
-    if initial or zones_changed:
-        lines += zones_section(data["zones"], "Heart-rate zone settings" + (" (changed)" if zones_changed else "")) + [""]
-    lines += ["## Activities", ""]
+    lines += ["", "## Activities", ""]
     if not data["activities"]:
         lines += ["No recorded activity in this period.", ""]
     for a in data["activities"]:
         lines += activity_section(a)
-    return f"garmin-{year}-W{week:02d}.md", "\n".join(lines).rstrip() + "\n"
+    lines += quality_section(data, start, end, flags)
+    if initial or zones_changed:
+        lines += zones_settings_section(data["zones"], "Heart-rate zone settings" + (" (changed)" if zones_changed else ""))
+    lines += lengths_appendix(data["activities"])
+    return f"garmin-{year}-W{week:02d}", "\n".join(lines).rstrip() + "\n"
+
+
+# HTML version of the same Markdown (only the subset this script writes)
+
+CSS = """
+:root{--bg:#fff;--fg:#1d1d1f;--muted:#6e6e73;--line:#e5e5ea;--head:#f5f5f7;--accent:#0a64e6;--warn:#b25000}
+@media (prefers-color-scheme:dark){:root{--bg:#111113;--fg:#f2f2f7;--muted:#a1a1a6;--line:#2c2c2e;--head:#1c1c1e;--accent:#5ea2ff;--warn:#ffb15e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:1.6em;margin:.4em 0}
+h2{font-size:1.25em;margin:1.8em 0 .5em;padding-top:.6em;border-top:1px solid var(--line)}
+h3{font-size:1.05em;margin:1.4em 0 .4em;color:var(--accent)}
+ul{padding-left:1.2em;margin:.4em 0}
+li{margin:.15em 0}
+p{margin:.5em 0}
+.table{overflow-x:auto;margin:.6em 0;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;font-size:13px;width:100%}
+th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;font-variant-numeric:tabular-nums}
+th{background:var(--head);position:sticky;top:0;font-weight:600}
+tr:last-child td{border-bottom:0}
+code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--head);padding:1px 4px;border-radius:4px}
+.warn{color:var(--warn);font-weight:600}
+nav{font-size:13px;color:var(--muted)}
+nav a{color:var(--accent);margin-right:10px;text-decoration:none}
+"""
+
+
+def inline(text):
+    text = html.escape(text)
+    text = re.sub(r"`([^`]+)`", r"<code>\1</code>", text)
+    return text.replace("⚠ flagged", '<span class="warn">⚠ flagged</span>')
+
+
+def markdown_to_html(markdown, title):
+    out, i, toc = [], 0, []
+    lines = markdown.splitlines()
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith("|"):
+            block = []
+            while i < len(lines) and lines[i].startswith("|"):
+                block.append([c.strip() for c in lines[i].strip("|").split("|")])
+                i += 1
+            head, body = block[0], block[2:]
+            out.append('<div class="table"><table><thead><tr>' + "".join(f"<th>{inline(c)}</th>" for c in head)
+                       + "</tr></thead><tbody>" + "".join(
+                           "<tr>" + "".join(f"<td>{inline(c)}</td>" for c in row) + "</tr>" for row in body)
+                       + "</tbody></table></div>")
+            continue
+        if line.startswith("- ") or line.startswith("  - "):
+            out.append("<ul>")
+            while i < len(lines) and (lines[i].startswith("- ") or lines[i].startswith("  - ")):
+                out.append(f"<li>{inline(lines[i].lstrip()[2:])}</li>")
+                i += 1
+            out.append("</ul>")
+            continue
+        m = re.match(r"(#{1,3}) (.*)", line)
+        if m:
+            level = len(m.group(1))
+            anchor = re.sub(r"[^a-z0-9]+", "-", m.group(2).lower()).strip("-")
+            if level == 2:
+                toc.append((anchor, m.group(2)))
+            out.append(f'<h{level} id="{anchor}">{inline(m.group(2))}</h{level}>')
+        elif line.strip():
+            out.append(f"<p>{inline(line)}</p>")
+        i += 1
+    nav = "<nav>" + "".join(f'<a href="#{a}">{html.escape(t)}</a>' for a, t in toc) + "</nav>"
+    body = "\n".join(out)
+    body = body.replace("</h1>", "</h1>" + nav, 1)
+    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            f'<meta name="viewport" content="width=device-width,initial-scale=1">'
+            f"<title>{html.escape(title)}</title><style>{CSS}</style></head><body><main>{body}</main></body></html>\n")
 
 
 # Telegram digest (Ukrainian, HTML)
@@ -440,17 +684,18 @@ def build_markdown(data, start, end, now, initial, zones_changed):
 def build_digest(data, start, end, now, initial):
     year, week, _ = end.isocalendar()
     week_start = end - dt.timedelta(days=6)
-    days = [week_start + dt.timedelta(days=i) for i in range(7)]
+    days = dates(week_start, end)
     daily = [data["daily"].get(d.isoformat(), {}) for d in days]
     sleep = [data["sleep"].get(d.isoformat(), {}) for d in days]
     hrv = [data["hrv"].get(d.isoformat(), {}) for d in days]
-    acts = [a for a in data["activities"] if week_start <= local_from_gmt(a["startTimeGMT"]).date() <= end]
+    acts = [a for a in data["activities"] if week_start <= activity_date(a) <= end]
     steps = [d.get("movement", {}).get("steps", {}).get("value") for d in daily]
     moderate = sum(d.get("intensityMinutes", {}).get("moderate") or 0 for d in daily)
     vigorous = sum(d.get("intensityMinutes", {}).get("vigorous") or 0 for d in daily)
     last_hrv = next((h for h in reversed(hrv) if h), {})
     base = last_hrv.get("baseline") or {}
-    load = sum(a.get("activityTrainingLoad") or 0 for a in acts)
+    load, _ = load_sum(acts)
+    flags = rhr_flags(data, start, end)
 
     def num(v):
         return "–" if v is None else f"{v:.0f}"
@@ -467,47 +712,53 @@ def build_digest(data, start, end, now, initial):
         f"база {num(base.get('balancedLow'))}–{num(base.get('balancedUpper'))}, {last_hrv.get('status', '–')}",
         f"❤️ Пульс спокою: <b>{num(avg([d.get('heartRate', {}).get('restingValue') for d in daily]))}</b>",
         f"🧠 Стрес: <b>{num(avg([d.get('stress', {}).get('avgLevel') for d in daily]))}</b>",
-        f"🔥 Інтенсивність: <b>{moderate + 2 * vigorous} хв</b> · навантаження {load:.0f} ({len(acts)} трен.)",
+        f"🔥 Інтенсивність: <b>{moderate + 2 * vigorous} хв</b> · навантаження "
+        f"{val(load, fmt='{:.1f}') if load is not None else '–'} ({len(acts)} трен.)",
         "",
         "<b>Дні</b>",
         "<pre>" + DAY_ROW.format("День", "Кроки", "Сон", "Оц", "HRV", "ЧСС"),
     ]
     for d, dd, s, h in zip(days, daily, sleep, hrv):
-        if d > end:
-            break
+        rhr = dd.get("heartRate", {}).get("restingValue")
         out.append(DAY_ROW.format(
             f"{DAYS_UK[d.weekday()]} {d:%d}",
             thousands(dd.get("movement", {}).get("steps", {}).get("value")),
             hm(s.get("sleepTimeSeconds")) if s else "–",
             num(s.get("sleepScores", {}).get("overall", {}).get("value")) if s else "–",
             num(h.get("lastNightAvg")) if h else "–",
-            num(dd.get("heartRate", {}).get("restingValue")),
-        ))
+            num(rhr),
+        ) + ("⚠" if d in flags else ""))
     out[-1] += "</pre>"
+    week_flags = [d for d in flags if week_start <= d <= end]
+    if week_flags:
+        out.append("⚠ Пульс спокою під питанням: " + ", ".join(f"{d:%d.%m}" for d in week_flags)
+                   + " (перевір у Garmin Connect)")
     out += ["", "<b>Тренування</b>"]
     if not acts:
         out.append("Немає записаних тренувань.")
     for a in acts:
         start_local = local_from_gmt(a["startTimeGMT"])
-        session = ((a.get("_fit") or {}).get("session_mesgs") or [{}])[0]
+        session = session_of(a)
         type_key = a.get("activityType", {}).get("typeKey", "")
         parts = [f"{DAYS_UK[start_local.weekday()]} {start_local:%H:%M}",
                  f"<b>{html.escape(TYPES_UK.get(type_key, a.get('activityName') or type_key))}</b>"]
         if a.get("distance"):
             parts.append(f"{a['distance']:.0f} м")
         parts.append(hm(a.get("duration")))
+        if type_key == "lap_swimming" and a.get("_fit"):
+            parts.append(f"плав. {hm(swim_times(a)[1])}")
         if a.get("averageHR"):
             parts.append(f"ЧСС {a['averageHR']:.0f}/{(a.get('maxHR') or 0):.0f}")
         if a.get("aerobicTrainingEffect") is not None:
             parts.append(f"TE {a['aerobicTrainingEffect']:.1f}/{(a.get('anaerobicTrainingEffect') or 0):.1f}")
-        if a.get("activityTrainingLoad"):
-            parts.append(f"навант. {a['activityTrainingLoad']:.0f}")
+        if a.get("activityTrainingLoad") is not None:
+            parts.append(f"навант. {a['activityTrainingLoad']:.1f}")
         if session.get("workout_feel") is not None:
             parts.append(FEEL_UK.get(session["workout_feel"], str(session["workout_feel"])))
         if session.get("workout_rpe") is not None:
             parts.append(f"RPE {session['workout_rpe'] / 10:g}")
         out.append("• " + " · ".join(parts))
-    out += ["", "📎 Повний звіт для ChatGPT у файлі нижче" + (" (28 днів)." if initial else ".")]
+    out += ["", "📎 Повний звіт для ChatGPT: .md і .html нижче" + (" (28 днів)." if initial else ".")]
     return "\n".join(out)
 
 
@@ -520,9 +771,9 @@ def telegram(method, fields, files=None):
         body = b""
         for name, value in fields.items():
             body += f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'.encode()
-        for name, (filename, content) in files.items():
+        for name, (filename, content, mime) in files.items():
             body += (f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"; filename="{filename}"\r\n'
-                     f"Content-Type: text/markdown\r\n\r\n").encode() + content + b"\r\n"
+                     f"Content-Type: {mime}\r\n\r\n").encode() + content + b"\r\n"
         body += f"--{boundary}--\r\n".encode()
         req = urllib.request.Request(url, body, {"Content-Type": f"multipart/form-data; boundary={boundary}"})
     else:
@@ -544,7 +795,7 @@ def save_state(state):
         json.dump(state, f)
 
 
-def run_once(print_only=False, force_initial=False):
+def run_once(print_only=False, force_initial=False, html_path=None):
     now = dt.datetime.now(TZ)
     end = now.date() if now.weekday() == 6 else now.date() - dt.timedelta(days=now.weekday() + 1)
     state = load_state()
@@ -553,18 +804,23 @@ def run_once(print_only=False, force_initial=False):
     data = fetch(start, end)
     zones_hash = hashlib.sha256(json.dumps(data["zones"], sort_keys=True).encode()).hexdigest()
     zones_changed = bool(state.get("zones_hash")) and state["zones_hash"] != zones_hash
-    filename, markdown = build_markdown(data, start, end, now, initial, zones_changed)
+    name, markdown = build_markdown(data, start, end, now, initial, zones_changed)
+    page = markdown_to_html(markdown, name)
     digest = build_digest(data, start, end, now, initial)
     if print_only:
         print(markdown)
         print("----- Telegram -----")
         print(digest)
+        if html_path:
+            with open(html_path, "w") as f:
+                f.write(page)
         return
     telegram("sendMessage", {"chat_id": CHAT_ID, "text": digest, "parse_mode": "HTML"})
-    telegram("sendDocument", {"chat_id": CHAT_ID}, {"document": (filename, markdown.encode())})
+    telegram("sendDocument", {"chat_id": CHAT_ID}, {"document": (f"{name}.md", markdown.encode(), "text/markdown")})
+    telegram("sendDocument", {"chat_id": CHAT_ID}, {"document": (f"{name}.html", page.encode(), "text/html")})
     state.update(initial_done=True, zones_hash=zones_hash, last_sent=now.isoformat())
     save_state(state)
-    print(f"{now:%Y-%m-%d %H:%M} sent {filename} ({start} to {end})", flush=True)
+    print(f"{now:%Y-%m-%d %H:%M} sent {name} ({start} to {end})", flush=True)
 
 
 def seconds_until_next_run():
@@ -579,7 +835,8 @@ def seconds_until_next_run():
 
 def main():
     if "--print" in sys.argv:
-        return run_once(print_only=True, force_initial="--initial" in sys.argv)
+        html_path = sys.argv[sys.argv.index("--html") + 1] if "--html" in sys.argv else None
+        return run_once(print_only=True, force_initial="--initial" in sys.argv, html_path=html_path)
     if not BOT_TOKEN or not CHAT_ID:
         sys.exit("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be set")
     if "--now" in sys.argv or "--initial" in sys.argv:
