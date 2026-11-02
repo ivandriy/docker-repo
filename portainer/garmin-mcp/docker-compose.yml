@@ -1,0 +1,34 @@
+# Beelink only. Garmin Personal MCP (https://github.com/Mason-Levyy/garmin-personal-mcp),
+# read-only access to Garmin Connect through Garmin's official Personal API.
+# The server has no authentication: the port stays on 127.0.0.1 and the Beelink Traefik
+# serves it at https://garmin.local.ivanskiy.com/mcp behind the LAN/VPN whitelist
+# (portainer/traefik/rules-beelink/garmin.yml).
+# Stack env in Portainer: GARMIN_PERSONAL_API_KEY, from
+# https://connect.garmin.com/app/settings/personalApiToken (expires after 30 days to a year).
+services:
+  garmin-mcp:
+    image: ghcr.io/mason-levyy/garmin-personal-mcp:0.2.0
+    container_name: garmin-mcp
+    command: ["--http", "--host", "0.0.0.0", "--allowed-host", "garmin.local.ivanskiy.com"]
+    restart: unless-stopped
+    mem_limit: 256m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges=true
+    read_only: true
+    tmpfs:
+      - /tmp
+    environment:
+      TZ: 'Europe/Kyiv'
+      GARMIN_PERSONAL_API_KEY: ${GARMIN_PERSONAL_API_KEY}
+    ports:
+      - "127.0.0.1:8491:8491"
+    volumes:
+      # bearer-token cache
+      - garmin-config:/home/garmin/.config/garmin
+      # files saved by garmin_download_activity
+      - garmin-downloads:/home/garmin/Downloads/garmin
+
+volumes:
+  garmin-config:
+  garmin-downloads:

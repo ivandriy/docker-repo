@@ -1,0 +1,25 @@
+# Beelink instance only, copied to /opt/portainer/volumes/traefik/rules/garmin.yml.
+# Garmin MCP (portainer/garmin-mcp) has no auth of its own, so it stays LAN/VPN only.
+# Both AdGuards rewrite garmin.local to 192.168.1.131.
+http:
+  routers:
+    garmin_mcp:
+      entryPoints:
+        - "https-lan"
+      service: garmin_mcp
+      middlewares:
+        - whitelist
+      rule: Host(`garmin.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+
+  services:
+    garmin_mcp:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://127.0.0.1:8491"
