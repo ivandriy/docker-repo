@@ -11,9 +11,11 @@ services:
     volumes:
       - /volume1/docker/homepage/config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock
-      # for the disk usage widget
-      - /volume1:/mnt/volume1:ro
-    restart: unless-stopped
+    # The disk widget reads /app/config, which is on volume1. Don't bind-mount
+    # /volume1 itself: Synology's boot start fails on it (error 117).
+    # "always" because Synology's shutdown stops containers by hand, so
+    # unless-stopped never brings it back after a reboot.
+    restart: always
     labels:
       - "traefik.enable=true"    
       - "traefik.http.routers.homepage.entrypoints=https"
