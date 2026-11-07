@@ -30,8 +30,19 @@ services:
       - homepage.description=Torrent indexer
       - homepage.widget.type=jackett
       - homepage.widget.url=http://jackett:9117
-      # auto update docker      
+      # auto update docker
       - "com.centurylinklabs.watchtower.enable=true"
+    depends_on:
+      - flaresolverr
+
+  # solves Cloudflare challenges for Jackett (RuTracker); Jackett points at http://flaresolverr:8191
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=Europe/Kyiv
+    restart: unless-stopped
 networks:
   default:
     name: containers_bridge
