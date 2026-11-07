@@ -3,7 +3,7 @@ services:
   homebridge:
     container_name: homebridge
     image: homebridge/homebridge:2026-11-02
-    restart: unless-stopped
+    restart: always
     environment:
       TZ: 'Europe/Kyiv'
     volumes:
