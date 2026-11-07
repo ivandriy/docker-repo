@@ -1,16 +1,24 @@
 services:
   esphome:
     container_name: esphome
-    image: ghcr.io/esphome/esphome
+    # Pinned. Upgrade on purpose, then rebuild and flash every device.
+    image: ghcr.io/esphome/esphome:2026.10.2
     volumes:
       - ${VOLUME_DATA}/esphome/config:/config
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
-    privileged: true
+    # Host network keeps mDNS online status working. No privileged mode:
+    # devices update over the air. For a USB flash, map the one device with
+    # devices: ["/dev/ttyUSB0:/dev/ttyUSB0"] instead.
     network_mode: host
     environment:
       - USERNAME=${ESP_USER_NAME}
       - PASSWORD=${ESP_PASSWORD}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
     labels:
       # auto update docker
       - "com.centurylinklabs.watchtower.monitor-only=true"
