@@ -1,0 +1,16 @@
+# Portainer on the NAS. Not a Portainer stack: run by hand on the host.
+# Live copy: /volume1/docker/portainer-compose/docker-compose.yml
+# Update: docker compose -f /volume1/docker/portainer-compose/docker-compose.yml up -d
+# Port 9000 must stay published: NAS Traefik (rules/portainer.yml) and the
+# Homepage widget use http on 9000. CE ends at 2.45, see plans/portainer-update.md.
+services:
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:2.45.3
+    restart: always
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /volume1/docker/portainer:/data

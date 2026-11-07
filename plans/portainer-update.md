@@ -52,6 +52,8 @@ Done 2026-11-08: now 2.45.3, DB migrated 2.27.0 to 2.45.3 with no errors (includ
 
 ### NAS
 
+Done 2026-11-08: now 2.45.3 from `/volume1/docker/portainer-compose/docker-compose.yml` (repo copy `portainer/portainer/docker-compose.nas.yml`), DB migrated 2.21.3 to 2.45.3 with no errors. Rollback image `portainer/portainer-ce:rollback-2.21.3`, backup `/volume1/docker/portainer-backup-20261108.tgz` (root-owned files, so tar through a container), old run config `/volume1/docker/portainer-inspect-20261108.json`. Traefik route and Homepage widget work. All 15 Git stacks need `refs/heads/main` set, as on the Beelink.
+
 1. Record the current run config before removing anything: `docker inspect portainer > /volume1/docker/portainer-inspect-20261108.json`.
 2. Keep the old image: `docker tag portainer/portainer-ce:latest portainer/portainer-ce:rollback-2.21.3`.
 3. Stop and back up: `docker stop portainer && tar czf /volume1/docker/portainer-backup-20261108.tgz -C /volume1/docker portainer`.
