@@ -42,6 +42,12 @@ services:
     environment:
       - LOG_LEVEL=info
       - TZ=Europe/Kyiv
+      # skip images and CSS while solving challenges
+      - DISABLE_MEDIA=true
+    # browser profiles live in RAM, not on the NAS disks (10-30 MB per request)
+    tmpfs:
+      - /tmp:size=256M,mode=1777
+    mem_limit: 1g
     restart: unless-stopped
 networks:
   default:
