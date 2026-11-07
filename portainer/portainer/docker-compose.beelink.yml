@@ -1,0 +1,15 @@
+# Portainer on the Beelink. Not a Portainer stack: run by hand on the host.
+# Live copy: /opt/portainer/compose/docker-compose.yml
+# Update: docker compose -f /opt/portainer/compose/docker-compose.yml up -d
+# CE ends at 2.45 (3.x is Business only). See plans/portainer-update.md.
+services:
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:2.45.3
+    restart: always
+    ports:
+      - "8000:8000"
+      - "9443:9443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/portainer/data:/data
