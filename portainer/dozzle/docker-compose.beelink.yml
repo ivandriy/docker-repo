@@ -1,0 +1,24 @@
+# Beelink agent: lets the Dozzle on the NAS (docker-compose.yml) show Beelink logs.
+# Locked with our own cert pair (dozzle generate-certs), so it only accepts the NAS
+# hub; the built-in pair is the same in every Dozzle image. The NAS mounts the same
+# two files. Replacing them means restarting the hub and the agent together.
+services:
+  dozzle-agent:
+    container_name: dozzle-agent
+    image: amir20/dozzle:latest
+    command: agent
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/portainer/volumes/dozzle-agent/dozzle_cert.pem:/dozzle_cert.pem:ro
+      - /opt/portainer/volumes/dozzle-agent/dozzle_key.pem:/dozzle_key.pem:ro
+    ports:
+      - 7007:7007
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+    labels:
+      # Same image tag as the NAS hub; Watchtower updates both.
+      - "com.centurylinklabs.watchtower.enable=true"

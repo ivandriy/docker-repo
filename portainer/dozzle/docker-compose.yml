@@ -5,6 +5,12 @@ services:
     image: amir20/dozzle:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      # Same pair as the Beelink agent (docker-compose.beelink.yml)
+      - /volume1/docker/dozzle/dozzle_cert.pem:/dozzle_cert.pem:ro
+      - /volume1/docker/dozzle/dozzle_key.pem:/dozzle_key.pem:ro
+    environment:
+      - DOZZLE_HOSTNAME=synology
+      - DOZZLE_REMOTE_AGENT=192.168.1.131:7007|beelink
     ports:
       - 9999:8080
     restart: unless-stopped
