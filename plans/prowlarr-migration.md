@@ -45,7 +45,7 @@ Nothing changes for the arrs in this phase.
 
 ## Phase 3: connect the arrs
 
-1. Add Sonarr, Radarr and Lidarr as apps in Prowlarr with the decided sync level, using container names (`http://prowlarr:9696`, `http://sonarr:8989`, and so on).
+1. Add each arr as an app in Prowlarr with the decided sync level, using container names (`http://prowlarr:9696`, `http://sonarr:8989`, and so on).
 2. Prowlarr creates its indexers in each arr next to the Jackett ones. The arr gets an indexer only if the tracker has matching categories, so Lidarr may gain Toloka's music sections.
 3. With "Add and Remove Only", I copy each arr's current priority, minimum seeders and category list from the Jackett indexer onto the matching Prowlarr one through the arr API, and print a before and after table.
 4. Disable (don't delete) the old Jackett indexers in each arr.
