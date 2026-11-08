@@ -550,9 +550,9 @@
     },
     {
       "id": 10,
-      "type": "stat",
+      "type": "state-timeline",
       "title": "",
-      "description": "",
+      "description": "Every Prometheus scrape target over the dashboard's time range. Red means the scrape failed.",
       "datasource": {
         "type": "prometheus",
         "uid": "cdup605h5snpce"
@@ -561,7 +561,7 @@
         "x": 0,
         "y": 10,
         "w": 24,
-        "h": 6
+        "h": 14
       },
       "targets": [
         {
@@ -569,16 +569,18 @@
             "type": "prometheus",
             "uid": "cdup605h5snpce"
           },
-          "expr": "up",
-          "legendFormat": "{{job}} · {{instance}}",
-          "instant": true,
-          "range": false,
+          "expr": "label_replace(label_replace(label_replace(label_replace(label_replace(up, \"job\", \"https\", \"job\", \"blackbox-http\"), \"job\", \"dns\", \"job\", \"blackbox-dns\"), \"where\", \"NAS\", \"instance\", \".*\"), \"where\", \"Beelink\", \"instance\", \"192\\\\.168\\\\.1\\\\.131:.*\"), \"where\", \"$1\", \"instance\", \"https?://([^/]+).*\")",
+          "legendFormat": "{{job}} · {{where}}",
+          "instant": false,
+          "range": true,
           "refId": "A"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "none",
+          "color": {
+            "mode": "thresholds"
+          },
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -607,32 +609,24 @@
               }
             }
           ],
-          "color": {
-            "mode": "thresholds"
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0
           }
         },
         "overrides": []
       },
       "options": {
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "showValue": "never",
+        "mergeValues": true,
+        "rowHeight": 0.85,
+        "alignValue": "left",
+        "legend": {
+          "showLegend": false
         },
-        "colorMode": "background",
-        "graphMode": "none",
-        "textMode": "name",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "textSize": {
-          "value": 14
-        },
-        "wideLayout": true,
-        "showPercentChange": false,
-        "minVizWidth": 230,
-        "minVizHeight": 40
+        "tooltip": {
+          "mode": "single"
+        }
       }
     },
     {
@@ -642,7 +636,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 16,
+        "y": 24,
         "w": 24,
         "h": 1
       },
@@ -659,7 +653,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 17,
+        "y": 25,
         "w": 24,
         "h": 7
       },
@@ -758,7 +752,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 24,
+        "y": 32,
         "w": 24,
         "h": 1
       },
@@ -775,7 +769,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 25,
+        "y": 33,
         "w": 4,
         "h": 4
       },
@@ -849,7 +843,7 @@
       },
       "gridPos": {
         "x": 4,
-        "y": 25,
+        "y": 33,
         "w": 4,
         "h": 4
       },
@@ -923,7 +917,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 25,
+        "y": 33,
         "w": 4,
         "h": 4
       },
@@ -996,7 +990,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 25,
+        "y": 33,
         "w": 4,
         "h": 4
       },
@@ -1071,7 +1065,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 25,
+        "y": 33,
         "w": 4,
         "h": 4
       },
@@ -1144,7 +1138,7 @@
       },
       "gridPos": {
         "x": 20,
-        "y": 25,
+        "y": 33,
         "w": 4,
         "h": 4
       },
@@ -1217,7 +1211,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 29,
+        "y": 37,
         "w": 8,
         "h": 8
       },
@@ -1289,7 +1283,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 29,
+        "y": 37,
         "w": 8,
         "h": 8
       },
@@ -1372,7 +1366,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 29,
+        "y": 37,
         "w": 8,
         "h": 8
       },
@@ -1439,7 +1433,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 37,
+        "y": 45,
         "w": 24,
         "h": 1
       },
@@ -1456,7 +1450,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 38,
+        "y": 46,
         "w": 12,
         "h": 7
       },
@@ -1535,7 +1529,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 38,
+        "y": 46,
         "w": 12,
         "h": 7
       },
