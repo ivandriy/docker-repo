@@ -20,7 +20,8 @@ services:
 
   # removes Plex poster and art files nothing uses any more (old overlay versions pile up)
   # and clears Plex's photo transcoder cache. Sunday 03:00, before Kometa's 05:00 run.
-  # MODE=report only lists what it would remove; switch to move (recoverable) or remove.
+  # MODE=move puts unused files in /config/ImageMaid Restore (restore with MODE=restore);
+  # switch to remove once a few runs show nothing in Plex went missing.
   imagemaid:
     image: kometateam/imagemaid:v1.2.2
     container_name: imagemaid
@@ -29,7 +30,7 @@ services:
       - PLEX_PATH=/plex
       - PLEX_URL=http://192.168.1.131:32400
       - PLEX_TOKEN=${KOMETA_PLEXTOKEN}
-      - MODE=report
+      - MODE=move
       - SCHEDULE=03:00|weekly(sunday)
       - PHOTO_TRANSCODER=True
       # copy the Plex database from disk instead of downloading it over the API
