@@ -61,3 +61,60 @@ services:
       options:
         max-size: 10m
         max-file: "3"
+
+  # Nightly encrypted backup: SQLite online backup + rsa key, attachments,
+  # sends, config.json, packed as 7z with encrypted file names. Two copies:
+  # the Beelink disk, and the NAS share BeelinkBackup/vaultwarden, which the
+  # Hyper Backup "Beelink backup to Dropbox/USB" tasks carry off the host.
+  # A night with the NAS off counts as a failure and pings Kuma down.
+  #
+  # Files under /opt/portainer/volumes/vaultwarden/backup-config (1000:1000):
+  #   rclone/rclone.conf   remotes BeelinkDisk (local) and NasBackup (smb)
+  #   zip-password         archive password, mode 0600, also on paper
+  # Stack env: VW_BACKUP_PUSH_URL  Beelink Kuma push URL without the query
+  #
+  # Manual run:  docker exec vaultwarden-backup bash /app/backup.sh
+  # Restore:     see plans/vaultwarden-beelink.md, Phase 2
+  vaultwarden-backup:
+    image: ttionya/vaultwarden-backup:1.27.2
+    container_name: vaultwarden-backup
+    restart: always
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp
+      # Parent of the scratch dir /bitwarden/backup, which the script deletes
+      # after each run; data is bind-mounted inside it at /bitwarden/data
+      - /bitwarden
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    depends_on:
+      - vaultwarden
+    volumes:
+      # Read-write on purpose: sqlite3 .backup on a WAL database needs the -shm file
+      - /opt/portainer/volumes/vaultwarden/data:/bitwarden/data
+      - /opt/portainer/volumes/vaultwarden/backup-config:/config
+      - /opt/portainer/volumes/vaultwarden/backup:/backup-local
+    environment:
+      HOME: /tmp
+      CRON: "0 2 * * *"
+      TIMEZONE: Europe/Kyiv
+      DISPLAY_NAME: Vaultwarden Beelink
+      ZIP_ENABLE: "TRUE"
+      ZIP_TYPE: 7z
+      ZIP_PASSWORD_FILE: /config/zip-password
+      BACKUP_KEEP_DAYS: "30"
+      RCLONE_REMOTE_NAME: BeelinkDisk
+      RCLONE_REMOTE_DIR: /backup-local
+      RCLONE_REMOTE_NAME_1: NasBackup
+      RCLONE_REMOTE_DIR_1: BeelinkBackup/vaultwarden
+      PING_URL_WHEN_SUCCESS: ${VW_BACKUP_PUSH_URL:+${VW_BACKUP_PUSH_URL}?status=up&msg=OK}
+      PING_URL_WHEN_FAILURE: ${VW_BACKUP_PUSH_URL:+${VW_BACKUP_PUSH_URL}?status=down&msg=backup%20failed}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

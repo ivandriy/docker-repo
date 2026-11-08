@@ -80,7 +80,9 @@ Checked 2026-11-08. Nothing in this plan is deployed yet.
 - `portainer/vaultwarden/docker-compose.beelink.yml` written, pinned to `vaultwarden/server:1.37.5` (released 2026-11-01). It differs from the sketch above in three ways: `SIGNUPS_ALLOWED` comes from stack env `VW_SIGNUPS` (default false), `PUSH_ENABLED` from `VW_PUSH_ENABLED` (default false, so the stack starts before the push keys exist), and `ADMIN_TOKEN` defaults to empty, which disables `/admin`.
 - Traefik rule live on the Beelink (`/opt/portainer/volumes/traefik/rules/vaultwarden.yml`, identical to Git). `https://vault.local.ivanskiy.com/alive` returns 502 until the container runs, so the router is loaded.
 - AdGuard rewrite `vault.local.ivanskiy.com` to `192.168.1.131` added on the NAS (backup `AdGuardHome.yaml.bak-20261108-vault` in the confdir, config checked with `--check-config` first), synced to the Beelink by restarting adguardhome-sync. Both AdGuards answer 192.168.1.131.
-- Left for you: step 2 (sudo), step 3 (hash), step 6 (Portainer stack), then step 7.
+- Deployed by you the same evening: data folder 1000:1000, Portainer stack from Git. Container healthy, runs as 1000:1000 with a read-only root and all caps dropped, listens only on 127.0.0.1:8085. `/alive` returns 200 through Traefik, with Vaultwarden's own CSP plus HSTS 86400. Signups on, push off.
+- Open: the admin token in the stack env is plain text (Vaultwarden logs a NOTICE), not the argon2 hash. Portainer passes stack env through Compose interpolation, so a pasted hash needs every `$` doubled (`$$argon2id$$v=19$$...`). Or clear it until the admin panel is needed.
+- Open: step 7's VPN and mobile-data checks, from your phone.
 
 ## Phase 2: backups, proven before any real data goes in
 
@@ -100,6 +102,15 @@ What gets backed up: `db.sqlite3` (taken with SQLite's online backup, never a pl
    3. Log in in a browser, open three items and one attachment, check the item count matches. Remove the container and folder.
    Done when the drill passes once on a test account.
 6. Monthly, by hand: Bitwarden "encrypted JSON (password protected)" export from the web vault, stored next to the archives. It restores into any Bitwarden-compatible server, so it survives a broken SQLite file or a Vaultwarden bug.
+
+### Status 2026-11-08
+
+- Sidecar `vaultwarden-backup` added to the compose: `ttionya/vaultwarden-backup:1.27.2` (rclone 1.75.2), user 1000:1000, read-only root with tmpfs on `/tmp` and `/bitwarden` (the script deletes its scratch dir `/bitwarden/backup` after each run, so that dir can't be a mount point itself), caps dropped. The data mount is read-write because `sqlite3 .backup` on a WAL database needs the `-shm` file. Remotes: `BeelinkDisk:/backup-local` and `NasBackup:BeelinkBackup/vaultwarden`. Ping URLs come from stack env `VW_BACKUP_PUSH_URL` and stay empty when it is unset.
+- The script succeeds when at least one remote is reachable, but any failed upload sends the failure ping. A night with the NAS off therefore pings Kuma down; that is expected.
+- The archive password is passed to `7z` on its command line, so it is visible in the Beelink process list for the few seconds a run takes. Acceptable on a single-user host.
+- Prepared: `/opt/portainer/volumes/vaultwarden/{backup,backup-config}` (0700, 1000:1000), `backup-config/rclone/rclone.conf` with the `BeelinkDisk` local remote, NAS folder `/volume1/BeelinkBackup/vaultwarden`.
+- Dry run with a throwaway key: archive holds `db.<date>.sqlite3` and `rsakey.<date>.tar` (no attachments or sends yet), 7zAES with encrypted headers, wrong password rejected.
+- Left for you: DSM user, `NasBackup` remote, archive password file, Kuma push monitor, redeploy. Then I run the first real backup and the restore drill.
 
 ## Phase 3: account and hardening
 
