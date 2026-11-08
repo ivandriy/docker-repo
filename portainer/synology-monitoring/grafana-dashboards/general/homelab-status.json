@@ -78,6 +78,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -146,6 +147,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -214,6 +216,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -278,6 +281,7 @@
         "textMode": "name",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -350,6 +354,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -422,6 +427,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -494,6 +500,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -554,7 +561,7 @@
         "x": 0,
         "y": 10,
         "w": 24,
-        "h": 5
+        "h": 6
       },
       "targets": [
         {
@@ -618,10 +625,13 @@
         "graphMode": "none",
         "textMode": "name",
         "justifyMode": "auto",
-        "orientation": "horizontal",
+        "orientation": "auto",
+        "textSize": {
+          "value": 14
+        },
         "wideLayout": true,
         "showPercentChange": false,
-        "minVizWidth": 150,
+        "minVizWidth": 230,
         "minVizHeight": 40
       }
     },
@@ -632,7 +642,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 15,
+        "y": 16,
         "w": 24,
         "h": 1
       },
@@ -649,7 +659,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 16,
+        "y": 17,
         "w": 24,
         "h": 7
       },
@@ -731,10 +741,13 @@
         "graphMode": "none",
         "textMode": "name",
         "justifyMode": "auto",
-        "orientation": "horizontal",
+        "orientation": "auto",
+        "textSize": {
+          "value": 14
+        },
         "wideLayout": true,
         "showPercentChange": false,
-        "minVizWidth": 130,
+        "minVizWidth": 150,
         "minVizHeight": 40
       }
     },
@@ -745,7 +758,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 23,
+        "y": 24,
         "w": 24,
         "h": 1
       },
@@ -762,7 +775,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 24,
+        "y": 25,
         "w": 4,
         "h": 4
       },
@@ -820,6 +833,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -835,7 +849,7 @@
       },
       "gridPos": {
         "x": 4,
-        "y": 24,
+        "y": 25,
         "w": 4,
         "h": 4
       },
@@ -893,6 +907,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -908,7 +923,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 24,
+        "y": 25,
         "w": 4,
         "h": 4
       },
@@ -965,6 +980,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -980,7 +996,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 24,
+        "y": 25,
         "w": 4,
         "h": 4
       },
@@ -1039,6 +1055,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "horizontal",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -1054,7 +1071,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 24,
+        "y": 25,
         "w": 4,
         "h": 4
       },
@@ -1111,6 +1128,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -1126,7 +1144,7 @@
       },
       "gridPos": {
         "x": 20,
-        "y": 24,
+        "y": 25,
         "w": 4,
         "h": 4
       },
@@ -1183,6 +1201,7 @@
         "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
+        "textSize": {},
         "wideLayout": true,
         "showPercentChange": false
       }
@@ -1198,7 +1217,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 28,
+        "y": 29,
         "w": 8,
         "h": 8
       },
@@ -1270,7 +1289,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 28,
+        "y": 29,
         "w": 8,
         "h": 8
       },
@@ -1353,7 +1372,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 28,
+        "y": 29,
         "w": 8,
         "h": 8
       },
@@ -1420,7 +1439,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 36,
+        "y": 37,
         "w": 24,
         "h": 1
       },
@@ -1437,7 +1456,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 37,
+        "y": 38,
         "w": 12,
         "h": 7
       },
@@ -1516,7 +1535,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 37,
+        "y": 38,
         "w": 12,
         "h": 7
       },
