@@ -1,7 +1,9 @@
 # Second Uptime Kuma, on the Beelink. It watches the NAS from outside, so a
 # NAS failure that also takes down the NAS Kuma, Grafana and Prometheus still
 # reaches Telegram. Keep it small: NAS-side checks only, not a copy of the NAS
-# Kuma. No Docker socket, no Traefik route: LAN only on port 3002.
+# Kuma. No Docker socket. LAN only: https://uptime-kuma2.local.ivanskiy.com
+# through the Beelink Traefik (traefik/rules-beelink/uptime-kuma.yml), or port
+# 3002. Status page slug "nas" feeds the Homepage card "Uptime Kuma on BeeLink".
 #
 # Alerts: the NAS monitors notify a webhook to HA (automation
 # nas_beelink_kuma_alert_gate), which pushes to the phone only when

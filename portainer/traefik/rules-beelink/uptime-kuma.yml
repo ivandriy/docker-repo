@@ -1,0 +1,25 @@
+# Beelink instance only, copied to /opt/portainer/volumes/traefik/rules/uptime-kuma.yml.
+# Second Uptime Kuma (portainer/uptime-kuma/docker-compose.beelink.yml), LAN/VPN only.
+# Both AdGuards rewrite uptime-kuma2.local to 192.168.1.131, so it works with the NAS off.
+http:
+  routers:
+    uptime_kuma2:
+      entryPoints:
+        - "https-lan"
+      service: uptime_kuma2
+      middlewares:
+        - whitelist
+      rule: Host(`uptime-kuma2.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+
+  services:
+    uptime_kuma2:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://127.0.0.1:3002"
