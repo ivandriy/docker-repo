@@ -282,6 +282,37 @@ services:
       - homepage.href=https://cleanuparr.${LOCAL_DOMAIN}
       - homepage.description=Stalled and failed download cleanup
 
+  # rule-based reports of Plex media nobody watches. Report only: rules collect titles
+  # into collections and never delete. Plex runs on the Beelink (http://192.168.1.131:32400).
+  maintainerr:
+    image: ghcr.io/maintainerr/maintainerr:3.31.0
+    container_name: maintainerr
+    user: 1026:100
+    environment:
+      - TZ=Europe/Kyiv
+      - TELEMETRY=off
+    volumes:
+      - /volume1/config/maintainerr:/opt/data
+    restart: always
+    depends_on: [sonarr, radarr]
+    labels:
+      # proxy settings
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintainerr.entrypoints=https"
+      - "traefik.http.routers.maintainerr.rule=Host(`maintainerr.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.maintainerr.middlewares=whitelist@file"
+      - "traefik.http.routers.maintainerr.tls=true"
+      - "traefik.http.routers.maintainerr.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.maintainerr.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.maintainerr.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      - "traefik.http.services.maintainerr.loadbalancer.server.port=6246"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Maintainerr
+      - homepage.icon=maintainerr.png
+      - homepage.href=https://maintainerr.${LOCAL_DOMAIN}
+      - homepage.description=Unwatched media reports
+
 networks:
   default:
     name: containers_bridge
