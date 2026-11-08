@@ -110,7 +110,13 @@ What gets backed up: `db.sqlite3` (taken with SQLite's online backup, never a pl
 - The archive password is passed to `7z` on its command line, so it is visible in the Beelink process list for the few seconds a run takes. Acceptable on a single-user host.
 - Prepared: `/opt/portainer/volumes/vaultwarden/{backup,backup-config}` (0700, 1000:1000), `backup-config/rclone/rclone.conf` with the `BeelinkDisk` local remote, NAS folder `/volume1/BeelinkBackup/vaultwarden`.
 - Dry run with a throwaway key: archive holds `db.<date>.sqlite3` and `rsakey.<date>.tar` (no attachments or sends yet), 7zAES with encrypted headers, wrong password rejected.
-- Left for you: DSM user, `NasBackup` remote, archive password file, Kuma push monitor, redeploy. Then I run the first real backup and the restore drill.
+- Done by you the same evening: DSM user `vwbackup` (SMB, `BeelinkBackup` only), `NasBackup` remote, `zip-password`, Kuma push monitor "Vaultwarden backup" (26 h), stack env `VW_BACKUP_PUSH_URL`, redeploy.
+- First real backup 21:35: `backup.20261108.7z` (6.5 KB) on the Beelink disk and on the NAS share, written as `vwbackup`. Retention pass ran on both.
+- Technical restore drill passed: the NAS copy was pulled back over SMB, unpacked with the sidecar's `restore`, `pragma integrity_check` ok, 58 schema migrations, and a throwaway `vaultwarden/server:1.37.5` on 127.0.0.1:18085 answered `/alive` 200 with the restored rsa key. Scratch container and folder removed.
+- `VW_BACKUP_PUSH_URL` fixed to `http://` (Kuma on 3002 is plain HTTP); the 21:43 run's success ping reached Kuma.
+- Full restore drill passed 21:50, after your account and one dummy item existed: NAS copy pulled back, restored, integrity ok, users/ciphers/folders and newest item timestamp identical to live, rsa key hash identical. You logged in to the restored copy with master password and 2FA and read the item.
+- The web vault refuses plain HTTP, even on `http://localhost` through a tunnel. The drill needed a temporary HTTPS name: Beelink Traefik rule `vault-drill.yml` to `127.0.0.1:18085`, AdGuard rewrite `vault-drill.local` to 192.168.1.131, and the drill container started with `DOMAIN=https://vault-drill.local.ivanskiy.com`. All three removed afterwards. Reuse this for the quarterly drill. After an AdGuard swap, wait until it answers before restarting adguardhome-sync, or the sync errors out and leaves the Beelink stale.
+- Open: `zip-password` still dates from 21:26:56, the run whose output went into the chat. Replace it in a Terminal tab, then delete the 20261108 archives on both remotes and run a new backup.
 
 ## Phase 3: account and hardening
 
