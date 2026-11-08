@@ -4,7 +4,8 @@ services:
   traefik:
     image: "traefik:v3.7"
     container_name: "traefik"
-    restart: unless-stopped
+    # always, like the NAS instance, so a stopped container still comes back on boot
+    restart: always
     network_mode: host
     volumes:
       - "/opt/portainer/volumes/traefik/traefik.yml:/traefik.yml:ro"

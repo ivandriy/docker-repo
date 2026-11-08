@@ -4,7 +4,9 @@ services:
   traefik:
     image: "traefik:v3.7"
     container_name: "traefik"
-    restart: unless-stopped
+    # always, not unless-stopped: Synology's shutdown script stops containers by name,
+    # so unless-stopped ones are not restarted by dockerd after a NAS reboot
+    restart: always
     volumes:
       - "/volume1/config/traefik/traefik.yml:/traefik.yml:ro"
       - "/volume1/config/traefik/rules:/rules:ro"
