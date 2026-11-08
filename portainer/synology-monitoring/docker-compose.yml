@@ -211,17 +211,6 @@ services:
       - /usr/syno/etc/synoschedule.d/root:/hb/schedule:ro
     restart: always
 
-  speedtest_exporter:
-    image: ghcr.io/aaronmwelborn/speedtest_exporter:latest
-    container_name: speedtest_exporter
-    hostname: speedtest
-    security_opt:
-      - no-new-privileges=true
-    read_only: true
-    user: 1026:100
-    restart: always
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
 networks:
   default:
     name: containers_bridge
