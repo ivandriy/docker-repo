@@ -7,10 +7,12 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "${HTTP_PORT}:8080"
-    # Update window: daily at 04:00 local time (cron with seconds first)
-    command: --schedule "0 0 4 * * *"
     environment:
       - TZ=Europe/Kiev
+      # Update window, cron with seconds first. NAS: 04:00 (default).
+      # Beelink stack env sets WATCHTOWER_SCHEDULE=0 30 4 * * * so both
+      # AdGuard and Traefik instances never restart at the same time.
+      - WATCHTOWER_SCHEDULE=${WATCHTOWER_SCHEDULE:-0 0 4 * * *}
       - WATCHTOWER_LABEL_ENABLE=true
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_INCLUDE_RESTARTING=true
