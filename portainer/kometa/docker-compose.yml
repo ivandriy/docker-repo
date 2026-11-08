@@ -17,6 +17,27 @@ services:
     restart: unless-stopped
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
+
+  # removes Plex poster and art files nothing uses any more (old overlay versions pile up)
+  # and clears Plex's photo transcoder cache. Sunday 03:00, before Kometa's 05:00 run.
+  # MODE=report only lists what it would remove; switch to move (recoverable) or remove.
+  imagemaid:
+    image: kometateam/imagemaid:v1.2.2
+    container_name: imagemaid
+    environment:
+      - TZ=Europe/Kyiv
+      - PLEX_PATH=/plex
+      - PLEX_URL=http://192.168.1.131:32400
+      - PLEX_TOKEN=${KOMETA_PLEXTOKEN}
+      - MODE=report
+      - SCHEDULE=03:00|weekly(sunday)
+      - PHOTO_TRANSCODER=True
+      # copy the Plex database from disk instead of downloading it over the API
+      - LOCAL_DB=True
+    volumes:
+      - ${VOLUME_DATA}/imagemaid:/config
+      - "${VOLUME_DATA}/plex/Library/Application Support/Plex Media Server:/plex"
+    restart: unless-stopped
 networks:
   default:
     name: containers_bridge

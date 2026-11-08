@@ -5,7 +5,8 @@
 # restart: always, because Synology's shutdown stops every container by name and
 # unless-stopped then never brings them back after a NAS reboot.
 #
-# Stack env: LOCAL_DOMAIN, SONARR_API_KEY, RADARR_API_KEY, LIDARR_API_KEY, PROWLARR_API_KEY
+# Stack env: LOCAL_DOMAIN, SONARR_API_KEY, RADARR_API_KEY, LIDARR_API_KEY, PROWLARR_API_KEY,
+# BAZARR_API_KEY
 
 x-linuxserver-env: &lsio-env
   PUID: "1026"
@@ -181,6 +182,41 @@ services:
       - homepage.widget.type=prowlarr
       - homepage.widget.url=http://prowlarr:9696
       - homepage.widget.key=${PROWLARR_API_KEY}
+      # auto update docker
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # downloads Ukrainian and English subtitles for everything in Sonarr and Radarr
+  bazarr:
+    image: linuxserver/bazarr:latest
+    container_name: bazarr
+    environment: *lsio-env
+    volumes:
+      - /volume1/config/bazarr:/config
+      # same path as the arrs, so their file paths work without mapping
+      - /volume1/Data:/Data
+    ports:
+      - 6767:6767
+    restart: always
+    depends_on: [sonarr, radarr]
+    labels:
+      # proxy settings
+      - "traefik.enable=true"
+      - "traefik.http.routers.bazarr.entrypoints=https"
+      - "traefik.http.routers.bazarr.rule=Host(`bazarr.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.bazarr.middlewares=whitelist@file"
+      - "traefik.http.routers.bazarr.tls=true"
+      - "traefik.http.routers.bazarr.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.bazarr.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.bazarr.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Bazarr
+      - homepage.icon=bazarr.png
+      - homepage.href=https://bazarr.${LOCAL_DOMAIN}
+      - homepage.description=Subtitles
+      - homepage.widget.type=bazarr
+      - homepage.widget.url=http://bazarr:6767
+      - homepage.widget.key=${BAZARR_API_KEY}
       # auto update docker
       - "com.centurylinklabs.watchtower.enable=true"
 

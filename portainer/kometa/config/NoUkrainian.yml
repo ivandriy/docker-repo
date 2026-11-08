@@ -1,0 +1,10 @@
+# Films with no Ukrainian audio track: a review list for deletion. Plex keeps it up to date
+# (smart collection), Kometa only creates it.
+collections:
+  No Ukrainian Audio:
+    smart_filter:
+      all:
+        audio_language.not: uk
+      sort_by: title.asc
+    sort_title: "~No Ukrainian Audio"
+    summary: Films in this library without a Ukrainian audio track
