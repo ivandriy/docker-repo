@@ -3,7 +3,13 @@
 # reaches Telegram. Keep it small: NAS-side checks only, not a copy of the NAS
 # Kuma. No Docker socket, no Traefik route: LAN only on port 3002.
 #
-# Monitors to add after the first-run account (Telegram notification on each):
+# Alerts: the NAS monitors notify a webhook to HA (automation
+# nas_beelink_kuma_alert_gate), which pushes to the phone only when
+# input_boolean.nas_planned_off is off and was cleared 30+ min ago, so HA's
+# planned blackout shutdown stays quiet. A "Home Assistant" monitor notifies
+# Telegram directly, so a dead HA still reaches you.
+#
+# Monitors (live since 2026-11-08, SQLite):
 #   NAS ping            ping 192.168.1.254
 #   DSM                 https://192.168.1.254:5001 (ignore TLS errors)
 #   NAS Uptime Kuma     http://192.168.1.254:3001/api/entry-page
