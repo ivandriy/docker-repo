@@ -51,7 +51,18 @@ Nothing changes for the arrs in this phase.
 4. Disable (don't delete) the old Jackett indexers in each arr.
 5. Test: an interactive search per arr for a known title, then wait for one RSS sync. Done when results come only from Prowlarr indexers and the health page is clean.
 
-## Phase 4: retire Jackett (about two weeks later)
+## Status 2026-11-08: phases 1 to 3 done
+
+- Prowlarr runs as Portainer stack `prowlarr` (id 81) with FlareSolverr. All six indexers return results.
+- Category IDs match Jackett's. Dropped on copy: 0day.kiev 100023 (Jackett already flagged it unsupported) and RuTracker 2030/2050 in Radarr (not in Prowlarr's RuTracker).
+- The arrs test new indexers with a search in the standard categories. BigFANGroup and RuTor (Radarr) and LimeTorrents (Lidarr) return nothing there, so the arrs rejected them. They were added by hand in those arrs, as Torznab at `http://prowlarr:9696/<id>/` with the old tracker categories and `forceSave`.
+- Prowlarr doesn't adopt indexers it didn't create, and kept retrying those. Fix: tags. Each app has a tag (`sonarr`, `radarr`, `lidarr`), and an indexer syncs to an app only when it carries that tag. Tags: 0day.kiev sonarr+radarr, BigFANGroup sonarr, RuTracker all three, Toloka sonarr+radarr, RuTor and LimeTorrents none. A sync now logs no warnings.
+- **A new indexer in Prowlarr reaches an arr only once you give it that arr's tag.**
+- Each arr's priorities, minimum seeders and categories were copied onto its Prowlarr indexers. The Jackett indexers are disabled, not deleted.
+- Disabled extras from the first sync: LimeTorrents in Sonarr; 0day.kiev and Toloka in Lidarr.
+- Test searches: Sonarr (Friends S01E01) returned results from Toloka, RuTracker and BigFANGroup. Radarr (Dune) from all five. Lidarr from RuTracker and LimeTorrents.
+
+## Phase 4: retire Jackett (about two weeks later, around 2026-11-22)
 
 1. Delete the disabled Jackett indexers from the arrs.
 2. Stop the Jackett stack in Portainer and keep `/volume1/docker/jackett` for another two weeks as the rollback.
