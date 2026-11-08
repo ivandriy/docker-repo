@@ -6,7 +6,7 @@ Found 2026-11-08.
 
 Every leaked value is dead. Checked against each service: the old Radarr and Sonarr keys, both old Plex tokens (the repo one and the newer live one) and the old TMDb key are refused. The OMDb key was already invalid before the rotation. Trakt is no longer supported by Kometa.
 
-- Kometa reads `config.env.yml` with placeholders. Its stack env holds the new Plex, TMDb, Radarr and Sonarr values, and each one checked out against its service.
+- Kometa reads `config.env.yml` with placeholders. Its stack env holds the four new values, and each one checked out against its service.
 - OMDb and Trakt were removed from Kometa (commit e384799). Both only produced errors.
 - Prowlarr and the Homepage Sonarr and Radarr widgets have the new keys. The `plex` stack has the same new token as Kometa.
 - Left for you:
@@ -66,7 +66,7 @@ Plex goes last. By then everything else is ready, so the sign-out disrupts your 
 
 ## Phase 3: verify
 
-- Kometa: one run (`--run`), log shows Plex, TMDb, OMDb, Trakt, Radarr and Sonarr all connected.
+- Kometa: one run (`--run`), log shows every configured service connected.
 - Homepage widgets for Plex, Sonarr, Radarr show data.
 - Prowlarr: sync to Sonarr and Radarr succeeds.
 - Home Assistant: `sensor.sonarr_upcoming` and the Plex media players are available again.
