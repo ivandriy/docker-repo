@@ -57,3 +57,74 @@ scrape_configs:
     scrape_interval: 5m
     static_configs:
       - targets: ['hyperbackup:9112']
+
+  # metrics entrypoint :8083 in traefik.yml / traefik.beelink.yml
+  - job_name: 'traefik'
+    static_configs:
+      - targets: ['traefik:8083']
+        labels: { host: nas }
+      - targets: ['192.168.1.131:8083']
+        labels: { host: beelink }
+
+  # Probed from inside the LAN, so this checks Traefik, the app and the certificate,
+  # not the WAN path. ha.ivanskiy.com without a port is the NAS backup route.
+  - job_name: 'blackbox-http'
+    scrape_interval: 60s
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://ha.ivanskiy.com:8443/manifest.json
+          - https://ha.ivanskiy.com/manifest.json
+          - https://blog.ivanskiy.com/
+          - https://myorchids.kyiv.ua/
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  - job_name: 'blackbox-dns'
+    scrape_interval: 30s
+    metrics_path: /probe
+    params:
+      module: [dns_adguard]
+    static_configs:
+      - targets: ['192.168.1.254:53']
+        labels: { host: nas }
+      - targets: ['192.168.1.131:53']
+        labels: { host: beelink }
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox:9115
+
+  - job_name: 'adguard'
+    static_configs:
+      - targets: ['adguard-exporter:9618']
+    metric_relabel_configs:
+      # http://192.168.1.254:9080 -> nas, http://192.168.1.131:9080 -> beelink
+      - source_labels: [server]
+        regex: .*192\.168\.1\.254.*
+        target_label: host
+        replacement: nas
+      - source_labels: [server]
+        regex: .*192\.168\.1\.131.*
+        target_label: host
+        replacement: beelink
+
+  # HA prometheus integration (packages/prometheus.yaml): EcoFlow and power outage
+  # entities only. Token file is NAS-only, see docker-compose.yml.
+  - job_name: 'homeassistant'
+    scrape_interval: 60s
+    metrics_path: /api/prometheus
+    authorization:
+      credentials_file: /etc/prometheus/ha.token
+    static_configs:
+      - targets: ['192.168.1.131:8123']

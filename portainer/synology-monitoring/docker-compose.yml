@@ -73,6 +73,8 @@ services:
       - /volume1/docker/synology-monitoring/watchtower.token:/etc/prometheus/watchtower.token:ro
       # Uptime Kuma API key for /metrics (Kuma Settings > API Keys), also NAS-only
       - /volume1/docker/synology-monitoring/kuma.apikey:/etc/prometheus/kuma.apikey:ro
+      # Home Assistant long-lived token for /api/prometheus, NAS-only
+      - /volume1/docker/synology-monitoring/ha.token:/etc/prometheus/ha.token:ro
     restart: always
     labels:
        # proxy settings       
@@ -210,6 +212,50 @@ services:
       - /var/packages/HyperBackup/etc/synobackup.conf:/hb/synobackup.conf:ro
       - /usr/syno/etc/synoschedule.d/root:/hb/schedule:ro
     restart: always
+
+  # HTTPS and DNS probes; modules in blackbox.yml, targets in prometheus.yml
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.29.1
+    command:
+      - '--config.file=/etc/blackbox_exporter/blackbox.yml'
+    container_name: blackbox_exporter
+    hostname: blackbox
+    mem_limit: 64m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    user: 1026:100
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:9115/ || exit 1
+    volumes:
+      - /volume1/docker/synology-monitoring/blackbox.yml:/etc/blackbox_exporter/blackbox.yml:ro
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # Both AdGuard Home instances. ADGUARD_USERNAME is stack env (same login on both);
+  # the passwords file is NAS-only, one password per server, comma separated.
+  adguard-exporter:
+    image: ghcr.io/henrywhitaker3/adguard-exporter:v1.2.3
+    container_name: adguard_exporter
+    hostname: adguard-exporter
+    mem_limit: 64m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    user: 1026:100
+    environment:
+      ADGUARD_SERVERS: http://192.168.1.254:9080,http://192.168.1.131:9080
+      ADGUARD_USERNAMES: ${ADGUARD_USERNAME},${ADGUARD_USERNAME}
+      ADGUARD_PASSWORDS_FILE: /run/secrets/adguard_passwords
+      INTERVAL: 30s
+    volumes:
+      - /volume1/docker/synology-monitoring/adguard.passwords:/run/secrets/adguard_passwords:ro
+    restart: always
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
 networks:
   default:

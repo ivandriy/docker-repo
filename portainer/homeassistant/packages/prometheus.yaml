@@ -1,0 +1,18 @@
+# Prometheus exporter at /api/prometheus, scraped by Prometheus on the NAS
+# (job homeassistant in synology-monitoring/prometheus.yml) with a long-lived token.
+# Only power data is exported, so it can be graphed next to the NAS metrics.
+# Live copy: /config/packages/prometheus.yaml. Needs an HA restart after edits.
+prometheus:
+  namespace: hass
+  filter:
+    include_entity_globs:
+      - sensor.delta_2_max_0709_*
+      - sensor.koridor_delta_2_max_*
+      - sensor.ecoflow_*
+      - sensor.corridor_ecoflow_input_*
+      - number.delta_2_max_0709_*
+      - sensor.power_outage_*
+    include_entities:
+      - binary_sensor.power_outage
+      - binary_sensor.synology_nas_icmp
+      - input_boolean.nas_planned_off

@@ -29,6 +29,9 @@ entryPoints:
     address: ":443"
   ping:
     address: "127.0.0.1:8082"
+  # LAN only, scraped by Prometheus on the NAS
+  metrics:
+    address: "192.168.1.131:8083"
 log:
   level: INFO
 accessLog: {}
@@ -41,3 +44,9 @@ api:
   dashboard: true
 ping:
   entryPoint: ping
+metrics:
+  prometheus:
+    entryPoint: metrics
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true

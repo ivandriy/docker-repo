@@ -415,3 +415,163 @@ groups:
         labels: { severity: critical }
         annotations:
           summary: "Hyper Backup \"{{ $labels.name }}\" failed its last run"
+
+      - uid: homelab-traefik-cert-expiring
+        title: TraefikCertExpiring
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 3600, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # Days left on each certificate Traefik serves. Let's Encrypt renews at 30 days,
+              # so under 20 means renewal has failed for 10 days.
+              expr: "min by (host, cn) ((traefik_tls_certs_not_after - time()) / 86400)"
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [20] }
+        for: 1h
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: warning }
+        annotations:
+          summary: "Traefik ({{ $labels.host }}) certificate {{ $labels.cn }} expires in {{ printf \"%.0f\" $values.A.Value }} days. Let's Encrypt renewal is failing; check the Traefik log."
+
+      - uid: homelab-traefik-5xx
+        title: Traefik5xxHigh
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 900, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # Percent of 5xx answers per service over 15 min; clamp_min keeps idle services quiet
+              expr: "sum by (host, service) (rate(traefik_service_requests_total{code=~\"5..\"}[15m])) / clamp_min(sum by (host, service) (rate(traefik_service_requests_total[15m])), 0.02) * 100"
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [20] }
+        for: 15m
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: warning }
+        annotations:
+          summary: "Traefik ({{ $labels.host }}) service {{ $labels.service }} answers {{ printf \"%.0f\" $values.A.Value }}% with 5xx"
+
+      - uid: homelab-probe-http
+        title: HttpsProbeFailed
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              expr: "probe_success{job=\"blackbox-http\"}"
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 5m
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.instance }} does not answer 2xx over HTTPS"
+
+      - uid: homelab-probe-cert
+        title: SiteCertExpiring
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 3600, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              expr: "(probe_ssl_earliest_cert_expiry{job=\"blackbox-http\"} - time()) / 86400"
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [20] }
+        for: 1h
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.instance }} certificate expires in {{ printf \"%.0f\" $values.A.Value }} days"
+
+      - uid: homelab-probe-dns
+        title: DnsProbeFailed
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # A query for google.com against each AdGuard; looks like "the internet is down"
+              expr: "probe_success{job=\"blackbox-dns\"}"
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 3m
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: critical }
+        annotations:
+          summary: "AdGuard on {{ $labels.host }} ({{ $labels.instance }}) does not answer DNS"
+
+      - uid: homelab-adguard-protection-off
+        title: AdGuardProtectionOff
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              expr: "adguard_protection_enabled"
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 30m
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: warning }
+        annotations:
+          summary: "AdGuard on {{ $labels.host }} has had filtering off for 30 min"
