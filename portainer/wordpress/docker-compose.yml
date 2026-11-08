@@ -30,6 +30,12 @@ services:
     depends_on:
         - wp-mariadb
         - wp-redis
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost/"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 2m
     labels:
       # The labels are usefull for Traefik only
       - "traefik.enable=true"
@@ -62,6 +68,12 @@ services:
       MARIADB_COLLATE: utf8_unicode_ci
     volumes:
       - /volume1/docker/wordpress/db:/bitnami/mariadb
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping --silent -h 127.0.0.1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 2m
     labels:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"         
@@ -73,6 +85,12 @@ services:
     ports:
       - "6379:6379"
     command: ["redis-server", "--appendonly", "no", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     labels:
       # Watchtower Update
       - "com.centurylinklabs.watchtower.enable=false"

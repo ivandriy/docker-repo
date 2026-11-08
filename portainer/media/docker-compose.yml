@@ -131,6 +131,12 @@ services:
       - 6881:6881
       - 6881:6881/udp
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost:6004/api/v2/app/version"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 2m
     labels:
       # proxy settings
       - "traefik.enable=true"

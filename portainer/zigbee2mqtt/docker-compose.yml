@@ -12,6 +12,12 @@ services:
     privileged: true
     depends_on:
        - mosquitto
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 2m
     labels:
       # homepage integration
       - homepage.group=Smart home
@@ -33,6 +39,12 @@ services:
     privileged: true
     volumes:
       - ${VOLUME_DATA}/mosquitto:/etc/mosquitto
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -h localhost -t '$$SYS/broker/uptime' -C 1 -W 5"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     labels:
       # auto update docker
       - "com.centurylinklabs.watchtower.monitor-only=true"

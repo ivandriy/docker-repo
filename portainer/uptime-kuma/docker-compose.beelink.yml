@@ -1,0 +1,26 @@
+# Second Uptime Kuma, on the Beelink. It watches the NAS from outside, so a
+# NAS failure that also takes down the NAS Kuma, Grafana and Prometheus still
+# reaches Telegram. Keep it small: NAS-side checks only, not a copy of the NAS
+# Kuma. No Docker socket, no Traefik route: LAN only on port 3002.
+#
+# Monitors to add after the first-run account (Telegram notification on each):
+#   NAS ping            ping 192.168.1.254
+#   DSM                 https://192.168.1.254:5001 (ignore TLS errors)
+#   NAS Uptime Kuma     http://192.168.1.254:3001/api/entry-page
+#   Grafana             http://192.168.1.254:3340/api/health
+#   Prometheus          http://192.168.1.254:9090/-/healthy
+#   NAS Traefik         https://uptime-kuma.local.ivanskiy.com (keyword or 200)
+#   NAS AdGuard DNS     dns ha.local.ivanskiy.com via 192.168.1.254
+# Add a maintenance window 04:00-04:20 Europe/Kyiv for the NAS Watchtower run.
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    container_name: uptime-kuma
+    volumes:
+      - /opt/portainer/volumes/uptime-kuma:/app/data
+    ports:
+      - 3002:3001
+    restart: always
+    labels:
+      # auto update docker
+      - "com.centurylinklabs.watchtower.enable=true"
