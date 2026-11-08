@@ -49,4 +49,18 @@ scrape_configs:
     authorization:
       credentials_file: /etc/prometheus/watchtower.token
     static_configs:
-      - targets: ['watchtower:8080']
+      # Both hosts use the same API token
+      - targets: ['watchtower:8080','192.168.1.131:8008']
+
+  - job_name: 'uptime-kuma'
+    scrape_interval: 60s
+    basic_auth:
+      username: prometheus
+      password_file: /etc/prometheus/kuma.apikey
+    static_configs:
+      - targets: ['uptime-kuma:3001']
+
+  - job_name: 'hyperbackup'
+    scrape_interval: 5m
+    static_configs:
+      - targets: ['hyperbackup:9112']

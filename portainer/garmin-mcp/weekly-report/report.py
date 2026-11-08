@@ -20,6 +20,7 @@ import re
 import statistics
 import sys
 import time
+import urllib.parse
 import urllib.request
 import zipfile
 from zoneinfo import ZoneInfo
@@ -37,6 +38,8 @@ REPORT_TIME = os.environ.get("REPORT_TIME", "19:00")
 FIT_DIR = os.environ.get("FIT_DIR", "/fit")
 MCP_FIT_DIR = "/home/garmin/Downloads/garmin"
 STATE_FILE = os.environ.get("STATE_FILE", "/state/state.json")
+# Uptime Kuma push monitor URL without query; empty disables the heartbeat
+KUMA_PUSH_URL = os.environ.get("KUMA_PUSH_URL", "")
 TZ = ZoneInfo("Europe/Kyiv")
 NA = "N/A"
 RHR_FLAG_BPM = 10  # flag a resting HR this far from the period median
@@ -780,6 +783,16 @@ def telegram(method, fields, files=None):
         return json.load(resp)
 
 
+def heartbeat(status, msg):
+    if not KUMA_PUSH_URL:
+        return
+    query = urllib.parse.urlencode({"status": status, "msg": msg[:200]})
+    try:
+        urllib.request.urlopen(f"{KUMA_PUSH_URL}?{query}", timeout=15).close()
+    except Exception as exc:  # the report itself already went out
+        print(f"heartbeat failed: {exc}", flush=True)
+
+
 def load_state():
     try:
         with open(STATE_FILE) as f:
@@ -819,6 +832,7 @@ def run_once(print_only=False, force_initial=False, html_path=None):
     state.update(initial_done=True, zones_hash=zones_hash, last_sent=now.isoformat())
     save_state(state)
     print(f"{now:%Y-%m-%d %H:%M} sent {name} ({start} to {end})", flush=True)
+    heartbeat("up", f"sent {name}")
 
 
 def seconds_until_next_run():
@@ -849,6 +863,8 @@ def main():
                 break
             except Exception as exc:  # retry within the evening, then wait for next week
                 print(f"report failed (attempt {attempt + 1}): {exc}", flush=True)
+                if attempt == 2:
+                    heartbeat("down", f"report failed 3 times: {exc}")
                 time.sleep(1200)
 
 

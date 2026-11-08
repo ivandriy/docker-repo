@@ -309,3 +309,109 @@ groups:
         labels: { severity: warning }
         annotations:
           summary: "Beelink lost the NAS media mount /mnt/nas_media. Plex can't read media."
+
+      - uid: homelab-watchtower-update-failed
+        title: WatchtowerUpdateFailed
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # Gauge from the last nightly scan, so it stays firing until the next scan
+              expr: max by (instance) (watchtower_containers_failed)
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        for: 1m
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: warning }
+        annotations:
+          summary: "Watchtower on {{ $labels.instance }} failed to update {{ $values.A.Value }} container(s) in its last scan"
+
+      - uid: homelab-watchtower-scan-failed
+        title: WatchtowerScanFailed
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              expr: max by (instance) (increase(watchtower_scans_failed_total[1h]))
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        for: 1m
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: warning }
+        annotations:
+          summary: "Watchtower on {{ $labels.instance }} had a failed scan in the last hour"
+
+      - uid: homelab-hyperbackup-stale
+        title: HyperBackupStale
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 900, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # Hours past the allowed age (36 h daily, 8 days weekly, from the exporter)
+              expr: (time() - hyperbackup_last_success_timestamp_seconds - hyperbackup_max_age_seconds) / 3600
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        for: 30m
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: critical }
+        annotations:
+          summary: "Hyper Backup \"{{ $labels.name }}\" ({{ $labels.schedule }}) has not succeeded for {{ printf \"%.0f\" $values.A.Value }} h past its limit"
+
+      - uid: homelab-hyperbackup-failed
+        title: HyperBackupFailed
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 900, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              expr: hyperbackup_last_run_ok
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 5m
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: critical }
+        annotations:
+          summary: "Hyper Backup \"{{ $labels.name }}\" failed its last run"

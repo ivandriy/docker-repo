@@ -53,6 +53,8 @@ services:
       REPORT_TIME: '19:00'
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+      # Uptime Kuma push monitor "Garmin weekly report" (stack env, optional)
+      KUMA_PUSH_URL: ${KUMA_PUSH_URL:-}
     volumes:
       # FIT files that garmin-mcp downloads
       - garmin-downloads:/fit:ro

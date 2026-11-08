@@ -71,6 +71,8 @@ services:
       - /volume1/docker/synology-monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       # Watchtower HTTP API token, kept only on the NAS (same value as the watchtower stack env)
       - /volume1/docker/synology-monitoring/watchtower.token:/etc/prometheus/watchtower.token:ro
+      # Uptime Kuma API key for /metrics (Kuma Settings > API Keys), also NAS-only
+      - /volume1/docker/synology-monitoring/kuma.apikey:/etc/prometheus/kuma.apikey:ro
     restart: always
     labels:
        # proxy settings       
@@ -184,6 +186,30 @@ services:
       - homepage.href=https://cadvisor.${LOCAL_DOMAIN}
       - homepage.description=Docker monitoring      
       - "com.centurylinklabs.watchtower.enable=true"
+
+  # Hyper Backup task results as metrics. The script is hyperbackup-exporter.py in this
+  # repo; copy edits to the NAS folder. Group 101 (administrators) can read the schedules.
+  hyperbackup-exporter:
+    image: python:3.13.18-alpine
+    command: ["python", "-u", "/app/exporter.py"]
+    container_name: hyperbackup_exporter
+    hostname: hyperbackup
+    mem_limit: 64m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges=true
+    read_only: true
+    user: 1026:100
+    group_add:
+      - "101"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9112/metrics')"]
+    volumes:
+      - /volume1/docker/synology-monitoring/hyperbackup-exporter.py:/app/exporter.py:ro
+      - /var/packages/HyperBackup/var/last_result:/hb/last_result:ro
+      - /var/packages/HyperBackup/etc/synobackup.conf:/hb/synobackup.conf:ro
+      - /usr/syno/etc/synoschedule.d/root:/hb/schedule:ro
+    restart: always
 
   speedtest_exporter:
     image: ghcr.io/aaronmwelborn/speedtest_exporter:latest
