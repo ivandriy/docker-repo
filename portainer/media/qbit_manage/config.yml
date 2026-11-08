@@ -1,0 +1,95 @@
+# qbit_manage config for the media stack.
+# Live copy: /volume1/config/qbit_manage/config.yml (copied by hand, like recyclarr.yml).
+#
+# Tags only: tracker tags, "issue" for dead torrents, "noHL" for unlinked ones.
+# It never removes a torrent or a file. The 2026-11-08 dry run showed why:
+# rem_unregistered would delete contents of music torrents the trackers dropped,
+# and rem_orphaned sees library hardlinks and loose music that must stay.
+
+commands:
+  dry_run: False
+  recheck: False
+  cat_update: False
+  tag_update: True
+  rem_unregistered: False
+  tag_tracker_error: True
+  rem_orphaned: False
+  tag_nohardlinks: True
+  share_limits: False
+  skip_qb_version_check: False
+  skip_cleanup: True
+
+qbt:
+  # qBittorrent skips auth for containers_bridge (AuthSubnetWhitelist)
+  host: "http://qbittorrent:6004"
+  user: ""
+  pass: ""
+
+settings:
+  force_auto_tmm: False
+  tracker_error_tag: issue
+  nohardlinks_tag: noHL
+  stalled_tag: stalledDL
+  private_tag: null
+  cat_filter_completed: True
+  share_limits_filter_completed: True
+  tag_nohardlinks_filter_completed: True
+  rem_unregistered_filter_completed: False
+  cat_update_all: False
+  disable_qbt_default_share_limits: False
+  tag_stalled_torrents: True
+  rem_unregistered_grace_minutes: 60
+  rem_unregistered_max_torrents: 5
+
+directory:
+  # same path as qBittorrent and the arrs see, so hardlink checks match
+  root_dir: "/Data/Downloads/"
+  recycle_bin: "/Data/Downloads/.RecycleBin"
+  orphaned_dir: "/Data/Downloads/.orphaned_data"
+
+cat:
+  movies: "/Data/Downloads/Movies"
+  movies-imported: "/Data/Downloads/Movies"
+  series: "/Data/Downloads/Series"
+  series-imported: "/Data/Downloads/Series"
+  music: "/Data/Downloads/Music"
+  Uncategorized: "/Data/Downloads"
+
+tracker:
+  toloka:
+    tag: Toloka
+  hurtom:
+    tag: Hurtom
+  t-ru.org:
+    tag: RuTracker
+  other:
+    tag: other
+
+nohardlinks:
+  # a torrent in these categories with no hardlink into /Data/Media gets noHL
+  movies:
+    ignore_root_dir: true
+  movies-imported:
+    ignore_root_dir: true
+  series:
+    ignore_root_dir: true
+  series-imported:
+    ignore_root_dir: true
+
+recyclebin:
+  enabled: true
+  empty_after_x_days: 14
+  save_torrents: false
+  split_by_category: false
+
+orphaned:
+  empty_after_x_days: 14
+  min_file_age_minutes: 120
+  exclude_patterns:
+    - "**/.DS_Store"
+    - "**/@eaDir"
+    - "**/#recycle"
+    - "**/*.!qB"
+    # music is kept by hand, whether a torrent still holds it or not
+    - "/Data/Downloads/Music/**"
+  max_orphaned_files_to_delete: 50

@@ -215,6 +215,42 @@ services:
     restart: always
     depends_on: [sonarr, radarr]
 
+  # tags and cleans qBittorrent torrents (noHL, tracker errors, orphaned files)
+  # config: /volume1/config/qbit_manage/config.yml (copy of qbit_manage/config.yml in this folder)
+  qbit_manage:
+    image: ghcr.io/stuffanthings/qbit_manage:v4.15.0
+    container_name: qbit_manage
+    environment:
+      <<: *lsio-env
+      QBT_CONFIG_DIR: /config
+      # nightly, before Watchtower's 04:00 window
+      QBT_SCHEDULE: "30 3 * * *"
+      QBT_WEB_SERVER: "true"
+      QBT_PORT: "8181"
+    volumes:
+      - /volume1/config/qbit_manage:/config
+      # same path as qBittorrent sees, so hardlink and orphan checks match
+      - /volume1/Data/Downloads:/Data/Downloads
+    restart: always
+    depends_on: [qbittorrent]
+    labels:
+      # proxy settings
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbm.entrypoints=https"
+      - "traefik.http.routers.qbm.rule=Host(`qbm.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.qbm.middlewares=whitelist@file"
+      - "traefik.http.routers.qbm.tls=true"
+      - "traefik.http.routers.qbm.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.qbm.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.qbm.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      - "traefik.http.services.qbm.loadbalancer.server.port=8181"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=qbit_manage
+      - homepage.icon=qbittorrent.png
+      - homepage.href=https://qbm.${LOCAL_DOMAIN}
+      - homepage.description=Torrent tagging and cleanup
+
 networks:
   default:
     name: containers_bridge
