@@ -2,7 +2,7 @@ version: "3.2"
 
 services:
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:13.3.0
     container_name: grafana
     hostname: grafana
     mem_limit: 512m
@@ -22,8 +22,9 @@ services:
       TZ: Europe/Kiev
       # Alert links (Rule, Silence) are built from this; without it they say localhost:3000
       GF_SERVER_ROOT_URL: https://grafana.${LOCAL_DOMAIN}
-      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,natel-discrete-panel,grafana-piechart-panel
-    restart: unless-stopped
+    # always, not unless-stopped: Synology's shutdown script stops containers by name,
+    # so unless-stopped ones are not restarted by dockerd after a NAS reboot
+    restart: always
     labels:
        # proxy settings   
       - "traefik.enable=true"    
@@ -50,7 +51,7 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:v3.16.0
     command:
       - '--storage.tsdb.retention.time=60d'
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -68,7 +69,9 @@ services:
     volumes:
       - /volume1/docker/synology-monitoring/prometheus:/prometheus:rw
       - /volume1/docker/synology-monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    restart: unless-stopped
+      # Watchtower HTTP API token, kept only on the NAS (same value as the watchtower stack env)
+      - /volume1/docker/synology-monitoring/watchtower.token:/etc/prometheus/watchtower.token:ro
+    restart: always
     labels:
        # proxy settings       
       - "traefik.enable=true"    
@@ -91,7 +94,7 @@ services:
       - "com.centurylinklabs.watchtower.enable=true"
 
   node-exporter:
-    image: prom/node-exporter:latest
+    image: prom/node-exporter:v1.12.1
     command:
       - --collector.disable-defaults
       - --collector.stat
@@ -112,13 +115,13 @@ services:
     user: 1026:100
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:9100/
-    restart: unless-stopped
+    restart: always
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 
 
   snmp-exporter:
-    image: prom/snmp-exporter:latest
+    image: prom/snmp-exporter:v0.31.0
     command:
       - '--config.file=/etc/snmp_exporter/snmp.yml'
     container_name: snmp_exporter
@@ -134,7 +137,7 @@ services:
       test: wget --no-verbose --tries=1 --spider http://localhost:9116/ || exit 1
     volumes:
       - /volume1/docker/synology-monitoring/snmp.yml:/etc/snmp_exporter/snmp.yml:ro
-    restart: unless-stopped
+    restart: always
     labels:
       - "com.centurylinklabs.watchtower.enable=true"   
 
@@ -152,8 +155,6 @@ services:
       - "--allow_dynamic_housekeeping=true"
     container_name: cadvisor
     hostname: cadvisor
-    ports:
-    - 8080:8080
     mem_limit: 256m
     mem_reservation: 64m
     cpu_shares: 512
@@ -165,7 +166,7 @@ services:
       - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-    restart: unless-stopped
+    restart: always
     labels:
       # proxy settings        
       - "traefik.enable=true"    
@@ -192,7 +193,7 @@ services:
       - no-new-privileges=true
     read_only: true
     user: 1026:100
-    restart: unless-stopped
+    restart: always
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 networks:

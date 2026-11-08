@@ -24,9 +24,7 @@ groups:
             relativeTimeRange: { from: 300, to: 0 }
             datasourceUid: cdup605h5snpce
             model:
-              # truenas (192.168.1.150) has been unreachable for a long time; drop the
-              # exclusion when the job is removed or the box is back.
-              expr: up{job!="truenas"}
+              expr: up
               instant: true
               refId: A
           - refId: C

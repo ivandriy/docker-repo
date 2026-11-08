@@ -1,21 +1,24 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+
 scrape_configs:
   - job_name: 'prometheus'
-    scrape_interval: 10s
     static_configs:
       - targets: ['prometheus:9090']
 
   - job_name: 'nodeexporter'
-    scrape_interval: 5s
     static_configs:
       - targets: ['nodeexporter:9100','192.168.1.131:9100']
 
   - job_name: 'cadvisor'
-    scrape_interval: 5s
     static_configs:
-      - targets: ['cadvisor:8080']
+      - targets: ['cadvisor:8080','192.168.1.131:8880']
 
+  # Synology SNMP is slow and its values change slowly, so poll less often
   - job_name: 'snmp'
-    scrape_interval: 5s
+    scrape_interval: 30s
+    scrape_timeout: 20s
     static_configs:
       - targets: ['192.168.1.254']
     metrics_path: /snmp
@@ -38,3 +41,12 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets: ['speedtest:9877']
+
+  - job_name: 'watchtower'
+    scrape_interval: 60s
+    metrics_path: /v1/metrics
+    # Token file lives only on the NAS next to this file, see docker-compose.yml
+    authorization:
+      credentials_file: /etc/prometheus/watchtower.token
+    static_configs:
+      - targets: ['watchtower:8080']
