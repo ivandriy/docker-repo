@@ -1,0 +1,39 @@
+# Notification templates, file-provisioned next to homelab.yml.
+# The Telegram contact point uses parse_mode HTML and the message
+#   {{ template "homelab.telegram" . }}
+# That contact point lives in grafana.db (it holds the bot token), not here.
+apiVersion: 1
+templates:
+  - orgId: 1
+    name: homelab
+    template: |
+      {{ define "homelab.icon" -}}
+      {{ if eq .Status "resolved" }}✅{{ else if eq .Labels.severity "critical" }}🔴{{ else if eq .Labels.severity "warning" }}🟠{{ else }}🔵{{ end }}
+      {{- end }}
+
+      {{ define "homelab.title" -}}
+      {{ if or (eq .Labels.alertname "DatasourceError") (eq .Labels.alertname "DatasourceNoData") }}{{ .Labels.rulename }}: can't query Prometheus{{ else if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}{{ .Labels.alertname }}{{ if .Labels.instance }} on {{ .Labels.instance }}{{ end }}{{ end }}
+      {{- end }}
+
+      {{ define "homelab.alert" -}}
+      {{ template "homelab.icon" . }} <b>{{ template "homelab.title" . }}</b>
+      <i>{{ .Labels.alertname }}{{ if .Labels.severity }} · {{ .Labels.severity }}{{ end }} · {{ if eq .Status "resolved" }}{{ .StartsAt | tz "Europe/Kyiv" | date "15:04" }}–{{ .EndsAt | tz "Europe/Kyiv" | date "15:04" }}{{ else }}since {{ .StartsAt | tz "Europe/Kyiv" | date "15:04" }}{{ end }}</i>
+      {{- if .Annotations.error }}
+      <code>{{ .Annotations.error }}</code>
+      {{- end }}
+      {{- if or .GeneratorURL .DashboardURL .SilenceURL }}
+      {{ if .GeneratorURL }}<a href="{{ .GeneratorURL }}">Rule</a>{{ end }}{{ if .DashboardURL }} · <a href="{{ .DashboardURL }}">Dashboard</a>{{ end }}{{ if and .SilenceURL (ne .Status "resolved") }} · <a href="{{ .SilenceURL }}">Silence</a>{{ end }}
+      {{- end }}
+      {{- end }}
+
+      {{ define "homelab.telegram" -}}
+      {{ range $i, $a := .Alerts.Firing }}{{ if $i }}
+
+      {{ end }}{{ template "homelab.alert" $a }}{{ end }}
+      {{- if and .Alerts.Firing .Alerts.Resolved }}
+
+      {{ end }}
+      {{- range $i, $a := .Alerts.Resolved }}{{ if $i }}
+
+      {{ end }}{{ template "homelab.alert" $a }}{{ end }}
+      {{- end }}

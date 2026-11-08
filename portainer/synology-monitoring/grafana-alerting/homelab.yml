@@ -5,6 +5,9 @@
 # Notifications go to the default route (Telegram contact point).
 # Every expression returns a value for every series, so "no data" means the exporter
 # is gone; TargetDown covers that, and noDataState is OK everywhere.
+# execErrState is KeepLast: with Prometheus down every rule would otherwise send its
+# own DatasourceError. A dead Prometheus is reported by Uptime Kuma and by the HA
+# watchdog (automation.nas_monitoring_watchdog) instead.
 # Datasource cdup605h5snpce is the "prometheus" datasource.
 apiVersion: 1
 groups:
@@ -36,7 +39,7 @@ groups:
                 - evaluator: { type: lt, params: [1] }
         for: 5m
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: critical }
         annotations:
           summary: "Prometheus can't scrape {{ $labels.job }} at {{ $labels.instance }}"
@@ -63,7 +66,7 @@ groups:
                 - evaluator: { type: gt, params: [0] }
         for: 2m
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: critical }
         annotations:
           summary: "NAS {{ $labels.raidName }} is not Normal. Check Storage Manager."
@@ -90,7 +93,7 @@ groups:
                 - evaluator: { type: gt, params: [0] }
         for: 5m
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: critical }
         annotations:
           summary: "NAS {{ $labels.diskID }} reports a bad status, failing health or bad sectors"
@@ -116,7 +119,7 @@ groups:
                 - evaluator: { type: gt, params: [50] }
         for: 10m
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: warning }
         annotations:
           summary: "NAS {{ $labels.diskID }} is at {{ $values.A.Value }} °C"
@@ -143,7 +146,7 @@ groups:
                 - evaluator: { type: lt, params: [20] }
         for: 1h
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: warning }
         annotations:
           summary: "NAS {{ $labels.diskID }} has {{ $values.A.Value }}% life left. Plan a replacement."
@@ -170,7 +173,7 @@ groups:
                 - evaluator: { type: gt, params: [85] }
         for: 30m
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: warning }
         annotations:
           summary: "NAS {{ $labels.raidName }} is {{ printf \"%.0f\" $values.A.Value }}% full"
@@ -197,7 +200,7 @@ groups:
                 - evaluator: { type: gt, params: [0] }
         for: 5m
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: critical }
         annotations:
           summary: "NAS reports a system, power or fan fault. Check DSM Info Center."
@@ -224,7 +227,7 @@ groups:
                 - evaluator: { type: gt, params: [0] }
         for: 1m
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: critical }
         annotations:
           summary: "NAS UPS status is {{ $labels.upsInfoStatus }}"
@@ -250,7 +253,7 @@ groups:
                 - evaluator: { type: gt, params: [85] }
         for: 15m
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: warning }
         annotations:
           summary: "Beelink {{ $labels.mountpoint }} is {{ printf \"%.0f\" $values.A.Value }}% full"
@@ -276,7 +279,7 @@ groups:
                 - evaluator: { type: gt, params: [90] }
         for: 10m
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: warning }
         annotations:
           summary: "Beelink CPU is at {{ $values.A.Value }} °C"
@@ -304,7 +307,7 @@ groups:
                 - evaluator: { type: gt, params: [0] }
         for: 5m
         noDataState: OK
-        execErrState: Error
+        execErrState: KeepLast
         labels: { severity: warning }
         annotations:
           summary: "Beelink lost the NAS media mount /mnt/nas_media. Plex can't read media."

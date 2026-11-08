@@ -20,6 +20,8 @@ services:
       - /volume1/docker/synology-monitoring/grafana-alerting:/etc/grafana/provisioning/alerting:ro
     environment:
       TZ: Europe/Kiev
+      # Alert links (Rule, Silence) are built from this; without it they say localhost:3000
+      GF_SERVER_ROOT_URL: https://grafana.${LOCAL_DOMAIN}
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,natel-discrete-panel,grafana-piechart-panel
     restart: unless-stopped
     labels:
