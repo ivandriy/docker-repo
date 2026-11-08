@@ -7,8 +7,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "${HTTP_PORT}:8080"
-    # Check for updates every couple hours: (3h * 60m * 60s)
-    command: --interval 10800
+    # Update window: daily at 04:00 local time (cron with seconds first)
+    command: --schedule "0 0 4 * * *"
     environment:
       - TZ=Europe/Kiev
       - WATCHTOWER_LABEL_ENABLE=true
