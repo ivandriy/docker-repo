@@ -27,9 +27,9 @@ services:
       - homepage.name=Jackett
       - homepage.icon=jackett.png
       - homepage.href=https://jackett.${LOCAL_DOMAIN}
-      - homepage.description=Torrent indexer
-      - homepage.widget.type=jackett
-      - homepage.widget.url=http://jackett:9117
+      # no widget: Jackett has an admin password, and its indexers are disabled until
+      # the stack is retired (plans/prowlarr-migration.md, phase 4)
+      - homepage.description=Torrent indexer (retiring)
       # auto update docker
       - "com.centurylinklabs.watchtower.enable=true"
 # FlareSolverr moved to the prowlarr stack; Jackett still uses http://flaresolverr:8191
