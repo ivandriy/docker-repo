@@ -32,23 +32,7 @@ services:
       - homepage.widget.url=http://jackett:9117
       # auto update docker
       - "com.centurylinklabs.watchtower.enable=true"
-    depends_on:
-      - flaresolverr
-
-  # solves Cloudflare challenges for Jackett (RuTracker); Jackett points at http://flaresolverr:8191
-  flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
-    container_name: flaresolverr
-    environment:
-      - LOG_LEVEL=info
-      - TZ=Europe/Kyiv
-      # skip images and CSS while solving challenges
-      - DISABLE_MEDIA=true
-    # browser profiles live in RAM, not on the NAS disks (10-30 MB per request)
-    tmpfs:
-      - /tmp:size=256M,mode=1777
-    mem_limit: 1g
-    restart: unless-stopped
+# FlareSolverr moved to the prowlarr stack; Jackett still uses http://flaresolverr:8191
 networks:
   default:
     name: containers_bridge
