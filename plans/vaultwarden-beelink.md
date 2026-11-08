@@ -136,6 +136,7 @@ Checked after you finished the account steps:
 - Exposure: 8085 refused from the LAN, bound to 127.0.0.1 only. The vault host gets 404 on both WAN-forwarded entrypoints (Beelink :8443, NAS :443), so it has no route from outside.
 - Grafana: `https://vault.local.ivanskiy.com/alive` added to the `blackbox-http` job in `portainer/synology-monitoring/prometheus.yml` (live on the NAS, backup `prometheus.yml.bak-20261108-vault`, Prometheus restarted), `probe_success` 1. `HttpsProbeFailed` and `SiteCertExpiring` now cover it.
 - Kuma: auto mode refused editing the Beelink Kuma database, so the HTTP monitor "Vaultwarden" (`https://vault.local.ivanskiy.com/alive`, 60 s, Telegram) is yours to add in the UI. Kuma was stopped for about a minute during the attempt and came back healthy.
+- That monitor first got 403: Kuma's requests reach the Beelink Traefik from its compose network (`uptime-kuma_default`, 172.24.0.2), which `whitelist` doesn't cover. The vault router now uses its own `vault-allow` middleware (the whitelist ranges plus 172.24.0.0/16), live on the Beelink. Kuma and the Mac both get 200. If the Kuma stack's network is ever recreated, check its subnet.
 
 ## Phase 4: move the data from Bitwarden cloud
 

@@ -9,7 +9,7 @@ http:
         - "https-lan"
       service: vaultwarden
       middlewares:
-        - whitelist
+        - vault-allow
         - hsts
       rule: Host(`vault.{{ env "LOCAL_DOMAIN" }}`)
       tls:
@@ -18,6 +18,18 @@ http:
           - main: '{{ env "LOCAL_DOMAIN" }}'
             sans:
               - '*.{{ env "LOCAL_DOMAIN" }}'
+
+  middlewares:
+    # whitelist@file plus the Beelink Uptime Kuma, whose requests arrive from
+    # its compose network (uptime-kuma_default, 172.24.0.0/16 since 2026-11-08).
+    # If that stack's network is ever recreated, check the subnet again.
+    vault-allow:
+      ipAllowList:
+        sourceRange:
+          - "192.168.1.0/24"
+          - "192.168.3.0/24"
+          - "192.168.4.0/24"
+          - "172.24.0.0/16"
 
   services:
     vaultwarden:
