@@ -116,7 +116,7 @@ What gets backed up: `db.sqlite3` (taken with SQLite's online backup, never a pl
 - `VW_BACKUP_PUSH_URL` fixed to `http://` (Kuma on 3002 is plain HTTP); the 21:43 run's success ping reached Kuma.
 - Full restore drill passed 21:50, after your account and one dummy item existed: NAS copy pulled back, restored, integrity ok, users/ciphers/folders and newest item timestamp identical to live, rsa key hash identical. You logged in to the restored copy with master password and 2FA and read the item.
 - The web vault refuses plain HTTP, even on `http://localhost` through a tunnel. The drill needed a temporary HTTPS name: Beelink Traefik rule `vault-drill.yml` to `127.0.0.1:18085`, AdGuard rewrite `vault-drill.local` to 192.168.1.131, and the drill container started with `DOMAIN=https://vault-drill.local.ivanskiy.com`. All three removed afterwards. Reuse this for the quarterly drill. After an AdGuard swap, wait until it answers before restarting adguardhome-sync, or the sync errors out and leaves the Beelink stale.
-- Open: `zip-password` still dates from 21:26:56, the run whose output went into the chat. Replace it in a Terminal tab, then delete the 20261108 archives on both remotes and run a new backup.
+- `zip-password` replaced at 21:53. The 22:12 run overwrote `backup.20261108.7z` on both remotes with an archive under the new key (`7z t` ok). Hyper Backup may still hold the earlier version under the old key in its history; it holds only the dummy item.
 
 ## Phase 3: account and hardening
 
@@ -125,6 +125,17 @@ What gets backed up: `db.sqlite3` (taken with SQLite's online backup, never a pl
 3. Admin panel: check Diagnostics once (time sync, DOMAIN, websocket, push), then remove `ADMIN_TOKEN` from the stack env and redeploy. That disables `/admin` entirely. Settings saved in the panel go to `config.json` and override env, so prefer env and leave `config.json` absent.
 4. Monitoring: HTTP monitor `https://vault.local.ivanskiy.com/alive` on the Beelink Kuma, added to maintenance window "Beelink Watchtower 04:30" only if a Watchtower label is ever added. A blackbox `http_2xx` probe in `blackbox.yml` covers it in Grafana too.
 5. Exposure check from outside: confirm the UCG Max has no port forward to 192.168.1.131:443 (only 8443 for HA), and that `ss -ltn` shows 8085 bound to 127.0.0.1 only.
+
+### Status 2026-11-08
+
+Checked after you finished the account steps:
+
+- Signups closed: `SIGNUPS_ALLOWED=false`, `/api/config` reports `disableUserRegistration: true`.
+- Admin panel off: `ADMIN_TOKEN` empty, `/admin` serves "The admin panel is disabled", `/admin/diagnostics` 404. Vaultwarden still logs the plain-text NOTICE at start because the compose passes an empty `ADMIN_TOKEN`; harmless.
+- Account: Argon2id, 6 iterations, 32 MB, 4 threads (Bitwarden's default is 3 iterations, 64 MB; raising memory to 64 MB is optional). Two-step login: authenticator app and a passkey/security key (WebAuthn), both enabled; recovery code generated.
+- Exposure: 8085 refused from the LAN, bound to 127.0.0.1 only. The vault host gets 404 on both WAN-forwarded entrypoints (Beelink :8443, NAS :443), so it has no route from outside.
+- Grafana: `https://vault.local.ivanskiy.com/alive` added to the `blackbox-http` job in `portainer/synology-monitoring/prometheus.yml` (live on the NAS, backup `prometheus.yml.bak-20261108-vault`, Prometheus restarted), `probe_success` 1. `HttpsProbeFailed` and `SiteCertExpiring` now cover it.
+- Kuma: auto mode refused editing the Beelink Kuma database, so the HTTP monitor "Vaultwarden" (`https://vault.local.ivanskiy.com/alive`, 60 s, Telegram) is yours to add in the UI. Kuma was stopped for about a minute during the attempt and came back healthy.
 
 ## Phase 4: move the data from Bitwarden cloud
 

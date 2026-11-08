@@ -79,6 +79,8 @@ scrape_configs:
           - https://ha.ivanskiy.com/manifest.json
           - https://blog.ivanskiy.com/
           - https://myorchids.kyiv.ua/
+          # LAN-only Vaultwarden on the Beelink Traefik
+          - https://vault.local.ivanskiy.com/alive
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
