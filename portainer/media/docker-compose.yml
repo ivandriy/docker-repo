@@ -2,6 +2,9 @@
 # stacks sonarr, radarr, lidarr, qbittorrent, prowlarr and recyclarr on 2026-11-08.
 # Jackett stays in its own stack until it is retired.
 #
+# restart: always, because Synology's shutdown stops every container by name and
+# unless-stopped then never brings them back after a NAS reboot.
+#
 # Stack env: LOCAL_DOMAIN, SONARR_API_KEY, RADARR_API_KEY, LIDARR_API_KEY, PROWLARR_API_KEY
 
 x-linuxserver-env: &lsio-env
@@ -19,7 +22,7 @@ services:
       - /volume1/Data:/Data
     ports:
       - 8989:8989
-    restart: unless-stopped
+    restart: always
     depends_on: [qbittorrent, prowlarr]
     labels:
       # proxy settings
@@ -53,7 +56,7 @@ services:
       - /volume1/Data:/Data
     ports:
       - 7878:7878
-    restart: unless-stopped
+    restart: always
     depends_on: [qbittorrent, prowlarr]
     labels:
       # proxy settings
@@ -87,7 +90,7 @@ services:
       - /volume1/Data:/Data
     ports:
       - 8686:8686
-    restart: unless-stopped
+    restart: always
     depends_on: [qbittorrent, prowlarr]
     labels:
       # proxy settings
@@ -126,7 +129,7 @@ services:
       - 6004:6004
       - 6881:6881
       - 6881:6881/udp
-    restart: unless-stopped
+    restart: always
     labels:
       # proxy settings
       - "traefik.enable=true"
@@ -157,7 +160,7 @@ services:
       - /volume1/config/prowlarr:/config
     ports:
       - 9696:9696
-    restart: unless-stopped
+    restart: always
     depends_on: [flaresolverr]
     labels:
       # proxy settings
@@ -194,7 +197,7 @@ services:
     tmpfs:
       - /tmp:size=256M,mode=1777
     mem_limit: 1g
-    restart: unless-stopped
+    restart: always
 
   # syncs TRaSH Guides custom formats into Sonarr and Radarr once a day
   # config: /volume1/config/recyclarr/recyclarr.yml (copy of recyclarr.yml in this folder)
@@ -209,7 +212,7 @@ services:
       - RADARR_API_KEY=${RADARR_API_KEY}
     volumes:
       - /volume1/config/recyclarr:/config
-    restart: unless-stopped
+    restart: always
     depends_on: [sonarr, radarr]
 
 networks:
