@@ -1,0 +1,218 @@
+# Portainer stack "media" on the NAS: the media apps in one stack. Replaced the separate
+# stacks sonarr, radarr, lidarr, qbittorrent, prowlarr and recyclarr on 2026-11-08.
+# Jackett stays in its own stack until it is retired.
+#
+# Stack env: LOCAL_DOMAIN, SONARR_API_KEY, RADARR_API_KEY, LIDARR_API_KEY, PROWLARR_API_KEY
+
+x-linuxserver-env: &lsio-env
+  PUID: "1026"
+  PGID: "100"
+  TZ: Europe/Kyiv
+
+services:
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    environment: *lsio-env
+    volumes:
+      - /volume1/config/sonarr:/config
+      - /volume1/Data:/Data
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+    depends_on: [qbittorrent, prowlarr]
+    labels:
+      # proxy settings
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.entrypoints=https"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.sonarr.middlewares=whitelist@file"
+      - "traefik.http.routers.sonarr.tls=true"
+      - "traefik.http.routers.sonarr.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.sonarr.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.sonarr.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Sonarr
+      - homepage.icon=sonarr.png
+      - homepage.href=https://sonarr.${LOCAL_DOMAIN}
+      - homepage.description=Series manager
+      - homepage.widget.type=sonarr
+      - homepage.widget.fields=["wanted","queued"]
+      - homepage.widget.url=http://sonarr:8989
+      - homepage.widget.key=${SONARR_API_KEY}
+      # auto update docker
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    environment: *lsio-env
+    volumes:
+      - /volume1/config/radarr:/config
+      - /volume1/Data:/Data
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+    depends_on: [qbittorrent, prowlarr]
+    labels:
+      # proxy settings
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.entrypoints=https"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.radarr.middlewares=whitelist@file"
+      - "traefik.http.routers.radarr.tls=true"
+      - "traefik.http.routers.radarr.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.radarr.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.radarr.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Radarr
+      - homepage.icon=radarr.png
+      - homepage.href=https://radarr.${LOCAL_DOMAIN}
+      - homepage.description=Movie manager
+      - homepage.widget.type=radarr
+      - homepage.widget.fields=["wanted","queued"]
+      - homepage.widget.url=http://radarr:7878
+      - homepage.widget.key=${RADARR_API_KEY}
+      # auto update docker
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  lidarr:
+    image: linuxserver/lidarr:latest
+    container_name: lidarr
+    environment: *lsio-env
+    volumes:
+      - /volume1/config/lidarr:/config
+      - /volume1/Data:/Data
+    ports:
+      - 8686:8686
+    restart: unless-stopped
+    depends_on: [qbittorrent, prowlarr]
+    labels:
+      # proxy settings
+      - "traefik.enable=true"
+      - "traefik.http.routers.lidarr.entrypoints=https"
+      - "traefik.http.routers.lidarr.rule=Host(`lidarr.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.lidarr.middlewares=whitelist@file"
+      - "traefik.http.routers.lidarr.tls=true"
+      - "traefik.http.routers.lidarr.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.lidarr.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.lidarr.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Lidarr
+      - homepage.icon=lidarr.png
+      - homepage.href=https://lidarr.${LOCAL_DOMAIN}
+      - homepage.description=Music manager
+      - homepage.widget.type=lidarr
+      - homepage.widget.fields=["wanted","queued"]
+      - homepage.widget.url=http://lidarr:8686
+      - homepage.widget.key=${LIDARR_API_KEY}
+      # auto update docker
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  qbittorrent:
+    image: linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      <<: *lsio-env
+      WEBUI_PORT: "6004"
+    volumes:
+      - /volume1/config/qbittorrent:/config
+      # same path as inside the arrs, so imports are hardlinks
+      - /volume1/Data/Downloads:/Data/Downloads
+    ports:
+      - 6004:6004
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
+    labels:
+      # proxy settings
+      - "traefik.enable=true"
+      - "traefik.http.routers.qb.entrypoints=https"
+      - "traefik.http.routers.qb.rule=Host(`qb.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.qb.middlewares=whitelist@file"
+      - "traefik.http.routers.qb.tls=true"
+      - "traefik.http.routers.qb.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.qb.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.qb.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=qBittorrent
+      - homepage.icon=qbittorrent.png
+      - homepage.href=https://qb.${LOCAL_DOMAIN}
+      - homepage.description=Torrents downloader
+      - homepage.widget.type=qbittorrent
+      - homepage.widget.fields=["download","upload","seed"]
+      - homepage.widget.url=http://qbittorrent:6004
+      # auto update docker
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  prowlarr:
+    image: linuxserver/prowlarr:latest
+    container_name: prowlarr
+    environment: *lsio-env
+    volumes:
+      - /volume1/config/prowlarr:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+    depends_on: [flaresolverr]
+    labels:
+      # proxy settings
+      - "traefik.enable=true"
+      - "traefik.http.routers.prowlarr.entrypoints=https"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.prowlarr.middlewares=whitelist@file"
+      - "traefik.http.routers.prowlarr.tls=true"
+      - "traefik.http.routers.prowlarr.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.prowlarr.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.prowlarr.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Prowlarr
+      - homepage.icon=prowlarr.png
+      - homepage.href=https://prowlarr.${LOCAL_DOMAIN}
+      - homepage.description=Indexer manager
+      - homepage.widget.type=prowlarr
+      - homepage.widget.url=http://prowlarr:9696
+      - homepage.widget.key=${PROWLARR_API_KEY}
+      # auto update docker
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # solves Cloudflare challenges (RuTracker) for Prowlarr
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=Europe/Kyiv
+      # skip images and CSS while solving challenges
+      - DISABLE_MEDIA=true
+    # browser profiles live in RAM, not on the NAS disks (10-30 MB per request)
+    tmpfs:
+      - /tmp:size=256M,mode=1777
+    mem_limit: 1g
+    restart: unless-stopped
+
+  # syncs TRaSH Guides custom formats into Sonarr and Radarr once a day
+  # config: /volume1/config/recyclarr/recyclarr.yml (copy of recyclarr.yml in this folder)
+  recyclarr:
+    image: ghcr.io/recyclarr/recyclarr:8.8.1
+    container_name: recyclarr
+    user: 1026:100
+    environment:
+      - TZ=Europe/Kyiv
+      - CRON_SCHEDULE=@daily
+      - SONARR_API_KEY=${SONARR_API_KEY}
+      - RADARR_API_KEY=${RADARR_API_KEY}
+    volumes:
+      - /volume1/config/recyclarr:/config
+    restart: unless-stopped
+    depends_on: [sonarr, radarr]
+
+networks:
+  default:
+    name: containers_bridge
+    external: true
