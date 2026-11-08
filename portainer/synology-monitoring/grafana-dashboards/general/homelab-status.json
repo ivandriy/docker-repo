@@ -645,8 +645,8 @@
     {
       "id": 12,
       "type": "stat",
-      "title": "",
-      "description": "",
+      "title": "Monitors up",
+      "description": "Uptime Kuma monitors in state up, groups left out.",
       "datasource": {
         "type": "prometheus",
         "uid": "cdup605h5snpce"
@@ -654,8 +654,8 @@
       "gridPos": {
         "x": 0,
         "y": 25,
-        "w": 24,
-        "h": 7
+        "w": 4,
+        "h": 5
       },
       "targets": [
         {
@@ -663,8 +663,8 @@
             "type": "prometheus",
             "uid": "cdup605h5snpce"
           },
-          "expr": "monitor_status{monitor_type!=\"group\"}",
-          "legendFormat": "{{monitor_name}}",
+          "expr": "count(monitor_status{monitor_type!=\"group\"} == 1) or vector(0)",
+          "legendFormat": "",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -677,46 +677,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "red",
-                "value": null
-              },
-              {
                 "color": "green",
-                "value": 1
-              },
-              {
-                "color": "orange",
-                "value": 2
-              },
-              {
-                "color": "blue",
-                "value": 3
+                "value": null
               }
             ]
           },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "0": {
-                  "text": "down",
-                  "color": "red"
-                },
-                "1": {
-                  "text": "up",
-                  "color": "green"
-                },
-                "2": {
-                  "text": "pending",
-                  "color": "orange"
-                },
-                "3": {
-                  "text": "maintenance",
-                  "color": "blue"
-                }
-              }
-            }
-          ],
+          "mappings": [],
           "color": {
             "mode": "thresholds"
           }
@@ -733,33 +699,163 @@
         },
         "colorMode": "background",
         "graphMode": "none",
-        "textMode": "name",
+        "textMode": "value",
         "justifyMode": "auto",
         "orientation": "auto",
-        "textSize": {
-          "value": 14
-        },
+        "textSize": {},
         "wideLayout": true,
-        "showPercentChange": false,
-        "minVizWidth": 150,
-        "minVizHeight": 40
+        "showPercentChange": false
       }
     },
     {
       "id": 13,
+      "type": "table",
+      "title": "Not up",
+      "description": "Uptime Kuma monitors that are down, pending or in maintenance.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 25,
+        "w": 20,
+        "h": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "monitor_status{monitor_type!=\"group\"} != 1",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A",
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "monitor_hostname": true,
+              "monitor_port": true,
+              "monitor_id": true
+            },
+            "indexByName": {
+              "monitor_name": 0,
+              "monitor_type": 1,
+              "monitor_url": 2,
+              "Value": 3
+            },
+            "renameByName": {
+              "monitor_name": "Monitor",
+              "monitor_type": "Type",
+              "monitor_url": "URL",
+              "Value": "State"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Every monitor is up",
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "State"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "down",
+                        "color": "red"
+                      },
+                      "1": {
+                        "text": "up",
+                        "color": "green"
+                      },
+                      "2": {
+                        "text": "pending",
+                        "color": "orange"
+                      },
+                      "3": {
+                        "text": "maintenance",
+                        "color": "blue"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 140
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Type"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      }
+    },
+    {
+      "id": 14,
       "type": "row",
       "title": "Disks and storage",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 32,
+        "y": 30,
         "w": 24,
         "h": 1
       },
       "panels": []
     },
     {
-      "id": 14,
+      "id": 15,
       "type": "stat",
       "title": "NAS volume used",
       "description": "",
@@ -769,7 +865,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 33,
+        "y": 31,
         "w": 4,
         "h": 4
       },
@@ -833,7 +929,7 @@
       }
     },
     {
-      "id": 15,
+      "id": 16,
       "type": "stat",
       "title": "Beelink / used",
       "description": "",
@@ -843,7 +939,7 @@
       },
       "gridPos": {
         "x": 4,
-        "y": 33,
+        "y": 31,
         "w": 4,
         "h": 4
       },
@@ -907,7 +1003,7 @@
       }
     },
     {
-      "id": 16,
+      "id": 17,
       "type": "stat",
       "title": "SSD life left",
       "description": "Synology's remaining-life estimate for the M.2 cache SSDs. The NasSsdWearing alert fires under 20%.",
@@ -917,7 +1013,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 33,
+        "y": 31,
         "w": 4,
         "h": 4
       },
@@ -980,7 +1076,7 @@
       }
     },
     {
-      "id": 17,
+      "id": 18,
       "type": "stat",
       "title": "Days to 20% SSD life",
       "description": "Linear projection from the last 30 days of remaining life. Capped at 10 years; empty when life did not drop in that window.",
@@ -990,7 +1086,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 33,
+        "y": 31,
         "w": 4,
         "h": 4
       },
@@ -1055,7 +1151,7 @@
       }
     },
     {
-      "id": 18,
+      "id": 19,
       "type": "stat",
       "title": "Hottest NAS disk",
       "description": "",
@@ -1065,7 +1161,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 33,
+        "y": 31,
         "w": 4,
         "h": 4
       },
@@ -1128,7 +1224,7 @@
       }
     },
     {
-      "id": 19,
+      "id": 20,
       "type": "stat",
       "title": "Beelink CPU",
       "description": "",
@@ -1138,7 +1234,7 @@
       },
       "gridPos": {
         "x": 20,
-        "y": 33,
+        "y": 31,
         "w": 4,
         "h": 4
       },
@@ -1201,7 +1297,7 @@
       }
     },
     {
-      "id": 20,
+      "id": 21,
       "type": "timeseries",
       "title": "SSD remaining life (60 d)",
       "description": "Prometheus keeps 60 days, so this is the whole history.",
@@ -1211,7 +1307,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 37,
+        "y": 35,
         "w": 8,
         "h": 8
       },
@@ -1273,7 +1369,7 @@
       "timeFrom": "60d"
     },
     {
-      "id": 21,
+      "id": 22,
       "type": "timeseries",
       "title": "Volume fill (30 d)",
       "description": "",
@@ -1283,7 +1379,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 37,
+        "y": 35,
         "w": 8,
         "h": 8
       },
@@ -1356,7 +1452,7 @@
       "timeFrom": "30d"
     },
     {
-      "id": 22,
+      "id": 23,
       "type": "timeseries",
       "title": "NAS disk temperature",
       "description": "",
@@ -1366,7 +1462,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 37,
+        "y": 35,
         "w": 8,
         "h": 8
       },
@@ -1427,20 +1523,20 @@
       }
     },
     {
-      "id": 23,
+      "id": 24,
       "type": "row",
       "title": "UPS",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 45,
+        "y": 43,
         "w": 24,
         "h": 1
       },
       "panels": []
     },
     {
-      "id": 24,
+      "id": 25,
       "type": "timeseries",
       "title": "UPS charge and load",
       "description": "",
@@ -1450,7 +1546,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 46,
+        "y": 44,
         "w": 12,
         "h": 7
       },
@@ -1520,7 +1616,7 @@
       }
     },
     {
-      "id": 25,
+      "id": 26,
       "type": "state-timeline",
       "title": "UPS status",
       "datasource": {
@@ -1529,7 +1625,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 46,
+        "y": 44,
         "w": 12,
         "h": 7
       },
