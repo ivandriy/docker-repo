@@ -1,0 +1,31 @@
+# Notification policy tree and mute timings, file-provisioned next to homelab.yml.
+# This replaces the whole policy tree and makes it read-only in the UI.
+# Watchtower restarts containers at 04:00 on the NAS and 04:30 on the Beelink (Kyiv
+# time, WATCHTOWER_SCHEDULE in each watchtower stack). Rules labelled mute: watchtower
+# stay silent inside those windows. An alert that is still firing when a window ends
+# is sent at the next group interval, so a real outage arrives up to 20 min late.
+apiVersion: 1
+muteTimes:
+  - orgId: 1
+    name: watchtower-nas
+    time_intervals:
+      - times:
+          - start_time: "04:00"
+            end_time: "04:20"
+        location: Europe/Kyiv
+  - orgId: 1
+    name: watchtower-beelink
+    time_intervals:
+      - times:
+          - start_time: "04:30"
+            end_time: "04:50"
+        location: Europe/Kyiv
+policies:
+  - orgId: 1
+    receiver: telegram
+    group_by: [grafana_folder, alertname]
+    routes:
+      - receiver: telegram
+        object_matchers:
+          - [mute, "=", watchtower]
+        mute_time_intervals: [watchtower-nas, watchtower-beelink]

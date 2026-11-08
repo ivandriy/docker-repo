@@ -18,6 +18,8 @@ services:
       - /volume1/docker/synology-monitoring/grafana:/var/lib/grafana:rw
       # Alert rules from grafana-alerting/ in this repo; copy edits to the NAS folder
       - /volume1/docker/synology-monitoring/grafana-alerting:/etc/grafana/provisioning/alerting:ro
+      # Dashboards from grafana-dashboards/ in this repo, same copy-to-NAS routine
+      - /volume1/docker/synology-monitoring/grafana-dashboards:/etc/grafana/provisioning/dashboards:ro
     environment:
       TZ: Europe/Kiev
       # Alert links (Rule, Silence) are built from this; without it they say localhost:3000

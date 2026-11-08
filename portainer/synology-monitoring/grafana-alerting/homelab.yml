@@ -9,6 +9,12 @@
 # own DatasourceError. A dead Prometheus is reported by Uptime Kuma and by the HA
 # watchdog (automation.nas_monitoring_watchdog) instead.
 # Datasource cdup605h5snpce is the "prometheus" datasource.
+# Planned NAS shutdowns: rules that a shutdown or the boot after it would trip end with
+#   unless on() (max_over_time(hass_input_boolean_state{entity="input_boolean.nas_planned_off"}[30m]) == 1)
+# so they go quiet while HA's input_boolean.nas_planned_off is on and for 30 min after it
+# clears (HA clears it as soon as DSM answers, before the CIFS mount and exporters settle).
+# If HA or its scrape is down the right side is empty and the rules work as before.
+# Label mute: watchtower routes a rule through the Watchtower mute timings in policies.yml.
 apiVersion: 1
 groups:
   - orgId: 1
@@ -24,7 +30,7 @@ groups:
             relativeTimeRange: { from: 300, to: 0 }
             datasourceUid: cdup605h5snpce
             model:
-              expr: up
+              expr: '(up) unless on() (max_over_time(hass_input_boolean_state{entity="input_boolean.nas_planned_off"}[30m]) == 1)'
               instant: true
               refId: A
           - refId: C
@@ -38,7 +44,7 @@ groups:
         for: 5m
         noDataState: OK
         execErrState: KeepLast
-        labels: { severity: critical }
+        labels: { severity: critical, mute: watchtower }
         annotations:
           summary: "Prometheus can't scrape {{ $labels.job }} at {{ $labels.instance }}"
 
@@ -51,7 +57,7 @@ groups:
             datasourceUid: cdup605h5snpce
             model:
               # Synology raidStatus: 1 Normal, anything else is repairing, degraded or crashed
-              expr: raidStatus != bool 1
+              expr: '(raidStatus != bool 1) unless on() (max_over_time(hass_input_boolean_state{entity="input_boolean.nas_planned_off"}[30m]) == 1)'
               instant: true
               refId: A
           - refId: C
@@ -78,7 +84,7 @@ groups:
             datasourceUid: cdup605h5snpce
             model:
               # diskStatus and diskHealthStatus: 1 is Normal. diskBadSector is -1 on SSDs.
-              expr: (diskStatus != bool 1) + (diskHealthStatus != bool 1) + (diskBadSector > bool 0)
+              expr: '((diskStatus != bool 1) + (diskHealthStatus != bool 1) + (diskBadSector > bool 0)) unless on() (max_over_time(hass_input_boolean_state{entity="input_boolean.nas_planned_off"}[30m]) == 1)'
               instant: true
               refId: A
           - refId: C
@@ -185,7 +191,7 @@ groups:
             datasourceUid: cdup605h5snpce
             model:
               # 1 is Normal for all four: system, power supply, system fan, CPU fan
-              expr: (systemStatus != bool 1) + (powerStatus != bool 1) + (systemFanStatus != bool 1) + (cpuFanStatus != bool 1)
+              expr: '((systemStatus != bool 1) + (powerStatus != bool 1) + (systemFanStatus != bool 1) + (cpuFanStatus != bool 1)) unless on() (max_over_time(hass_input_boolean_state{entity="input_boolean.nas_planned_off"}[30m]) == 1)'
               instant: true
               refId: A
           - refId: C
@@ -212,7 +218,7 @@ groups:
             datasourceUid: cdup605h5snpce
             model:
               # Info metric: the status is in the label. "OL" is on line.
-              expr: upsInfoStatus{upsInfoStatus!~"OL.*"}
+              expr: '(upsInfoStatus{upsInfoStatus!~"OL.*"}) unless on() (max_over_time(hass_input_boolean_state{entity="input_boolean.nas_planned_off"}[30m]) == 1)'
               instant: true
               refId: A
           - refId: C
@@ -292,7 +298,7 @@ groups:
             model:
               # Plex reads media over this CIFS mount. Also fires while the Beelink
               # node exporter is down; TargetDown names that case.
-              expr: absent(node_filesystem_size_bytes{instance="192.168.1.131:9100",mountpoint="/mnt/nas_media"})
+              expr: '(absent(node_filesystem_size_bytes{instance="192.168.1.131:9100",mountpoint="/mnt/nas_media"})) unless on() (max_over_time(hass_input_boolean_state{entity="input_boolean.nas_planned_off"}[30m]) == 1)'
               instant: true
               refId: A
           - refId: C
@@ -454,7 +460,7 @@ groups:
             model:
               # Percent of 5xx answers per service over 15 min; clamp_min keeps idle services quiet.
               # The 5xx series only exists after a service's first 5xx, so "or ... * 0" gives 0 before that.
-              expr: "(sum by (host, service) (rate(traefik_service_requests_total{code=~\"5..\"}[15m])) or sum by (host, service) (rate(traefik_service_requests_total[15m])) * 0) / clamp_min(sum by (host, service) (rate(traefik_service_requests_total[15m])), 0.02) * 100"
+              expr: "((sum by (host, service) (rate(traefik_service_requests_total{code=~\"5..\"}[15m])) or sum by (host, service) (rate(traefik_service_requests_total[15m])) * 0) / clamp_min(sum by (host, service) (rate(traefik_service_requests_total[15m])), 0.02) * 100) unless on() (max_over_time(hass_input_boolean_state{entity=\"input_boolean.nas_planned_off\"}[30m]) == 1)"
               instant: true
               refId: A
           - refId: C
@@ -468,7 +474,7 @@ groups:
         for: 15m
         noDataState: OK
         execErrState: KeepLast
-        labels: { severity: warning }
+        labels: { severity: warning, mute: watchtower }
         annotations:
           summary: "Traefik ({{ $labels.host }}) service {{ $labels.service }} answers {{ printf \"%.0f\" $values.A.Value }}% with 5xx"
 
@@ -480,7 +486,7 @@ groups:
             relativeTimeRange: { from: 300, to: 0 }
             datasourceUid: cdup605h5snpce
             model:
-              expr: "probe_success{job=\"blackbox-http\"}"
+              expr: "(probe_success{job=\"blackbox-http\"}) unless on() (max_over_time(hass_input_boolean_state{entity=\"input_boolean.nas_planned_off\"}[30m]) == 1)"
               instant: true
               refId: A
           - refId: C
@@ -494,7 +500,7 @@ groups:
         for: 5m
         noDataState: OK
         execErrState: KeepLast
-        labels: { severity: critical }
+        labels: { severity: critical, mute: watchtower }
         annotations:
           summary: "{{ $labels.instance }} does not answer 2xx over HTTPS"
 
@@ -533,7 +539,7 @@ groups:
             datasourceUid: cdup605h5snpce
             model:
               # A query for google.com against each AdGuard; looks like "the internet is down"
-              expr: "probe_success{job=\"blackbox-dns\"}"
+              expr: "(probe_success{job=\"blackbox-dns\"}) unless on() (max_over_time(hass_input_boolean_state{entity=\"input_boolean.nas_planned_off\"}[30m]) == 1)"
               instant: true
               refId: A
           - refId: C
@@ -547,7 +553,7 @@ groups:
         for: 3m
         noDataState: OK
         execErrState: KeepLast
-        labels: { severity: critical }
+        labels: { severity: critical, mute: watchtower }
         annotations:
           summary: "AdGuard on {{ $labels.host }} ({{ $labels.instance }}) does not answer DNS"
 

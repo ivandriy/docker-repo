@@ -1,0 +1,27 @@
+# Grafana dashboards, file-provisioned from this folder. Read-only in the Grafana UI:
+# change the JSON here, copy it to /volume1/docker/synology-monitoring/grafana-dashboards
+# on the NAS, and Grafana picks it up within 30 s (or POST
+# /api/admin/provisioning/dashboards/reload). To change a dashboard in the UI first,
+# edit it there, use Export > JSON, and paste the result over the file here.
+# Each dashboard keeps its uid, so links and the home dashboard keep working.
+apiVersion: 1
+providers:
+  - name: general
+    orgId: 1
+    folder: ""
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards/general
+  - name: alerts
+    orgId: 1
+    folder: Alerts
+    folderUid: fduqjw7ypkz5sd
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards/alerts
