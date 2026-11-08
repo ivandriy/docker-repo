@@ -53,7 +53,7 @@ Nothing changes for the arrs in this phase.
 
 ## Status 2026-11-08: phases 1 to 3 done
 
-- Prowlarr runs as Portainer stack `prowlarr` (id 81) with FlareSolverr. All six indexers return results.
+- Prowlarr runs as Portainer stack `prowlarr` (id 81) with FlareSolverr. All six indexers return results. Later the same day both moved into the merged `media` stack (id 83, `portainer/media/docker-compose.yml`).
 - Category IDs match Jackett's. Dropped on copy: 0day.kiev 100023 (Jackett already flagged it unsupported) and RuTracker 2030/2050 in Radarr (not in Prowlarr's RuTracker).
 - The arrs test new indexers with a search in the standard categories. BigFANGroup and RuTor (Radarr) and LimeTorrents (Lidarr) return nothing there, so the arrs rejected them. They were added by hand in those arrs, as Torznab at `http://prowlarr:9696/<id>/` with the old tracker categories and `forceSave`.
 - Prowlarr doesn't adopt indexers it didn't create, and kept retrying those. Fix: tags. Each app has a tag (`sonarr`, `radarr`, `lidarr`), and an indexer syncs to an app only when it carries that tag. A sync now logs no warnings. Tags per indexer:
