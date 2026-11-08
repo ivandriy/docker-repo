@@ -20,7 +20,8 @@ services:
 
   # removes Plex poster and art files nothing uses any more (old overlay versions pile up)
   # and clears Plex's photo transcoder cache. Sunday 03:00, before Kometa's 05:00 run.
-  # MODE=move puts unused files in /config/ImageMaid Restore (restore with MODE=restore);
+  # MODE=move puts unused files in "ImageMaid Restore" inside the Plex config folder
+  # (restore with MODE=restore);
   # switch to remove once a few runs show nothing in Plex went missing.
   imagemaid:
     image: kometateam/imagemaid:v1.2.2
