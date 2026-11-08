@@ -251,6 +251,37 @@ services:
       - homepage.href=https://qbm.${LOCAL_DOMAIN}
       - homepage.description=Torrent tagging and cleanup
 
+  # removes stalled and failed downloads from the Sonarr and Radarr queues and searches again.
+  # Configured in its web UI (settings in /config). Lidarr is left out on purpose:
+  # its failed imports are music the user keeps.
+  cleanuparr:
+    image: ghcr.io/cleanuparr/cleanuparr:2.10.12
+    container_name: cleanuparr
+    environment:
+      <<: *lsio-env
+      PORT: "11011"
+    volumes:
+      - /volume1/config/cleanuparr:/config
+    restart: always
+    depends_on: [qbittorrent, sonarr, radarr]
+    labels:
+      # proxy settings
+      - "traefik.enable=true"
+      - "traefik.http.routers.cleanuparr.entrypoints=https"
+      - "traefik.http.routers.cleanuparr.rule=Host(`cleanuparr.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.cleanuparr.middlewares=whitelist@file"
+      - "traefik.http.routers.cleanuparr.tls=true"
+      - "traefik.http.routers.cleanuparr.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.cleanuparr.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.cleanuparr.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      - "traefik.http.services.cleanuparr.loadbalancer.server.port=11011"
+      # homepage integration
+      - homepage.group=Media
+      - homepage.name=Cleanuparr
+      - homepage.icon=cleanuparr.png
+      - homepage.href=https://cleanuparr.${LOCAL_DOMAIN}
+      - homepage.description=Stalled and failed download cleanup
+
 networks:
   default:
     name: containers_bridge
