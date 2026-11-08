@@ -452,8 +452,9 @@ groups:
             relativeTimeRange: { from: 900, to: 0 }
             datasourceUid: cdup605h5snpce
             model:
-              # Percent of 5xx answers per service over 15 min; clamp_min keeps idle services quiet
-              expr: "sum by (host, service) (rate(traefik_service_requests_total{code=~\"5..\"}[15m])) / clamp_min(sum by (host, service) (rate(traefik_service_requests_total[15m])), 0.02) * 100"
+              # Percent of 5xx answers per service over 15 min; clamp_min keeps idle services quiet.
+              # The 5xx series only exists after a service's first 5xx, so "or ... * 0" gives 0 before that.
+              expr: "(sum by (host, service) (rate(traefik_service_requests_total{code=~\"5..\"}[15m])) or sum by (host, service) (rate(traefik_service_requests_total[15m])) * 0) / clamp_min(sum by (host, service) (rate(traefik_service_requests_total[15m])), 0.02) * 100"
               instant: true
               refId: A
           - refId: C
