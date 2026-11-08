@@ -1,0 +1,63 @@
+# Vaultwarden on the Beelink, LAN and VPN only: https://vault.local.ivanskiy.com
+# through the Beelink Traefik (traefik/rules-beelink/vaultwarden.yml), which
+# reaches it on 127.0.0.1:8085. Plan and record: plans/vaultwarden-beelink.md.
+#
+# Pinned and left out of Watchtower on purpose: take a backup, then bump the
+# tag by hand. Check releases monthly, new Bitwarden clients drop old servers.
+#
+# Stack env (Portainer, not Git):
+#   LOCAL_DOMAIN       local.ivanskiy.com
+#   VW_OWNER_EMAIL     the only account allowed to create organizations
+#   VW_ADMIN_TOKEN     argon2 hash from `/vaultwarden hash`; remove after setup
+#   VW_SIGNUPS         true for the first account, then false
+#   VW_PUSH_ENABLED    true once VW_PUSH_ID and VW_PUSH_KEY are set
+#   VW_PUSH_ID, VW_PUSH_KEY   from https://bitwarden.com/host
+services:
+  vaultwarden:
+    image: vaultwarden/server:1.37.5
+    container_name: vaultwarden
+    restart: always
+    # Data dir must be owned by 1000:1000
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    ports:
+      # Loopback only: the Beelink Traefik runs on the host network
+      - "127.0.0.1:8085:8080"
+    volumes:
+      - /opt/portainer/volumes/vaultwarden/data:/data
+    environment:
+      DOMAIN: https://vault.${LOCAL_DOMAIN}
+      # Non-root can't bind 80
+      ROCKET_PORT: "8080"
+      SIGNUPS_ALLOWED: ${VW_SIGNUPS:-false}
+      SIGNUPS_VERIFY: "false"
+      INVITATIONS_ALLOWED: "false"
+      SHOW_PASSWORD_HINT: "false"
+      PASSWORD_HINTS_ALLOWED: "false"
+      ORG_CREATION_USERS: ${VW_OWNER_EMAIL}
+      # Unset disables /admin entirely
+      ADMIN_TOKEN: ${VW_ADMIN_TOKEN:-}
+      LOGIN_RATELIMIT_SECONDS: "60"
+      LOGIN_RATELIMIT_MAX_BURST: "5"
+      ADMIN_RATELIMIT_SECONDS: "300"
+      ADMIN_RATELIMIT_MAX_BURST: "3"
+      ICON_BLACKLIST_NON_GLOBAL_IPS: "true"
+      PUSH_ENABLED: ${VW_PUSH_ENABLED:-false}
+      PUSH_INSTALLATION_ID: ${VW_PUSH_ID:-}
+      PUSH_INSTALLATION_KEY: ${VW_PUSH_KEY:-}
+      # For an EU-region install add:
+      # PUSH_RELAY_URI: https://api.bitwarden.eu
+      # PUSH_IDENTITY_URI: https://identity.bitwarden.eu
+      TZ: Europe/Kyiv
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

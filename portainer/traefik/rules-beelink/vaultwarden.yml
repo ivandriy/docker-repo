@@ -1,0 +1,27 @@
+# Beelink instance only, copied to /opt/portainer/volumes/traefik/rules/vaultwarden.yml.
+# Vaultwarden (portainer/vaultwarden/docker-compose.beelink.yml), LAN/VPN only.
+# Both AdGuards rewrite vault.local to 192.168.1.131, so it works with the NAS off.
+# hsts, not secure-headers: Vaultwarden sends its own CSP and frame headers.
+http:
+  routers:
+    vaultwarden:
+      entryPoints:
+        - "https-lan"
+      service: vaultwarden
+      middlewares:
+        - whitelist
+        - hsts
+      rule: Host(`vault.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+
+  services:
+    vaultwarden:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://127.0.0.1:8085"
