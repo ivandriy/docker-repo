@@ -1,0 +1,225 @@
+# yaml-language-server: $schema=https://schemas.recyclarr.dev/latest/config-schema.json
+#
+# Live copy: /volume1/config/recyclarr/recyclarr.yml on the NAS. Edit here, then copy it over.
+#
+# TRaSH Guides custom formats on the existing quality profiles, with our own scores.
+# The Ukrainian formats are ours, not from the guide. They are excluded from the score
+# reset and their scores are set by hand in the arrs:
+#   Sonarr  UkrLanguage_3                     +1000 in every profile
+#   Radarr  Release with Ukrainian language   +5000 HD-1080p, +50000 Ultra-HD (min score 50000)
+# Both are higher than any total the guide formats below can reach (Sonarr about 400,
+# Radarr about 4600). HD-1080p stays under its 9999 cutoff score so upgrades continue.
+# Quality lists, cutoffs and upgrade settings are not managed here.
+
+sonarr:
+  sonarr:
+    base_url: http://sonarr:8989
+    api_key: !env_var SONARR_API_KEY
+    delete_old_custom_formats: false
+
+    quality_profiles:
+      - name: Any
+        reset_unmatched_scores: &sonarr_keep
+          enabled: true
+          except: [UkrLanguage_3]
+      - name: SD
+        reset_unmatched_scores: *sonarr_keep
+      - name: HD-720p
+        reset_unmatched_scores: *sonarr_keep
+      - name: HD-1080p
+        reset_unmatched_scores: *sonarr_keep
+      - name: Ultra-HD
+        reset_unmatched_scores: *sonarr_keep
+      - name: HD - 720p/1080p
+        reset_unmatched_scores: *sonarr_keep
+
+    custom_formats:
+      # streaming services
+      - trash_ids:
+          - d660701077794679fd59e8bdf4ce3a29 # AMZN
+          - f67c9ca88f463a48346062e8ad07713f # ATVP
+          - a880d6abc21e7c16884f3ae393f84179 # HMAX
+          - 81d1fbf600e2540cee87f3a23f9d3c1c # MAX
+        assign_scores_to: &sonarr_all
+          - name: Any
+          - name: SD
+          - name: HD-720p
+          - name: HD-1080p
+          - name: Ultra-HD
+          - name: HD - 720p/1080p
+        score: 100
+      - trash_ids:
+          - ae58039e1319178e6be73caab5c42166 # SHO
+        assign_scores_to: *sonarr_all
+        score: 95
+      - trash_ids:
+          - 89358767a60cc28783cdc3d0be9388a4 # DSNP
+          - d34870697c9db575f17700212167be23 # NF
+        assign_scores_to: *sonarr_all
+        score: 90
+      - trash_ids:
+          - f6cce30f1733d5c8194222a7507909bb # HULU
+          - 1656adc6d7bb2c8cca6acfb6592db421 # PCOK
+        assign_scores_to: *sonarr_all
+        score: 85
+      - trash_ids:
+          - 36b72f59f4ea20aad9316f475f2d9fbb # DCU
+          - 7a235133c87f7da4c8cccceca7e3c7a6 # HBO
+          - c30d2958827d1867c73318a5a2957eb1 # RED
+          - 0ac24a2a68a9700bcb7eeca8e5cd644c # iT
+          - c67a75ae4a1715f2bb4d492755ba4195 # PMTP
+        assign_scores_to: *sonarr_all
+        score: 75
+
+      # release group tiers (replace the old hand-made group lists)
+      - trash_ids:
+          - 9965a052eb87b0d10313b1cea89eb451 # Remux Tier 01
+          - e6258996055b9fbab7e9cb2f75819294 # WEB Tier 01
+        assign_scores_to: *sonarr_all
+        score: 150
+      - trash_ids:
+          - 8a1d0c3d7497e741736761a1da866a2e # Remux Tier 02
+          - 58790d4e2fdcd9733aa7ae68ba2bb503 # WEB Tier 02
+        assign_scores_to: *sonarr_all
+        score: 125
+      - trash_ids:
+          - d84935abd3f8556dcd51d4f27e22d0a6 # WEB Tier 03
+        assign_scores_to: *sonarr_all
+        score: 100
+
+      - trash_ids:
+          - ec8fa7296b64e8cd390a1600981f3923 # Repack/Proper
+          - 505d871304820ba7106b693be6fe4a9e # HDR
+        assign_scores_to: *sonarr_all
+        score: 10
+
+      # unwanted, guide score (-10000)
+      - trash_ids:
+          - 85c61753df5da1fb2aab6f2a47426b09 # BR-DISK
+          - 9c11cd3f07101cdba90a2d81cf0e56b4 # LQ
+          - e2315f990da2e2cbfc9fa5b7a6fcfe48 # LQ (Release Title)
+        assign_scores_to: *sonarr_all
+        score: -10000
+
+radarr:
+  radarr:
+    base_url: http://radarr:7878
+    api_key: !env_var RADARR_API_KEY
+    delete_old_custom_formats: false
+
+    quality_profiles:
+      - name: HD-1080p
+        reset_unmatched_scores: &radarr_keep
+          enabled: true
+          except: [Release with Ukrainian language, "Language: Not Ukrainian"]
+      - name: Ultra-HD
+        reset_unmatched_scores: *radarr_keep
+
+    custom_formats:
+      # audio, our old scale
+      - trash_ids: [496f355514737f7d83bf7aa4d24f8169] # TrueHD ATMOS
+        assign_scores_to: &radarr_both
+          - name: HD-1080p
+          - name: Ultra-HD
+        score: 2000
+      - trash_ids: [2f22d89048b01681dde8afe203bf2e95] # DTS X
+        assign_scores_to: *radarr_both
+        score: 1900
+      - trash_ids:
+          - 417804f7f2c4308c1f4c5d380d4c4475 # ATMOS (undefined)
+          - 1af239278386be2919e1bcee0bde047e # DD+ ATMOS
+        assign_scores_to: *radarr_both
+        score: 1800
+      - trash_ids: [3cafb66171b47f226146a0770576870f] # TrueHD
+        assign_scores_to: *radarr_both
+        score: 1700
+      - trash_ids: [dcf3ec6938fa32445f590a4da84256cd] # DTS-HD MA
+        assign_scores_to: *radarr_both
+        score: 1600
+      - trash_ids:
+          - a570d4a0e56a2874b64e5bfa55202a1b # FLAC
+          - e7c2fcae07cbada050a0af3357491d7b # PCM
+        assign_scores_to: *radarr_both
+        score: 1500
+      - trash_ids: [8e109e50e0a0b83a5098b056e13bf6db] # DTS-HD HRA
+        assign_scores_to: *radarr_both
+        score: 1400
+      - trash_ids: [185f1dd7264c4562b9022d963ac37424] # DD+
+        assign_scores_to: *radarr_both
+        score: 1300
+      - trash_ids: [f9f847ac70a0af62ea4a08280b859636] # DTS-ES
+        assign_scores_to: *radarr_both
+        score: 1200
+      - trash_ids: [1c1a4c5e823891c75bc50380a6866f73] # DTS
+        assign_scores_to: *radarr_both
+        score: 1100
+      - trash_ids: [240770601cc226190c367ef59aba7463] # AAC
+        assign_scores_to: *radarr_both
+        score: 1000
+      - trash_ids: [c2998bd0d90ed5621d8df281e839436e] # DD
+        assign_scores_to: *radarr_both
+        score: 900
+
+      # release group tiers (replace HQ, HQ-WEBDL, HQ-Remux at the same 1700)
+      - trash_ids:
+          - 3a3ff47579026e76d6504ebea39390de # Remux Tier 01
+          - 9f98181fe5a3fbeb0cc29340da2a468a # Remux Tier 02
+          - 8baaf0b3142bf4d94c42a724f034e27a # Remux Tier 03
+          - 4d74ac4c4db0b64bff6ce0cffef99bf0 # UHD Bluray Tier 01
+          - a58f517a70193f8e578056642178419d # UHD Bluray Tier 02
+          - e71939fae578037e7aed3ee219bbe7c1 # UHD Bluray Tier 03
+          - ed27ebfef2f323e964fb1f61391bcb35 # HD Bluray Tier 01
+          - c20c8647f2746a1f4c4262b0fbbeeeae # HD Bluray Tier 02
+          - 5608c71bcebba0a5e666223bae8c9227 # HD Bluray Tier 03
+          - c20f169ef63c5f40c2def54abaf4438e # WEB Tier 01
+          - 403816d65392c79236dcb6dd591aeda4 # WEB Tier 02
+          - af94e0fe497124d1f9ce732069ec8c3b # WEB Tier 03
+        assign_scores_to: *radarr_both
+        score: 1700
+
+      # movie versions
+      - trash_ids: [0f12c086e289cf966fa5948eac571f44] # Hybrid
+        assign_scores_to: *radarr_both
+        score: 200
+      - trash_ids:
+          - 570bc9ebecd92723d2d21500f4be314c # Remaster
+          - eca37840c13c6ef2dd0262b141a5482f # 4K Remaster
+          - eecf3a857724171f968a66cb5719e152 # IMAX
+        assign_scores_to: *radarr_both
+        score: 190
+      - trash_ids: [957d0f44b592285f26449575e8b1167e] # Special Edition
+        assign_scores_to: *radarr_both
+        score: 180
+      - trash_ids: [e0c07d59beb37348e975a930d5e50319] # Criterion Collection
+        assign_scores_to: *radarr_both
+        score: 170
+
+      - trash_ids: [e7718d7a3ce595f289bfee26adc178f5] # Repack/Proper
+        assign_scores_to: *radarr_both
+        score: 1
+      - trash_ids: [ae43b294509409a6a13919dedd4764c4] # Repack2
+        assign_scores_to: *radarr_both
+        score: 2
+      - trash_ids: [5caaaa1c08c1742aa4342d8c4cc463f2] # Repack3
+        assign_scores_to: *radarr_both
+        score: 3
+
+      # HDR, 4K only (replaces DoVi 1000, DoVi (SL) 950, HDR and HDR (undefined) 900)
+      - trash_ids: [493b6d1dbec3c3364c59d7607f7e3405] # HDR, now matches DV too
+        assign_scores_to: [name: Ultra-HD]
+        score: 900
+      - trash_ids: [b337d6812e06c200ec9a2d3cfa9d20a7] # DV Boost
+        assign_scores_to: [name: Ultra-HD]
+        score: 100
+
+      # unwanted (DV (w/o HDR fallback) replaces DoVi (WEBDL); LQ (Release Title) is new)
+      - trash_ids:
+          - ed38b889b31be83fda192888e2286d83 # BR-DISK
+          - 90a6f9a284dff5103f6346090e6280c8 # LQ
+          - e204b80c87be9497a8a6eaff48f72905 # LQ (Release Title)
+          - dc98083864ea246d05a42df0d05f81cc # x265 (HD)
+          - b8cd450cbfa689c0259a01d9e29ba3d6 # 3D
+          - 6ba9033150e7896bdc9ec4b44f2b230f # MP3
+          - 923b6abef9b17f937fab56cfcf89e1f1 # DV (w/o HDR fallback)
+        assign_scores_to: *radarr_both
+        score: -10000
