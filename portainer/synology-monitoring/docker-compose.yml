@@ -16,6 +16,8 @@ services:
       - 3340:3000
     volumes:
       - /volume1/docker/synology-monitoring/grafana:/var/lib/grafana:rw
+      # Alert rules from grafana-alerting/ in this repo; copy edits to the NAS folder
+      - /volume1/docker/synology-monitoring/grafana-alerting:/etc/grafana/provisioning/alerting:ro
     environment:
       TZ: Europe/Kiev
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,natel-discrete-panel,grafana-piechart-panel

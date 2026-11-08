@@ -1,0 +1,310 @@
+# Grafana-managed alert rules, file-provisioned. Read-only in the Grafana UI.
+# Live copy: /volume1/docker/synology-monitoring/grafana-alerting/homelab.yml on the NAS,
+# mounted at /etc/grafana/provisioning/alerting. Copy edits there, then reload with
+#   POST /api/admin/provisioning/alerting/reload  (or restart Grafana).
+# Notifications go to the default route (Telegram contact point).
+# Every expression returns a value for every series, so "no data" means the exporter
+# is gone; TargetDown covers that, and noDataState is OK everywhere.
+# Datasource cdup605h5snpce is the "prometheus" datasource.
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: homelab
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: homelab-target-down
+        title: TargetDown
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # truenas (192.168.1.150) has been unreachable for a long time; drop the
+              # exclusion when the job is removed or the box is back.
+              expr: up{job!="truenas"}
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: critical }
+        annotations:
+          summary: "Prometheus can't scrape {{ $labels.job }} at {{ $labels.instance }}"
+
+      - uid: homelab-nas-raid
+        title: NasRaidNotNormal
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # Synology raidStatus: 1 Normal, anything else is repairing, degraded or crashed
+              expr: raidStatus != bool 1
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        for: 2m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: critical }
+        annotations:
+          summary: "NAS {{ $labels.raidName }} is not Normal. Check Storage Manager."
+
+      - uid: homelab-nas-disk
+        title: NasDiskProblem
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # diskStatus and diskHealthStatus: 1 is Normal. diskBadSector is -1 on SSDs.
+              expr: (diskStatus != bool 1) + (diskHealthStatus != bool 1) + (diskBadSector > bool 0)
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: critical }
+        annotations:
+          summary: "NAS {{ $labels.diskID }} reports a bad status, failing health or bad sectors"
+
+      - uid: homelab-nas-disk-hot
+        title: NasDiskHot
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              expr: diskTemperature
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [50] }
+        for: 10m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: warning }
+        annotations:
+          summary: "NAS {{ $labels.diskID }} is at {{ $values.A.Value }} °C"
+
+      - uid: homelab-nas-ssd-wear
+        title: NasSsdWearing
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # Only SSDs report remaining life; HDDs report -1.
+              expr: diskRemainLife >= 0
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [20] }
+        for: 1h
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: warning }
+        annotations:
+          summary: "NAS {{ $labels.diskID }} has {{ $values.A.Value }}% life left. Plan a replacement."
+
+      - uid: homelab-nas-volume-full
+        title: NasVolumeFull
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # Volumes only: Storage Pool free space is unallocated pool space.
+              expr: 100 * (1 - raidFreeSize{raidName=~"Volume.*"} / raidTotalSize{raidName=~"Volume.*"})
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [85] }
+        for: 30m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: warning }
+        annotations:
+          summary: "NAS {{ $labels.raidName }} is {{ printf \"%.0f\" $values.A.Value }}% full"
+
+      - uid: homelab-nas-system
+        title: NasSystemFault
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # 1 is Normal for all four: system, power supply, system fan, CPU fan
+              expr: (systemStatus != bool 1) + (powerStatus != bool 1) + (systemFanStatus != bool 1) + (cpuFanStatus != bool 1)
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: critical }
+        annotations:
+          summary: "NAS reports a system, power or fan fault. Check DSM Info Center."
+
+      - uid: homelab-nas-ups
+        title: NasUpsOnBattery
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # Info metric: the status is in the label. "OL" is on line.
+              expr: upsInfoStatus{upsInfoStatus!~"OL.*"}
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        for: 1m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: critical }
+        annotations:
+          summary: "NAS UPS status is {{ $labels.upsInfoStatus }}"
+
+      - uid: homelab-beelink-disk-full
+        title: BeelinkDiskFull
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              expr: 100 * (1 - node_filesystem_avail_bytes{instance="192.168.1.131:9100",mountpoint=~"/|/boot"} / node_filesystem_size_bytes{instance="192.168.1.131:9100",mountpoint=~"/|/boot"})
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [85] }
+        for: 15m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: warning }
+        annotations:
+          summary: "Beelink {{ $labels.mountpoint }} is {{ printf \"%.0f\" $values.A.Value }}% full"
+
+      - uid: homelab-beelink-hot
+        title: BeelinkCpuHot
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              expr: max by (instance) (node_hwmon_temp_celsius{instance="192.168.1.131:9100",chip="platform_coretemp_0"})
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [90] }
+        for: 10m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: warning }
+        annotations:
+          summary: "Beelink CPU is at {{ $values.A.Value }} °C"
+
+      - uid: homelab-beelink-media-mount
+        title: BeelinkMediaMountMissing
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 300, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # Plex reads media over this CIFS mount. Also fires while the Beelink
+              # node exporter is down; TargetDown names that case.
+              expr: absent(node_filesystem_size_bytes{instance="192.168.1.131:9100",mountpoint="/mnt/nas_media"})
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels: { severity: warning }
+        annotations:
+          summary: "Beelink lost the NAS media mount /mnt/nas_media. Plex can't read media."
