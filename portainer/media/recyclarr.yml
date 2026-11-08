@@ -5,10 +5,16 @@
 # TRaSH Guides custom formats on the existing quality profiles, with our own scores.
 # The Ukrainian formats are ours, not from the guide. They are excluded from the score
 # reset and their scores are set by hand in the arrs:
-#   Sonarr  UkrLanguage_3                     +1000 in every profile
-#   Radarr  Release with Ukrainian language   +5000 HD-1080p, +50000 Ultra-HD (min score 50000)
+#   Sonarr  UkrLanguage_3                     +1000 in every profile, min score 1000
+#   Radarr  Release with Ukrainian language   +5000 and min score 5000 in every profile
+#                                             except Ultra-HD: +50000, min score 50000
+# The minimum scores (2026-11-08) mean a release without Ukrainian audio is never grabbed.
 # Both are higher than any total the guide formats below can reach (Sonarr about 400,
 # Radarr about 4600). HD-1080p stays under its 9999 cutoff score so upgrades continue.
+# Title regex of both formats (Sonarr adds "ua"): matches "Ukr/Eng", "2xUkr", "3xUkr",
+# but not "Ukr" after "Sub" up to the next "|", so "| Sub Ukr/Eng" alone does not count:
+#   (?<!\bsub(s|titles?)?\b[^|]*)(\b|(?<=\d+x?))(ukr|ukrainian|укр|українськ\w*)(?![a-zа-яіїєґ])
+# A second condition on each format matches the parsed language Ukrainian.
 # Quality lists, cutoffs and upgrade settings are not managed here.
 
 sonarr:
