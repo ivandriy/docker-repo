@@ -8,8 +8,9 @@ collections:
     summary: Movies Trending across the internet
   Popular:
     tmdb_popular: 40
-    imdb_list:
-      url: https://www.imdb.com/search/title/?title_type=feature,tv_movie,documentary,short
+    imdb_search:
+      type: movie, tv_movie, short
+      sort_by: popularity.asc
       limit: 40
     sort_title: +2_Popular
     sync_mode: sync
