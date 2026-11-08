@@ -1,6 +1,5 @@
 collections:
   Trending:
-    trakt_trending: 10
     tmdb_trending_daily: 10
     tmdb_trending_weekly: 10
     sort_title: +1_Trending

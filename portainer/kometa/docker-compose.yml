@@ -9,11 +9,8 @@ services:
       - KOMETA_CONFIG=/config/config.env.yml
       - KOMETA_PLEXTOKEN=${KOMETA_PLEXTOKEN}
       - KOMETA_TMDBKEY=${KOMETA_TMDBKEY}
-      - KOMETA_OMDBKEY=${KOMETA_OMDBKEY}
       - KOMETA_RADARRKEY=${KOMETA_RADARRKEY}
       - KOMETA_SONARRKEY=${KOMETA_SONARRKEY}
-      - KOMETA_TRAKTID=${KOMETA_TRAKTID}
-      - KOMETA_TRAKTSECRET=${KOMETA_TRAKTSECRET}
     volumes:
       - ${VOLUME_DATA}/kometa/config:/config
     restart: unless-stopped
