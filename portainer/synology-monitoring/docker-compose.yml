@@ -157,6 +157,8 @@ services:
       - "--event_storage_event_limit=default=0"
       - "--event_storage_age_limit=default=0"
       - "--store_container_labels=false"
+      # Keep only the image version label, for the Homelab status versions table
+      - "--whitelisted_container_labels=org.opencontainers.image.version"
       - "--storage_duration=1m0s"
       - "--allow_dynamic_housekeeping=true"
     container_name: cadvisor

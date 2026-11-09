@@ -1683,6 +1683,188 @@
           "mode": "single"
         }
       }
+    },
+    {
+      "id": 27,
+      "type": "row",
+      "title": "Service versions",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 51,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 28,
+      "type": "table",
+      "title": "Running containers",
+      "description": "Every container cAdvisor sees on the NAS and the Beelink. Version is the image's org.opencontainers.image.version label; when the image has none it falls back to the image tag. Empty means the image has neither (untagged or a local build).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 52,
+        "w": 24,
+        "h": 16
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "max by (host, name, image, version) (\n  label_replace(label_replace(\n    label_replace(container_start_time_seconds{name!=\"\", container_label_org_opencontainers_image_version!=\"\"}, \"version\", \"$1\", \"container_label_org_opencontainers_image_version\", \"(.+)\")\n    or\n    label_replace(container_start_time_seconds{name!=\"\", container_label_org_opencontainers_image_version=\"\"}, \"version\", \"$1\", \"image\", \".*:([^/]+)\"),\n  \"host\", \"NAS\", \"instance\", \"cadvisor:.*\"), \"host\", \"Beelink\", \"instance\", \"192.168.1.131:.*\")\n) * 1000",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A",
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "name": 0,
+              "version": 1,
+              "host": 2,
+              "image": 3,
+              "Value": 4
+            },
+            "renameByName": {
+              "name": "Service",
+              "version": "Version",
+              "host": "Host",
+              "image": "Image",
+              "Value": "Started"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "-",
+          "custom": {
+            "align": "left",
+            "filterable": true,
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Started"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              },
+              {
+                "id": "custom.width",
+                "value": 160
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Version"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 240
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "empty",
+                      "result": {
+                        "text": "no tag",
+                        "color": "orange"
+                      }
+                    }
+                  },
+                  {
+                    "type": "value",
+                    "options": {
+                      "latest": {
+                        "color": "orange"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Host"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 110
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Service"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Service",
+            "desc": false
+          }
+        ]
+      }
     }
   ],
   "templating": {
@@ -1701,5 +1883,5 @@
       "keepTime": true
     }
   ],
-  "description": "One page for the homelab: scrape targets, Uptime Kuma, disks, SSD wear and the UPS."
+  "description": "One page for the homelab: scrape targets, Uptime Kuma, disks, SSD wear, the UPS and running service versions."
 }
