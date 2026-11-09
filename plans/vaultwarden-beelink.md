@@ -151,6 +151,15 @@ The JSON export carries logins, cards, identities, notes, SSH keys, folders, cus
 7. Recreate any Sends you still need.
 8. Securely delete the export files and the attachment folder (`rm -P` is gone on recent macOS; delete and empty the trash, the disk is FileVault-encrypted).
 
+### Status 2026-11-09
+
+- Before the import the database held 1 user, 1 login (the drill dummy), no folders, organizations or attachments. The 02:00 nightly run had saved that state.
+- You exported the cloud vault as password-protected `.json (Encrypted)` and imported it into My vault with "Bitwarden (json)".
+- Database after the import (counted by type; item contents are encrypted): 450 logins, 2 secure notes, 23 folders, nothing in trash, 0 organizations, 0 attachments, 0 Sends. No cards, identities or SSH keys.
+- On-demand backup at 22:26: `backup.20261109.7z` (323 KB) on the Beelink disk and the NAS share, success ping sent. It replaced that day's 02:00 archive of the same name. The NAS copy was pulled back and unpacked: `integrity_check` ok, counts identical to live.
+- The sidecar reads its archive password from `ZIP_PASSWORD_FILE`, not a `ZIP_PASSWORD` variable. Use `$(cat $ZIP_PASSWORD_FILE)` in manual unpacks.
+- Open: compare against the cloud's counts per type, delete the drill dummy (it is one of the 450 logins until removed), re-upload any attachments, then delete the export file and `~/vw-migration`.
+
 ## Phase 5: switch the clients
 
 For each client: log out of the cloud account, pick "Self-hosted" on the login screen, server URL `https://vault.local.ivanskiy.com`, log in. Order: browser extension on the Mac first, then iPhone (app and AutoFill provider), then any other device.
