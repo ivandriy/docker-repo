@@ -168,6 +168,13 @@ For each client: log out of the cloud account, pick "Self-hosted" on the login s
 - On iPhone, consider the UniFi WireGuard on-demand rule so the tunnel comes up off home Wi-Fi without thinking about it.
 - Check that a new item made on the phone shows up in the browser extension within seconds (push and websocket both working).
 
+### Status 2026-11-09
+
+- Push on: installation id and key for the US region from bitwarden.com/host, set as stack env `VW_PUSH_ENABLED`, `VW_PUSH_ID`, `VW_PUSH_KEY` in Portainer. No compose change (US relay is Vaultwarden's default).
+- Devices on the new server: web vault (Chrome), Chrome extension, macOS desktop app, iPhone. The iPhone login sent its push token (`PUT /api/devices/identifier/.../token` 200, no relay error), so the installation key is accepted.
+- Four icon downloads failed with a DNS error at 22:43. The container resolves public names (`github.com` fine through Docker's resolver), so these are dead or non-public domains on individual items. Ignored.
+- Open: the phone-to-extension test item round trip; the vault still holds 450 logins, so the drill dummy is not deleted yet.
+
 ## Phase 6: wind down
 
 1. Keep the cloud account for 30 days, unused, as a fallback. Turn off its Premium auto-renew now.
