@@ -1,0 +1,26 @@
+# Beelink instance only, copied to /opt/portainer/volumes/traefik/rules/music-assistant.yml.
+# Music Assistant (portainer/music-assistant/docker-compose.beelink.yml), LAN/VPN only.
+# Both AdGuards rewrite music.local to 192.168.1.131, so it works with the NAS off.
+# Only the web UI goes through here; speakers stream from 192.168.1.131:8097 directly.
+http:
+  routers:
+    music_assistant:
+      entryPoints:
+        - "https-lan"
+      service: music_assistant
+      middlewares:
+        - whitelist
+      rule: Host(`music.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+
+  services:
+    music_assistant:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: "http://127.0.0.1:8095"
