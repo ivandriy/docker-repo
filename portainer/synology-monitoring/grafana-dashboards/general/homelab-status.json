@@ -15,6 +15,1296 @@
   "schemaVersion": 41,
   "panels": [
     {
+      "id": 29,
+      "type": "row",
+      "title": "Last night",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "id": 30,
+      "type": "stat",
+      "title": "NAS uptime",
+      "description": "Red when the NAS booted in the last 12 hours.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "time() - node_boot_time_seconds{instance=\"nodeexporter:9100\"}",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 43200
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textSize": {},
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 31,
+      "type": "stat",
+      "title": "Beelink uptime",
+      "description": "Red when the Beelink booted in the last 12 hours.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "time() - node_boot_time_seconds{instance=\"192.168.1.131:9100\"}",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 43200
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textSize": {},
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 32,
+      "type": "stat",
+      "title": "Grid off, 12 h",
+      "description": "Minutes binary_sensor.power_outage was on in the last 12 hours (HA).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "sum_over_time(hass_binary_sensor_state{entity=\"binary_sensor.power_outage\"}[12h:1m])",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "m",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textSize": {},
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 33,
+      "type": "stat",
+      "title": "UPS on battery, 12 h",
+      "description": "Minutes the NAS UPS was not on line power in the last 12 hours.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 9,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "count_over_time(upsInfoStatus{upsInfoStatus!~\"OL.*\"}[12h:1m]) or vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "m",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textSize": {},
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 34,
+      "type": "stat",
+      "title": "Watchtower NAS updated",
+      "description": "Containers updated by the last NAS scan (04:00).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 12,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "watchtower_containers_updated{instance=\"watchtower:8080\"}",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textSize": {},
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 35,
+      "type": "stat",
+      "title": "Watchtower Beelink updated",
+      "description": "Containers updated by the last Beelink scan (04:30).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 15,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "watchtower_containers_updated{instance=\"192.168.1.131:8008\"}",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textSize": {},
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 36,
+      "type": "stat",
+      "title": "Watchtower failures",
+      "description": "Containers that failed to update in the last scan plus failed scans in 12 hours, both hosts.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 18,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "sum(watchtower_containers_failed) + sum(increase(watchtower_scans_failed_total[12h]))",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textSize": {},
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 37,
+      "type": "stat",
+      "title": "Containers restarted, 12 h",
+      "description": "Containers whose start time is in the last 12 hours, both hosts.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 21,
+        "y": 1
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "count(container_start_time_seconds{name!=\"\"} > time() - 43200) or vector(0)",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [],
+          "color": {
+            "mode": "thresholds"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "textSize": {},
+        "wideLayout": true,
+        "showPercentChange": false
+      }
+    },
+    {
+      "id": 38,
+      "type": "table",
+      "title": "Hyper Backup",
+      "description": "Enabled Hyper Backup tasks from hyperbackup-exporter. Overdue = last success older than 36 h (daily) or 8 d (weekly).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "hyperbackup_last_success_timestamp_seconds * 1000",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A",
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "hyperbackup_last_run_ok",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "B",
+          "format": "table"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "(time() - hyperbackup_last_success_timestamp_seconds) > bool hyperbackup_max_age_seconds",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "C",
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true,
+              "task": true
+            },
+            "indexByName": {
+              "name": 0,
+              "schedule": 1,
+              "Value #A": 2,
+              "Value #B": 3,
+              "Value #C": 4
+            },
+            "renameByName": {
+              "name": "Task",
+              "schedule": "Schedule",
+              "Value #A": "Last success",
+              "Value #B": "Last run",
+              "Value #C": "Overdue"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No Hyper Backup data",
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Last success"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeFromNow"
+              },
+              {
+                "id": "custom.width",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Last run"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "failed",
+                        "color": "red"
+                      },
+                      "1": {
+                        "text": "ok",
+                        "color": "green"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Overdue"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "no",
+                        "color": "green"
+                      },
+                      "1": {
+                        "text": "yes",
+                        "color": "red"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Schedule"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 85
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Task",
+            "desc": false
+          }
+        ]
+      }
+    },
+    {
+      "id": 39,
+      "type": "table",
+      "title": "Restarted overnight",
+      "description": "Running containers started in the last 12 hours: Watchtower updates, crashes, host reboots. A container that crashed and stayed down is not here; see Prometheus targets and Kuma.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 5
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "max by (host, name, version) (\n  label_replace(label_replace(\n    label_replace(container_start_time_seconds{name!=\"\", container_label_org_opencontainers_image_version!=\"\"} > time() - 43200, \"version\", \"$1\", \"container_label_org_opencontainers_image_version\", \"(.+)\")\n    or\n    label_replace(container_start_time_seconds{name!=\"\", container_label_org_opencontainers_image_version=\"\"} > time() - 43200, \"version\", \"$1\", \"image\", \".*:([^/]+)\"),\n  \"host\", \"NAS\", \"instance\", \"cadvisor:.*\"), \"host\", \"Beelink\", \"instance\", \"192.168.1.131:.*\")\n) * 1000",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A",
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "name": 0,
+              "host": 1,
+              "version": 2,
+              "Value": 3
+            },
+            "renameByName": {
+              "name": "Container",
+              "host": "Host",
+              "version": "Version",
+              "Value": "Started"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Nothing restarted in 12 h",
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Started"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsLocal"
+              },
+              {
+                "id": "custom.width",
+                "value": 150
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Host"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Started",
+            "desc": true
+          }
+        ]
+      }
+    },
+    {
+      "id": 40,
+      "type": "annolist",
+      "title": "Alerts overnight",
+      "description": "Alert state changes from Grafana's alert history in the last 12 hours, all rules.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 5
+      },
+      "timeFrom": "12h",
+      "options": {
+        "onlyFromThisDashboard": false,
+        "onlyInTimeRange": true,
+        "tags": [],
+        "limit": 30,
+        "showUser": false,
+        "showTime": true,
+        "showTags": true,
+        "navigateToPanel": false,
+        "navigateBefore": "10m",
+        "navigateAfter": "10m"
+      }
+    },
+    {
+      "id": 41,
+      "type": "table",
+      "title": "Kuma not up, 12 h",
+      "description": "Minutes each NAS Kuma monitor was down or pending in the last 12 hours, sampled every minute. Maintenance windows are not counted.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 13
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "label_replace(count_over_time((monitor_status{monitor_type!=\"group\"} == 0)[12h:1m]), \"state\", \"down\", \"\", \"\")\nor\nlabel_replace(count_over_time((monitor_status{monitor_type!=\"group\"} == 2)[12h:1m]), \"state\", \"pending\", \"\", \"\")",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A",
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "instance": true,
+              "job": true,
+              "monitor_hostname": true,
+              "monitor_port": true,
+              "monitor_id": true,
+              "monitor_url": true
+            },
+            "indexByName": {
+              "monitor_name": 0,
+              "monitor_type": 1,
+              "state": 2,
+              "Value": 3
+            },
+            "renameByName": {
+              "monitor_name": "Monitor",
+              "monitor_type": "Type",
+              "state": "State",
+              "Value": "Minutes"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No Kuma downtime in 12 h",
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "State"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "down": {
+                        "color": "red"
+                      },
+                      "pending": {
+                        "color": "orange"
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Minutes"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Type"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 90
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Minutes",
+            "desc": true
+          }
+        ]
+      }
+    },
+    {
+      "id": 42,
+      "type": "table",
+      "title": "Targets down, 12 h",
+      "description": "Minutes each Prometheus target failed its scrape in the last 12 hours.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 13
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "count_over_time((up == 0)[12h:1m])",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A",
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true
+            },
+            "indexByName": {
+              "job": 0,
+              "instance": 1,
+              "Value": 2
+            },
+            "renameByName": {
+              "job": "Job",
+              "instance": "Target",
+              "Value": "Minutes"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No target down in 12 h",
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Minutes"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Minutes",
+            "desc": true
+          }
+        ]
+      }
+    },
+    {
+      "id": 43,
+      "type": "table",
+      "title": "Certificates expiring soonest",
+      "description": "The six Traefik certificates closest to expiry, both hosts. Renewal starts at 30 days; the TraefikCertExpiring rule fires under 20.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "cdup605h5snpce"
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 13
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "cdup605h5snpce"
+          },
+          "expr": "bottomk(6, min by (cn, host) ((traefik_tls_certs_not_after - time()) / 86400))",
+          "legendFormat": "",
+          "instant": true,
+          "range": false,
+          "refId": "A",
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "cn": 0,
+              "host": 1,
+              "Value": 2
+            },
+            "renameByName": {
+              "cn": "Certificate",
+              "host": "Traefik",
+              "Value": "Days left"
+            }
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "No certificate data",
+          "custom": {
+            "align": "left",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Days left"
+            },
+            "properties": [
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.width",
+                "value": 90
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 20
+                    },
+                    {
+                      "color": "green",
+                      "value": 30
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Traefik"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 80
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "sortBy": [
+          {
+            "displayName": "Days left",
+            "desc": false
+          }
+        ]
+      }
+    },
+    {
+      "id": 44,
+      "type": "row",
+      "title": "Now",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
+      "panels": []
+    },
+    {
       "id": 1,
       "type": "stat",
       "title": "Targets down",
@@ -25,7 +1315,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 0,
+        "y": 21,
         "w": 4,
         "h": 4
       },
@@ -94,7 +1384,7 @@
       },
       "gridPos": {
         "x": 4,
-        "y": 0,
+        "y": 21,
         "w": 4,
         "h": 4
       },
@@ -163,7 +1453,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 0,
+        "y": 21,
         "w": 4,
         "h": 4
       },
@@ -232,7 +1522,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 0,
+        "y": 21,
         "w": 3,
         "h": 4
       },
@@ -297,7 +1587,7 @@
       },
       "gridPos": {
         "x": 15,
-        "y": 0,
+        "y": 21,
         "w": 3,
         "h": 4
       },
@@ -370,7 +1660,7 @@
       },
       "gridPos": {
         "x": 18,
-        "y": 0,
+        "y": 21,
         "w": 3,
         "h": 4
       },
@@ -443,7 +1733,7 @@
       },
       "gridPos": {
         "x": 21,
-        "y": 0,
+        "y": 21,
         "w": 3,
         "h": 4
       },
@@ -511,7 +1801,7 @@
       "title": "Firing alerts",
       "gridPos": {
         "x": 0,
-        "y": 4,
+        "y": 25,
         "w": 24,
         "h": 5
       },
@@ -542,7 +1832,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 9,
+        "y": 30,
         "w": 24,
         "h": 1
       },
@@ -559,7 +1849,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 10,
+        "y": 31,
         "w": 24,
         "h": 14
       },
@@ -636,7 +1926,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 24,
+        "y": 45,
         "w": 24,
         "h": 1
       },
@@ -653,7 +1943,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 25,
+        "y": 46,
         "w": 4,
         "h": 5
       },
@@ -718,7 +2008,7 @@
       },
       "gridPos": {
         "x": 4,
-        "y": 25,
+        "y": 46,
         "w": 20,
         "h": 5
       },
@@ -848,7 +2138,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 30,
+        "y": 51,
         "w": 24,
         "h": 1
       },
@@ -865,7 +2155,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 31,
+        "y": 52,
         "w": 4,
         "h": 4
       },
@@ -939,7 +2229,7 @@
       },
       "gridPos": {
         "x": 4,
-        "y": 31,
+        "y": 52,
         "w": 4,
         "h": 4
       },
@@ -1013,7 +2303,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 31,
+        "y": 52,
         "w": 4,
         "h": 4
       },
@@ -1086,7 +2376,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 31,
+        "y": 52,
         "w": 4,
         "h": 4
       },
@@ -1161,7 +2451,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 31,
+        "y": 52,
         "w": 4,
         "h": 4
       },
@@ -1234,7 +2524,7 @@
       },
       "gridPos": {
         "x": 20,
-        "y": 31,
+        "y": 52,
         "w": 4,
         "h": 4
       },
@@ -1307,7 +2597,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 35,
+        "y": 56,
         "w": 8,
         "h": 8
       },
@@ -1379,7 +2669,7 @@
       },
       "gridPos": {
         "x": 8,
-        "y": 35,
+        "y": 56,
         "w": 8,
         "h": 8
       },
@@ -1462,7 +2752,7 @@
       },
       "gridPos": {
         "x": 16,
-        "y": 35,
+        "y": 56,
         "w": 8,
         "h": 8
       },
@@ -1529,7 +2819,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 43,
+        "y": 64,
         "w": 24,
         "h": 1
       },
@@ -1546,7 +2836,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 44,
+        "y": 65,
         "w": 12,
         "h": 7
       },
@@ -1625,7 +2915,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 44,
+        "y": 65,
         "w": 12,
         "h": 7
       },
@@ -1691,7 +2981,7 @@
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 51,
+        "y": 72,
         "w": 24,
         "h": 1
       },
@@ -1708,7 +2998,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 52,
+        "y": 73,
         "w": 24,
         "h": 16
       },
