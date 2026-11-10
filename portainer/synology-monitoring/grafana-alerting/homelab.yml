@@ -422,6 +422,63 @@ groups:
         annotations:
           summary: "Hyper Backup \"{{ $labels.name }}\" failed its last run"
 
+      # Jobs reporting to job-heartbeat (job-heartbeat.py, jobs.json). A job that has never
+      # reported has no last-run series, so it shows "never" on the dashboard but does not alert.
+      - uid: homelab-job-overdue
+        title: ScheduledJobOverdue
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 900, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              # Hours past the job's allowed age since its last finished run
+              expr: (time() - homelab_job_last_run_timestamp_seconds - homelab_job_max_age_seconds) / 3600
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: gt, params: [0] }
+        for: 30m
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: warning }
+        annotations:
+          summary: "Job {{ $labels.job_name }} on {{ $labels.host }} ({{ $labels.schedule }}) has not reported a run for {{ printf \"%.0f\" $values.A.Value }} h past its limit"
+
+      - uid: homelab-job-failed
+        title: ScheduledJobFailed
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 1800, to: 0 }
+            datasourceUid: cdup605h5snpce
+            model:
+              expr: |
+                homelab_job_last_status
+                unless on() (max_over_time(hass_input_boolean_state{entity="input_boolean.nas_planned_off"}[30m]) == 1)
+              instant: true
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              refId: C
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 1m
+        noDataState: OK
+        execErrState: KeepLast
+        labels: { severity: critical }
+        annotations:
+          summary: "Job {{ $labels.job_name }} on {{ $labels.host }} failed its last run"
+
       - uid: homelab-traefik-cert-expiring
         title: TraefikCertExpiring
         condition: C

@@ -45,7 +45,7 @@ No new services. New row "Last night" at the top (y=0, push the rest down), each
 
 Done when: the row renders on the live dashboard, every query returns data or a deliberate "none" text, and a test restart of one container shows up in panel 1.
 
-## Phase 2: job heartbeat exporter (built 2026-11-10, waiting for stack redeploys)
+## Phase 2: job heartbeat exporter (live 2026-11-10)
 
 Wired so far: vaultwarden-backup, recyclarr, qbit-manage, kometa, garmin-report. Not yet: ImageMaid, adguardhome-sync, Cleanuparr, HA backups, DSM tasks.
 
@@ -76,7 +76,7 @@ Dashboard: "Scheduled jobs" table as the first panel of the row: job, host, sche
 
 Done when: every job in the table has run at least once and shows green, and a forced failure (`/ping/<job>?status=fail`) turns its row red.
 
-## Phase 3: alerts
+## Phase 3: alerts (live 2026-11-10)
 
 - `ScheduledJobFailed` (last status 0) and `ScheduledJobOverdue` (age over `max_age`) in `grafana-alerting/homelab.yml`, with the `nas_planned_off` gate that nine rules already carry.
 - Keep the Hyper Backup and Watchtower rules as they are; no duplicates for those two.
