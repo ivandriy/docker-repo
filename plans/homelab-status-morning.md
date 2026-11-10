@@ -45,7 +45,9 @@ No new services. New row "Last night" at the top (y=0, push the rest down), each
 
 Done when: the row renders on the live dashboard, every query returns data or a deliberate "none" text, and a test restart of one container shows up in panel 1.
 
-## Phase 2: job heartbeat exporter
+## Phase 2: job heartbeat exporter (built 2026-11-10, waiting for stack redeploys)
+
+Wired so far: vaultwarden-backup, recyclarr, qbit-manage, kometa, garmin-report. Not yet: ImageMaid, adguardhome-sync, Cleanuparr, HA backups, DSM tasks.
 
 One small service records every scheduled job run, so the jobs table and a staleness alert work the same way for all of them.
 

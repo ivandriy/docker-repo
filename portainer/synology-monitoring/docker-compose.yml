@@ -217,6 +217,29 @@ services:
       - /usr/syno/etc/synoschedule.d/root:/hb/schedule:ro
     restart: always
 
+  # Scheduled job runs as metrics: jobs call /ping/<job> (see job-heartbeat.py), the job list
+  # is jobs.json. Copy both to the NAS folder. Port 9113 on the NAS for the Beelink jobs.
+  job-heartbeat:
+    image: python:3.13.18-alpine
+    command: ["python", "-u", "/app/heartbeat.py"]
+    container_name: job_heartbeat
+    hostname: job-heartbeat
+    mem_limit: 64m
+    cpu_shares: 256
+    security_opt:
+      - no-new-privileges=true
+    read_only: true
+    user: 1026:100
+    ports:
+      - 9113:9113
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9113/metrics')"]
+    volumes:
+      - /volume1/docker/synology-monitoring/job-heartbeat.py:/app/heartbeat.py:ro
+      - /volume1/docker/synology-monitoring/jobs.json:/app/jobs.json:ro
+      - /volume1/docker/synology-monitoring/job-heartbeat:/data
+    restart: always
+
   # HTTPS and DNS probes; modules in blackbox.yml, targets in prometheus.yml
   blackbox-exporter:
     image: prom/blackbox-exporter:v0.29.1

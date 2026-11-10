@@ -1,0 +1,7 @@
+[
+  {"job": "vaultwarden-backup", "host": "Beelink", "schedule": "daily 02:00", "max_age": 93600},
+  {"job": "recyclarr", "host": "NAS", "schedule": "daily 00:00", "max_age": 93600},
+  {"job": "qbit-manage", "host": "NAS", "schedule": "daily 03:30", "max_age": 93600},
+  {"job": "kometa", "host": "Beelink", "schedule": "daily 05:00", "max_age": 100800},
+  {"job": "garmin-report", "host": "Beelink", "schedule": "Sun 19:00", "max_age": 691200}
+]

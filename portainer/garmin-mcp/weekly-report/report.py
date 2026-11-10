@@ -40,6 +40,8 @@ MCP_FIT_DIR = "/home/garmin/Downloads/garmin"
 STATE_FILE = os.environ.get("STATE_FILE", "/state/state.json")
 # Uptime Kuma push monitor URL without query; empty disables the heartbeat
 KUMA_PUSH_URL = os.environ.get("KUMA_PUSH_URL", "")
+# job-heartbeat ping URL for the Grafana jobs table; empty disables it
+JOB_PING_URL = os.environ.get("JOB_PING_URL", "")
 TZ = ZoneInfo("Europe/Kyiv")
 NA = "N/A"
 RHR_FLAG_BPM = 10  # flag a resting HR this far from the period median
@@ -784,13 +786,14 @@ def telegram(method, fields, files=None):
 
 
 def heartbeat(status, msg):
-    if not KUMA_PUSH_URL:
-        return
     query = urllib.parse.urlencode({"status": status, "msg": msg[:200]})
-    try:
-        urllib.request.urlopen(f"{KUMA_PUSH_URL}?{query}", timeout=15).close()
-    except Exception as exc:  # the report itself already went out
-        print(f"heartbeat failed: {exc}", flush=True)
+    for url in (KUMA_PUSH_URL, JOB_PING_URL):
+        if not url:
+            continue
+        try:
+            urllib.request.urlopen(f"{url}?{query}", timeout=15).close()
+        except Exception as exc:  # the report itself already went out
+            print(f"heartbeat failed: {exc}", flush=True)
 
 
 def load_state():

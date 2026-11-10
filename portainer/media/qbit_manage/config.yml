@@ -93,3 +93,9 @@ orphaned:
     # music is kept by hand, whether a torrent still holds it or not
     - "/Data/Downloads/Music/**"
   max_orphaned_files_to_delete: 50
+
+# run start/end and errors go to job-heartbeat (Grafana Homelab status jobs table)
+webhooks:
+  error: http://job-heartbeat:9113/ping/qbit-manage/fail
+  run_start: http://job-heartbeat:9113/ping/qbit-manage/start
+  run_end: http://job-heartbeat:9113/ping/qbit-manage

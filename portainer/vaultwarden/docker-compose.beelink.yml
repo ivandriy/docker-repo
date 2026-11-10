@@ -113,6 +113,9 @@ services:
       RCLONE_REMOTE_DIR_1: BeelinkBackup/vaultwarden
       PING_URL_WHEN_SUCCESS: ${VW_BACKUP_PUSH_URL:+${VW_BACKUP_PUSH_URL}?status=up&msg=OK}
       PING_URL_WHEN_FAILURE: ${VW_BACKUP_PUSH_URL:+${VW_BACKUP_PUSH_URL}?status=down&msg=backup%20failed}
+      # job-heartbeat on the NAS; the subject says Success or Failed
+      PING_URL_WHEN_START: http://192.168.1.254:9113/ping/vaultwarden-backup/start
+      PING_URL: http://192.168.1.254:9113/ping/vaultwarden-backup?subject=%{subject}
     logging:
       driver: json-file
       options:

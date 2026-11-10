@@ -58,6 +58,11 @@ scrape_configs:
     static_configs:
       - targets: ['hyperbackup:9112']
 
+  - job_name: 'job-heartbeat'
+    scrape_interval: 1m
+    static_configs:
+      - targets: ['job-heartbeat:9113']
+
   # metrics entrypoint :8083 in traefik.yml / traefik.beelink.yml
   - job_name: 'traefik'
     static_configs:

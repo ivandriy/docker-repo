@@ -55,6 +55,8 @@ services:
       TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
       # Uptime Kuma push monitor "Garmin weekly report" (stack env, optional)
       KUMA_PUSH_URL: ${KUMA_PUSH_URL:-}
+      # job-heartbeat on the NAS, for the Grafana Homelab status jobs table
+      JOB_PING_URL: http://192.168.1.254:9113/ping/garmin-report
     volumes:
       # FIT files that garmin-mcp downloads
       - garmin-downloads:/fit:ro

@@ -254,6 +254,8 @@ services:
       - RADARR_API_KEY=${RADARR_API_KEY}
     volumes:
       - /volume1/config/recyclarr:/config
+      # recyclarr-cron.sh in this folder: the stock cron script plus a job-heartbeat ping
+      - /volume1/config/recyclarr/cron.sh:/cron.sh:ro
     restart: always
     depends_on: [sonarr, radarr]
 
