@@ -1,0 +1,35 @@
+# Recorder: keep 10 days and skip entities that change often but are never charted.
+# Excluded entities keep their live state; only their history and statistics stop.
+# Picked on 2026-11-10 from the row counts of the last 3 days (about 30% of all rows),
+# after checking that no dashboard, automation, script, package or helper refers to them.
+# Live copy: /config/packages/recorder.yaml. Needs an HA restart after edits.
+recorder:
+  purge_keep_days: 10
+  exclude:
+    entity_globs:
+      # Zigbee2MQTT "last seen" timestamps, one write per device message
+      - sensor.*_last_seen
+      # iCloud3 next poll time
+      - sensor.*_next_update
+    entities:
+      # UniFi network gear CPU and memory, updated every few seconds
+      - sensor.ucg_max_cpu_utilization_2
+      - sensor.ucg_max_memory_utilization_2
+      - sensor.ucg_max_storage_utilization
+      - sensor.u7_pro_xg_cpu_utilization
+      - sensor.u7_pro_xg_memory_utilization
+      - sensor.studio_ap_cpu_utilization
+      - sensor.studio_ap_memory_utilization
+      - sensor.usw_ultra_cpu_utilization
+      - sensor.usw_ultra_memory_utilization
+      - sensor.living_room_switch_cpu_utilization
+      - sensor.living_room_switch_memory_utilization
+      - sensor.bedroom_switch_cpu_utilization
+      - sensor.bedroom_switch_memory_utilization
+      - sensor.sofa_switch_cpu_utilization
+      - sensor.sofa_switch_memory_utilization
+      - sensor.sofa_switch_2_cpu_utilization
+      - sensor.sofa_switch_2_memory_utilization
+      # GeekMagic display status text
+      - sensor.nas_display_status
+      - sensor.livingroom_display_status
