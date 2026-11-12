@@ -1,0 +1,55 @@
+# Portainer stack "forgejo" on the NAS: local git server for the Claude agents
+# (homelab-agents). Agents push branches and open pull requests; only Andrii merges.
+#
+# Web editor stack, never a Repository stack: if Forgejo is down, Portainer could not
+# fetch this file to bring it back.
+#
+# Port 3030, because Homepage holds 3000. The agents VLAN reaches Forgejo by
+# http://192.168.1.254:3030 only, so ROOT_URL stays on the IP, not the Traefik host.
+# User forgejo (UID 1032) is a non-admin DSM user with R/W on /volume1/docker/forgejo.
+#
+# Pinned to the LTS line, updated by hand, so Watchtower stays off.
+# restart: always, because Synology's shutdown stops every container by name and
+# unless-stopped then never brings them back after a NAS reboot.
+#
+# Stack env: LOCAL_DOMAIN
+
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:15.0.11
+    container_name: forgejo
+    environment:
+      USER_UID: "1032"
+      USER_GID: "100"
+      FORGEJO__server__ROOT_URL: http://192.168.1.254:3030/
+      FORGEJO__server__SSH_PORT: "2222"
+      FORGEJO__service__DISABLE_REGISTRATION: "true"
+    volumes:
+      - /volume1/docker/forgejo:/data
+    ports:
+      - 3030:3000   # web UI and git over HTTPS with a token
+      - 2222:22     # git over SSH, for the Beelink read-only deploy key
+    restart: always
+    labels:
+      # proxy settings
+      - "traefik.enable=true"
+      - "traefik.http.routers.forgejo.entrypoints=https"
+      - "traefik.http.routers.forgejo.rule=Host(`forgejo.${LOCAL_DOMAIN}`)"
+      - "traefik.http.routers.forgejo.middlewares=whitelist@file"
+      - "traefik.http.routers.forgejo.tls=true"
+      - "traefik.http.routers.forgejo.tls.certresolver=mydnschallenge"
+      - "traefik.http.routers.forgejo.tls.domains[0].main=${LOCAL_DOMAIN}"
+      - "traefik.http.routers.forgejo.tls.domains[0].sans=*.${LOCAL_DOMAIN}"
+      - "traefik.http.services.forgejo.loadbalancer.server.port=3000"
+      # homepage integration
+      - homepage.group=Dev
+      - homepage.name=Forgejo
+      - homepage.icon=forgejo.png
+      - homepage.href=https://forgejo.${LOCAL_DOMAIN}
+      - homepage.description=Git server for the Claude agents
+      # pinned LTS, updated by hand
+      - "com.centurylinklabs.watchtower.enable=false"
+networks:
+  default:
+    name: containers_bridge
+    external: true
