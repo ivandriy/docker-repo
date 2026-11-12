@@ -16,7 +16,7 @@
 
 services:
   forgejo:
-    image: codeberg.org/forgejo/forgejo:15.0.11
+    image: data.forgejo.org/forgejo/forgejo:15.0.11   # Forgejo registry; codeberg.org returns 403 under load
     container_name: forgejo
     environment:
       USER_UID: "1032"
