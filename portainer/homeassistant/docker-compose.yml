@@ -1,3 +1,6 @@
+# HA config (configuration.yaml, packages/, templates) lives in Forgejo:
+# nomad/homeassistant-config on the NAS, deployed with ha-deploy.sh on the Beelink.
+# Agents change it by pull request; only nomad merges.
 services:
   homeassistant:
     container_name: homeassistant
