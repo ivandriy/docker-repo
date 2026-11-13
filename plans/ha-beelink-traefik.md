@@ -246,3 +246,9 @@ The Beelink serves its own dashboard at `https://traefik2.local.ivanskiy.com`, w
 Verified: 401 without or with wrong credentials, 200 on the API with the right ones, not reachable on 8443 or the public IP, and with the NAS Traefik stopped the dashboard (via AdGuard2) and HA on 8443 both kept working.
 
 Shared rule files to copy to both hosts when they change: `headers.yml`, `tls.yml`, `whitelist.yml`.
+
+### Cockpit on the Beelink Traefik (2026-11-13)
+
+- Rule `portainer/traefik/rules-beelink/cockpit.yml`: router `cockpit` on `https-lan`, `whitelist`, service `https://127.0.0.1:9090` with its own `cockpit-insecure` transport (Cockpit's self-signed cert). Copied into `/opt/portainer/volumes/traefik/rules` through a throwaway `traefik:v3.7` container; from the Mac it returns 200 with a valid certificate.
+- `/etc/cockpit/cockpit.conf` (new file): `Origins = https://cockpit.local.ivanskiy.com https://192.168.1.131:9090`, `ProtocolHeader = X-Forwarded-Proto`. Cockpit restarted. The WebSocket at `/cockpit/socket` answers 101 for this Origin and 403 for a foreign one.
+- AdGuard rewrite `cockpit.local.ivanskiy.com` to `192.168.1.131` on the NAS (backup `AdGuardHome.yaml.bak-20261113-cockpit`, `--check-config` ok), synced to the Beelink by restarting adguardhome-sync. Both AdGuards answer 192.168.1.131.

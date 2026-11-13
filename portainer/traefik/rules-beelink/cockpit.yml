@@ -1,0 +1,32 @@
+# Beelink instance only, copied to /opt/portainer/volumes/traefik/rules/cockpit.yml.
+# Cockpit on the Beelink host (VM management for the Claude agents), LAN/VPN only.
+# Both AdGuards rewrite cockpit.local to 192.168.1.131, so it works with the NAS off.
+# Cockpit checks Origin: /etc/cockpit/cockpit.conf lists this URL in Origins.
+http:
+  routers:
+    cockpit:
+      entryPoints:
+        - "https-lan"
+      service: cockpit
+      middlewares:
+        - whitelist
+      rule: Host(`cockpit.{{ env "LOCAL_DOMAIN" }}`)
+      tls:
+        certResolver: mydnschallenge
+        domains:
+          - main: '{{ env "LOCAL_DOMAIN" }}'
+            sans:
+              - '*.{{ env "LOCAL_DOMAIN" }}'
+
+  services:
+    cockpit:
+      loadBalancer:
+        serversTransport: cockpit-insecure
+        passHostHeader: true
+        servers:
+          - url: "https://127.0.0.1:9090"
+
+  serversTransports:
+    # Cockpit serves a self-signed certificate
+    cockpit-insecure:
+      insecureSkipVerify: true
